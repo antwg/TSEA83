@@ -34,9 +34,9 @@ XILINX_INIT = source /opt/xilinx_ise/14.7/settings64.sh;
 PART=xc6slx16-3-csg324
 
 
-proj.%: S=pipeCPU.vhd PM/PM.vhd
-proj.%: T=pipeCPU_tb.vhd
-proj.%: U=Nexys3_Master.ucf
+pipecpu.%: S=pipeCPU.vhd PM/PM.vhd
+pipecpu.%: T=pipeCPU_tb.vhd
+pipecpu.%: U=Nexys3_Master.ucf
 
 
 # Det här är ett exempel på hur man kan skriva en testbänk som är
@@ -47,15 +47,15 @@ proj.%: U=Nexys3_Master.ucf
 
 
 # Misc functions that are good to have
-include build/util.mk
+include ./build/util.mk
 # Setup simulation environment
-include build/vsim.mk
+include ./build/vsim.mk
 # Setup synthesis environment
-include build/xst.mk
+include ./build/xst.mk
 # Setup backend flow environment
-include build/xilinx-par.mk
+include ./build/xilinx-par.mk
 # Setup tools for programming the FPGA
-include build/digilentprog.mk
+include ./build/digilentprog.mk
 
 
 
