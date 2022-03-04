@@ -3,6 +3,7 @@ vcom "+acc" ../pipeCPU_tb.vhd
 vsim pipeCPU_tb
 
 config wave -signalnamewidth 1
+
 add wave {sim:/pipecpu_tb/clk}
 add wave {sim:/pipecpu_tb/rst}
 add wave -group ir {sim:/pipecpu_tb/U0/IR1}
@@ -14,4 +15,4 @@ add wave -color gold {sim:/pipecpu_tb/U0/PMdata_out}
 add wave {sim:/pipecpu_tb/U0/pm_addr}
 
 restart -f
-run 20 us
+run 1000 ns
