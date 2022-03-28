@@ -1,3 +1,4 @@
 pipecpu-simdir/transcript
 pipecpu-simdir/vsim.wlf
 pipecpu-simdir/work
+*.swp

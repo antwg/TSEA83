@@ -45,6 +45,15 @@ component PRIM_MEM is
 		);
 end component;
 
+component REG_FILE is
+	port(
+	        rd : in unsigned(3 downto 0); 
+	        ra : in unsigned(3 downto 0); 
+	        rd_out : out unsigned(15 downto 0) 
+		ra_out : out unsigned(15 downto 0) 
+		);
+end component;
+
 begin
 
 	U1 : PRIM_MEM port map(
