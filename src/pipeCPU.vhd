@@ -26,6 +26,13 @@ alias IR2_const : unsigned(11 downto 0) is IR2(11 downto 0);
 -- Stack pointer
 signal SP : unsigned(15 downto 0);
 
+signal status_reg : unsigned(4 downto 1);
+alias ZF : std_logic is status_reg(0);
+alias NF : std_logic is status_reg(1);
+alias CF : std_logic is status_reg(2);
+alias vF : std_logic is status_reg(3);
+--alias ZF : std_logic is status_reg(4);
+
 signal PC, PC1, PC2 : unsigned(15 downto 0);
 
 signal PMdata_out : unsigned(25 downto 0);
