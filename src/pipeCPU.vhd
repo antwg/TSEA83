@@ -31,6 +31,9 @@ signal PC, PC1, PC2 : unsigned(15 downto 0);
 signal PMdata_out : unsigned(25 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
+signal ALU_dummy1 : unsigned(15 downto 0);
+signal ALU_dummy2 : unsigned(15 downto 0);
+
 -- Instructions
 constant iNOP : unsigned(5 downto 0) := "000000";
 constant iJ 	: unsigned(5 downto 0) := "010101";
@@ -47,10 +50,10 @@ end component;
 
 component REG_FILE is
 	port(
-	        rd : in unsigned(3 downto 0); 
-	        ra : in unsigned(3 downto 0); 
-	        rd_out : out unsigned(15 downto 0) 
-		ra_out : out unsigned(15 downto 0) 
+	        rd : in unsigned(3 downto 0);
+	        ra : in unsigned(3 downto 0);
+	        rd_out : out unsigned(15 downto 0);
+					ra_out : out unsigned(15 downto 0)
 		);
 end component;
 
@@ -59,6 +62,13 @@ begin
 	U1 : PRIM_MEM port map(
 		addr => pm_addr,
 		data_out => PMdata_out
+	);
+
+	U2 : REG_FILE port map(
+		rd => IR2_rd,
+		ra => IR2_ra,
+		rd_out => ALU_dummy1,
+		ra_out => ALU_dummy2
 	);
 
 	-- If jmp instruction, take value from IR2, else increment
