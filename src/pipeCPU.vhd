@@ -26,10 +26,10 @@ alias IR2_const : unsigned(11 downto 0) is IR2(11 downto 0);
 -- Stack pointer
 signal SP : unsigned(15 downto 0);
 
-signal PC, PC1, PC2 : unsigned(10 downto 0);
+signal PC, PC1, PC2 : unsigned(15 downto 0);
 
-signal PMdata_out : unsigned(31 downto 0);
-signal pm_addr : unsigned(8 downto 0);
+signal PMdata_out : unsigned(25 downto 0);
+signal pm_addr : unsigned(15 downto 0);
 
 -- Instructions
 constant iNOP : unsigned(5 downto 0) := "000000";
@@ -38,17 +38,16 @@ constant iBF 	: unsigned(5 downto 0) := "000100";
 constant iPUSH 	: unsigned(5 downto 0) := "000111"; -- TODO change op code
 constant iPOP 	: unsigned(5 downto 0) := "000110";
 
-component PM_comp is
+component PRIM_MEM is
 	port(
-		addr : in unsigned(8 downto 0);
-		data_out : out unsigned(31 downto 0)
+		addr : in unsigned(15 downto 0);
+		data_out : out unsigned(25 downto 0)
 		);
 end component;
 
-
 begin
 
-	U1 : PM_comp port map(
+	U1 : PRIM_MEM port map(
 		addr => pm_addr,
 		data_out => PMdata_out
 	);
@@ -67,9 +66,9 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= PC(8 downto 0);
+	pm_addr <= PC(15 downto 0);
 
-	-- Update PC1. Copy PC
+	-- Update PC1 by copying PC
 	process(clk)
 	begin
 		if rising_edge(clk) then
@@ -102,7 +101,7 @@ begin
 			elsif (IR2_op = iJ) then
 				IR1_op <= iNOP;
 			else
-				IR1 <= PMdata_out(31 downto 0);
+				IR1 <= PMdata_out(25 downto 0);
 			end if;
 		end if;
 	end process;

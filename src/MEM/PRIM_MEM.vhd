@@ -13,18 +13,18 @@ architecture func of PRIM_MEM is
 
 	type PM_t is array(0 to 4095) of unsigned(25 downto 0);
 	constant PM_c : PM_t := (
-		"1000000000000000000000000",	-- dummy
-		"2000000000000000000000000",	-- dummy
-		"3000000000000000000000000",	-- dummy
-		"4000000000000000000000000",	-- dummy
-		"5000000000000000000000000",	-- dummy
-		"6000000000000000000000000",	-- dummy
-		
+		"10000000000000000000000000",	-- dummy
+		"10000000000000000000000000",	-- dummy
+		"10000000000000000000000000",	-- dummy
+		"10000000000000000000000000",	-- dummy
+		"10000000000000000000000000",	-- dummy
+		"10000000000000000000000000",	-- dummy
+
 		others => (others => '0')
 	);
-	
+
 	signal PM : PM_t := PM_c;
-	
+
 begin
 	data_out <= PM(to_integer(addr));
 end func;
