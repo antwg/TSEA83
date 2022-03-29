@@ -11,7 +11,7 @@ entity ALU is
 end ALU;
 
 architecture func of ALU is
-signal Z, N, C, V : std_logic;
+signal Z, N, C, V, Z_sens, N_sens, C_sens, V_sens : std_logic;
 signal add : unsigned(15 downto 0);
 signal addi : unsigned(15 downto 0);
 signal subi : unsigned(15 downto 0);
@@ -23,6 +23,7 @@ signal add_carry: unsigned(15 downto 0);
 signal sub_carry: unsigned(15 downto 0);
 signal log_shift_left: unsigned (15 downto 0);
 signal log_shift_right: unsigned (15 downto 0);
+signal result_large : unsiged(31 downto 0)
 	
 constant NOP 		: unsigned(5 downto 0) := "000000" 
 constant RJMP		: unsigned(5 downto 0) := "000001"
@@ -86,27 +87,76 @@ log_shift_right <= shift_left(unsigned(MUX1), 1);
 
 
 --decide OP code for all operations
-with OP select result <=
-add	when ADD,
-add	when ADDI,
-add_carry when ADC,
-sub_carry when SBC
-sub when SUB
-sub when SUBI 
-mul when MUL,
-mul when MULI,
-mul when MULS,
-mul when MULSI,
-logical_and when _AND,
-logical_or when _OR,
-log_shift_left when LSLS,
-log_shift_right when LSRS,
-send_through when others;
-
-when others;
+with op_code select result <=
+	add	when ADD,
+	add	when ADDI,
+	add_carry when ADC,
+	sub_carry when SBC
+	sub when SUB
+	sub when SUBI 
+	mul when MUL,
+	mul when MULI,
+	mul when MULS,
+	mul when MULSI,
+	logical_and when _AND,
+	logical_or when _OR,
+	log_shift_left when LSLS,
+	log_shift_right when LSRS,
+	send_through when others;
 end case;
 
+	-- C flag	
+process(clk)
+begin
+	if rising_edge(clk)	then
+		case op_code is
+			when ADD => C <= result_large(16);
+			when ADDI => C <= result_large(16);
+		end case;
+	end if;
+
+end process
+
+	-- V flag	
+process(clk)
+begin
+	if rising_edge(clk)	then
+		case op_code is
+			when ADD => C <= result_large(16);
+			when ADDI => C <= result_large(16);
+			when ADD => C <= result_large(16);
+		end case;
+	end if;
+
+end process
+
+	-- N flag	
+process(clk)
+begin
+	if rising_edge(clk)	then
+		case op_code is
+			when ADD => N <= result_large(15);
+
+			end case;
+	end if;
+
+end process
+
+	-- Z flag	
+process(clk)
+begin
+	if rising_edge(clk)	then
+		case op_code is
+			-- when result is zero
+			ADD => Z <= '1' when R(result_large(15 downto 0)) else '0'
+			SUB => Z <= '1' when R(result_large(15 downto 0)) else '0'
+			
+			end case;
+	end if;
+
+end process
 
 
-	
+
+
 end architecture;
