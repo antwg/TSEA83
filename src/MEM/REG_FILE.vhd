@@ -25,6 +25,15 @@ architecture func of REG_FILE is
 	signal RF : RF_t := RF_c;
 
 begin
+      process(clk)
+        begin
+          if rising_edge(clk) then
+            if we = '1' then
+              RF(to_integer(rd)) <= data_in;
+            end if;
+          end if;
+        end process;
+
 	rd_out <= RF(to_integer(rd));
 	ra_out <= RF(to_integer(ra));
 end func;
