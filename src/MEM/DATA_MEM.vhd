@@ -7,14 +7,14 @@ entity DATA_MEM is
 		clk : std_logic;
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(15 downto 0);
-		data_in : out unsigned(15 downto 0);
+		data_in : in unsigned(15 downto 0);
 		we : in std_logic
 		);
 end DATA_MEM;
 
 architecture func of DATA_MEM is
 
-	type DM_t is array(0 to 4095) of unsigned(25 downto 0);
+	type DM_t is array(0 to 4095) of unsigned(15 downto 0);
 	constant DM_c : DM_t := (
 		others => (others => '0')
 	);
