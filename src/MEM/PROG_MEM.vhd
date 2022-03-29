@@ -2,14 +2,14 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity PRIM_MEM is
+entity PROG_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(25 downto 0)
 		);
-end PRIM_MEM;
+end PROG_MEM;
 
-architecture func of PRIM_MEM is
+architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 4095) of unsigned(25 downto 0);
 	constant PM_c : PM_t := (

@@ -48,10 +48,17 @@ constant iBF 	: unsigned(5 downto 0) := "000100";
 constant iPUSH 	: unsigned(5 downto 0) := "000111"; -- TODO change op code
 constant iPOP 	: unsigned(5 downto 0) := "000110";
 
-component PRIM_MEM is
+component PROG_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(25 downto 0)
+		);
+end component;
+
+component DATA_MEM is
+	port(
+		addr : in unsigned(15 downto 0);
+		data_out : out unsigned(15 downto 0)
 		);
 end component;
 
@@ -66,7 +73,7 @@ end component;
 
 begin
 
-	U1 : PRIM_MEM port map(
+	U1 : PROG_MEM port map(
 		addr => pm_addr,
 		data_out => PMdata_out
 	);
