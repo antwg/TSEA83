@@ -26,7 +26,7 @@ alias IR2_const : unsigned(11 downto 0) is IR2(11 downto 0);
 -- Stack pointer
 signal SP : unsigned(15 downto 0);
 
-signal status_reg : unsigned(4 downto 1);
+signal status_reg : unsigned(4 downto 0);
 alias ZF : std_logic is status_reg(0);
 alias NF : std_logic is status_reg(1);
 alias CF : std_logic is status_reg(2);
@@ -41,14 +41,19 @@ signal pm_addr : unsigned(15 downto 0);
 -- Data memory
 signal dm_addr : unsigned(15 downto 0);
 signal dm_we : std_logic;
-signal dm_data_out : out unsigned(15 downto 0);
-signal dm_data_in : out unsigned(15 downto 0);
+signal dm_data_out : unsigned(15 downto 0);
+signal dm_data_in : unsigned(15 downto 0);
 
 -- Sprite memory
 signal sm_addr : unsigned(15 downto 0);
 signal sm_we : std_logic;
 
 signal alu_out : unsigned(15 downto 0);
+
+signal data_bus : unsigned(15 downto 0);
+
+-- Register file
+signal rf_we : std_logic;
 
 signal ALU_dummy1 : unsigned(15 downto 0);
 signal ALU_dummy2 : unsigned(15 downto 0);
@@ -71,8 +76,9 @@ component DATA_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(15 downto 0);
-		data_in : out unsigned(15 downto 0);
-		we : in unsigned(0) -- write enable
+		data_in : in unsigned(15 downto 0);
+		we : in std_logic; -- write enable
+		clk : in std_logic
 		);
 end component;
 
@@ -82,12 +88,13 @@ end component;
 
 component REG_FILE is
 	port(
-	        rd : in unsigned(3 downto 0);
-	        rd_out : out unsigned(15 downto 0);
-	        ra : in unsigned(3 downto 0);
+    rd : in unsigned(3 downto 0);
+    rd_out : out unsigned(15 downto 0);
+    ra : in unsigned(3 downto 0);
 		ra_out : out unsigned(15 downto 0);
-		we : in unsigned(0); -- write enable
-		data_in : in unsigned(15 downto 0)
+		we : in std_logic; -- write enable
+		data_in : in unsigned(15 downto 0);
+		clk : std_logic
 		);
 end component;
 
@@ -102,14 +109,18 @@ begin
 		rd => IR2_rd,
 		ra => IR2_ra,
 		rd_out => ALU_dummy1,
-		ra_out => ALU_dummy2
+		ra_out => ALU_dummy2,
+		we => rf_we,
+		data_in => data_bus,
+		clk => clk
 	);
 
 	U3 : DATA_MEM port map(
-			dm_addr => addr;
-			dm_we => we;
-			dm_data_out => data_out;
-			dm_data_in => data_in
+			addr => dm_addr,
+			we => dm_we,
+			data_out => dm_data_out,
+			data_in => dm_data_in,
+			clk => clk
 	);
 
 	-- Address controller
@@ -125,7 +136,7 @@ begin
 				dm_addr <= alu_out;
 				dm_we <= '1';
 			else
-				sm_addr <= (alu_out & "0000001111111111"); -- translate to sm_addr
+				sm_addr <= (alu_out and "0000001111111111"); -- translate to sm_addr
 				sm_we <= '1';
 			end if;
 		end if;

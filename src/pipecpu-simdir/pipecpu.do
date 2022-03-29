@@ -1,4 +1,4 @@
-vcom "+acc" ../pipeCPU.vhd ../MEM/PRIM_MEM.vhd
+vcom "+acc" ../pipeCPU.vhd ../MEM/DATA_MEM.vhd
 vcom "+acc" ../pipeCPU_tb.vhd
 vsim pipeCPU_tb
 
