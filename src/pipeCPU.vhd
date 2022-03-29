@@ -82,11 +82,13 @@ end component;
 
 component REG_FILE is
 	port(
-    rd : in unsigned(3 downto 0);
-    ra : in unsigned(3 downto 0);
-    rd_out : out unsigned(15 downto 0);
-		ra_out : out unsigned(15 downto 0)
-	);
+	        rd : in unsigned(3 downto 0);
+	        rd_out : out unsigned(15 downto 0);
+	        ra : in unsigned(3 downto 0);
+		ra_out : out unsigned(15 downto 0);
+		we : in unsigned(0); -- write enable
+		data_in : in unsigned(15 downto 0)
+		);
 end component;
 
 begin
