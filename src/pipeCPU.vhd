@@ -38,6 +38,18 @@ signal PC, PC1, PC2 : unsigned(15 downto 0);
 signal PMdata_out : unsigned(25 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
+-- Data memory
+signal dm_addr : unsigned(15 downto 0);
+signal dm_we : std_logic;
+signal dm_data_out : out unsigned(15 downto 0);
+signal dm_data_in : out unsigned(15 downto 0);
+
+-- Sprite memory
+signal sm_addr : unsigned(15 downto 0);
+signal sm_we : std_logic;
+
+signal alu_out : unsigned(15 downto 0);
+
 signal ALU_dummy1 : unsigned(15 downto 0);
 signal ALU_dummy2 : unsigned(15 downto 0);
 
@@ -58,19 +70,23 @@ end component;
 component DATA_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
-		data_out : out unsigned(15 downto 0)
-		data_in : out unsigned(15 downto 0)
-		we : in unsigned(0); -- write enable
+		data_out : out unsigned(15 downto 0);
+		data_in : out unsigned(15 downto 0);
+		we : in unsigned(0) -- write enable
 		);
 end component;
 
+-- Sprite minne
+-- address
+-- we
+
 component REG_FILE is
 	port(
-	        rd : in unsigned(3 downto 0);
-	        ra : in unsigned(3 downto 0);
-	        rd_out : out unsigned(15 downto 0);
-					ra_out : out unsigned(15 downto 0)
-		);
+    rd : in unsigned(3 downto 0);
+    ra : in unsigned(3 downto 0);
+    rd_out : out unsigned(15 downto 0);
+		ra_out : out unsigned(15 downto 0)
+	);
 end component;
 
 begin
@@ -86,6 +102,32 @@ begin
 		rd_out => ALU_dummy1,
 		ra_out => ALU_dummy2
 	);
+
+	U3 : DATA_MEM port map(
+			dm_addr => addr;
+			dm_we => we;
+			dm_data_out => data_out;
+			dm_data_in => data_in
+	);
+
+	-- Address controller
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if (rst='1') then
+				dm_addr <= (others => '0');
+				sm_addr <= (others => '0');
+				dm_we <= '0';
+				sm_we <= '0';
+			elsif (alu_out <= x"FC00") then
+				dm_addr <= alu_out;
+				dm_we <= '1';
+			else
+				sm_addr <= (alu_out & "0000001111111111"); -- translate to sm_addr
+				sm_we <= '1';
+			end if;
+		end if;
+	end process;
 
 	-- If jmp instruction, take value from IR2, else increment
 	process(clk)
