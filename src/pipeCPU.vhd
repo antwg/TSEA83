@@ -11,6 +11,7 @@ end pipeCPU;
 
 architecture func of pipeCPU is
 
+----------------------------- Internal signals --------------------------------
 signal IR1 : unsigned(25 downto 0); -- Fetch stage
 alias IR1_op : unsigned(5 downto 0) is IR1(25 downto 20);
 alias IR1_rd : unsigned(3 downto 0) is IR1(19 downto 16);
@@ -26,6 +27,7 @@ alias IR2_const : unsigned(11 downto 0) is IR2(11 downto 0);
 -- Stack pointer
 signal SP : unsigned(15 downto 0);
 
+-- Status register
 signal status_reg : unsigned(4 downto 0);
 alias ZF : std_logic is status_reg(0);
 alias NF : std_logic is status_reg(1);
@@ -48,15 +50,16 @@ signal dm_data_in : unsigned(15 downto 0);
 signal sm_addr : unsigned(15 downto 0);
 signal sm_we : std_logic;
 
+-- ALU
 signal alu_out : unsigned(15 downto 0);
+signal alu_in1 : unsigned(15 downto 0);
+signal alu_in2 : unsigned(15 downto 0);
 
+-- Data bus
 signal data_bus : unsigned(15 downto 0);
 
 -- Register file
 signal rf_we : std_logic;
-
-signal ALU_dummy1 : unsigned(15 downto 0);
-signal ALU_dummy2 : unsigned(15 downto 0);
 
 -- Instructions
 constant iNOP : unsigned(5 downto 0) := "000000";
@@ -64,6 +67,8 @@ constant iJ 	: unsigned(5 downto 0) := "010101";
 constant iBF 	: unsigned(5 downto 0) := "000100";
 constant iPUSH 	: unsigned(5 downto 0) := "000111"; -- TODO change op code
 constant iPOP 	: unsigned(5 downto 0) := "000110";
+
+------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
 	port(
@@ -75,10 +80,10 @@ end component;
 component DATA_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
-		data_out : out unsigned(15 downto 0);
 		data_in : in unsigned(15 downto 0);
 		we : in std_logic; -- write enable
-		clk : in std_logic
+		clk : in std_logic;
+		data_out : out unsigned(15 downto 0)
 		);
 end component;
 
@@ -89,33 +94,35 @@ end component;
 component REG_FILE is
 	port(
     rd : in unsigned(3 downto 0);
-    rd_out : out unsigned(15 downto 0);
     ra : in unsigned(3 downto 0);
-		ra_out : out unsigned(15 downto 0);
 		we : in std_logic; -- write enable
+		clk : in std_logic;
 		data_in : in unsigned(15 downto 0);
-		clk : std_logic
+		rd_out : out unsigned(15 downto 0);
+		ra_out : out unsigned(15 downto 0)
 		);
 end component;
 
 begin
 
-	U1 : PROG_MEM port map(
+------------------------------------ Components -------------------------------
+
+	prog_mem_comp : PROG_MEM port map(
 		addr => pm_addr,
 		data_out => PMdata_out
 	);
 
-	U2 : REG_FILE port map(
+	reg_file_comp : REG_FILE port map(
 		rd => IR2_rd,
 		ra => IR2_ra,
-		rd_out => ALU_dummy1,
-		ra_out => ALU_dummy2,
+		rd_out => alu_in1,
+		ra_out => alu_in2,
 		we => rf_we,
 		data_in => data_bus,
 		clk => clk
 	);
 
-	U3 : DATA_MEM port map(
+	data_mem_comp : DATA_MEM port map(
 			addr => dm_addr,
 			we => dm_we,
 			data_out => dm_data_out,
@@ -123,24 +130,29 @@ begin
 			clk => clk
 	);
 
+	-- Parts added
+	-- 	IR1
+	-- 	IR2
+	-- 	PM
+	-- 	Address controller
+	-- 	PC
+	--	Registers
+	--  Status reg
+	--  DM
+
+	-- Parts missing
+	--	ALU
+	--  Data bus
+
+
+-------------------------------------------------------------------------------
+
 	-- Address controller
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if (rst='1') then
-				dm_addr <= (others => '0');
-				sm_addr <= (others => '0');
-				dm_we <= '0';
-				sm_we <= '0';
-			elsif (alu_out <= x"FC00") then
-				dm_addr <= alu_out;
-				dm_we <= '1';
-			else
-				sm_addr <= (alu_out and "0000001111111111"); -- translate to sm_addr
-				sm_we <= '1';
-			end if;
-		end if;
-	end process;
+	dm_addr <= alu_out;
+	dm_we <= '1' when (alu_out <= x"FC00") else '0';
+
+	sm_addr <= (alu_out and "0000001111111111");
+	sm_we <= '0' when (alu_out <= x"FC00") else '1';
 
 	-- If jmp instruction, take value from IR2, else increment
 	process(clk)
@@ -211,18 +223,18 @@ begin
 	-- Update stack pointer
 	-- If push: decrement
 	-- If pop: increment
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if (rst='1') then
-				SP <= (others => '0');
-			elsif (IR1_op = iPOP) then
-				SP <= SP + 1;
-			elsif (IR1_op = iPUSH) then
-				SP <= SP - 1;
-			end if;
-		end if;
-	end process;
+	--process(clk)
+	--begin
+	--	if rising_edge(clk) then
+	--		if (rst='1') then
+	--			SP <= (others => '0');
+	--		elsif (IR1_op = iPOP) then
+	--			SP <= SP + 1;
+	--		elsif (IR1_op = iPUSH) then
+	--			SP <= SP - 1;
+	--		end if;
+	--	end if;
+	--end process;
 
 
 end architecture;
