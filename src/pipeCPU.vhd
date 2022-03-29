@@ -59,6 +59,8 @@ component DATA_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(15 downto 0)
+		data_in : out unsigned(15 downto 0)
+		we : in unsigned(0); -- write enable
 		);
 end component;
 

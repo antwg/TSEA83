@@ -6,6 +6,8 @@ entity DATA_MEM is
 	port(
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(15 downto 0)
+		data_in : out unsigned(15 downto 0)
+		we : in unsigned(0);
 		);
 end DATA_MEM;
 
@@ -17,7 +19,15 @@ architecture func of DATA_MEM is
 	);
 
 	signal DM : DM_t := DM_c;
-
 begin
+	process(clk)
+	begin
+	  if rising_edge(clk) then
+	    if we = '1' then
+	      DM(to_integer(addr)) <= data_in;
+	    end if;
+	  end if;
+  	end process;
+
 	data_out <= DM(to_integer(addr));
 end func;
