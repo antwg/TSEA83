@@ -4,10 +4,10 @@ use IEEE.numeric_std.all;
 
 entity ALU is
 	port (
-	MUX1: in unsigned(25 downto 0);
-	MUX2 : in unsigned(25 downto 0);
+	MUX1: in unsigned(15 downto 0);
+	MUX2 : in unsigned(15 downto 0);
 	op_code : in unsigned(5 downto 0);
-	result : out unsigned(25 downto 0);
+	result : out unsigned(15 downto 0);
 end ALU;
 
 architecture func of ALU is
@@ -86,9 +86,24 @@ log_shift_right <= shift_left(unsigned(MUX1), 1);
 
 
 --decide OP code for all operations
-with OP select
-result <= add when 
-	when others;
+with OP select result <=
+add	when ADD,
+add	when ADDI,
+add_carry when ADC,
+sub_carry when SBC
+sub when SUB
+sub when SUBI 
+mul when MUL,
+mul when MULI,
+mul when MULS,
+mul when MULSI,
+logical_and when _AND,
+logical_or when _OR,
+log_shift_left when LSLS,
+log_shift_right when LSRS,
+send_through when others;
+
+when others;
 end case;
 
 
