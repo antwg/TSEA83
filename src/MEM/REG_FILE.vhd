@@ -29,7 +29,7 @@ begin
         begin
           if rising_edge(clk) then
             if we = '1' then
-              RF(to_integer(addr)) <= data_in;
+              RF(to_integer(rd)) <= data_in;
             end if;
           end if;
         end process;
