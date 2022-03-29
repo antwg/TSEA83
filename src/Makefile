@@ -1,6 +1,6 @@
 # Makefile for hardware implementation on Xilinx FPGAs and ASICs
 # Author: Andreas Ehliar <ehliar@isy.liu.se>
-# 
+#
 # T is the testbench file for this project
 # S is the synthesizable sources for this project
 # U is the UCF file
@@ -18,7 +18,7 @@
 #                       rebuild bitfile if source files have changed!
 # make clean            Removes all generated files for all projects. Also
 #                       backup files (*~) are removed.
-# 
+#
 # VIKTIG NOTERING: 	Om du ändrar vilka filer som finns med i projektet så måste du köra
 #                  	make lab.clean
 #
@@ -34,7 +34,7 @@ XILINX_INIT = source /opt/xilinx_ise/14.7/settings64.sh;
 PART=xc6slx16-3-csg324
 
 
-pipecpu.%: S=pipeCPU.vhd MEM/PRIM_MEM.vhd MEM/REG_FILE.vhd
+pipecpu.%: S=pipeCPU.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PROG_MEM.vhd
 pipecpu.%: T=pipeCPU_tb.vhd
 pipecpu.%: U=Nexys3_Master.ucf
 
@@ -64,6 +64,3 @@ include ./build/digilentprog.mk
 #include design_compiler.mk
 # The following is for synthesis to a Xilinx target using Precision.
 #include precision-xilinx.mk
-
-
-
