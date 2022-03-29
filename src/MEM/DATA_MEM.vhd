@@ -7,7 +7,7 @@ entity DATA_MEM is
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(15 downto 0)
 		data_in : out unsigned(15 downto 0)
-		we : in unsigned(0);
+		we : in std_logic;
 		);
 end DATA_MEM;
 

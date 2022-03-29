@@ -8,7 +8,7 @@ entity REG_FILE is
 		rd_out : out unsigned(15 downto 0);
 		ra : in unsigned(3 downto 0);
 		ra_out : out unsigned(15 downto 0);
-		we : in unsigned(0);
+		we : in std_logic;
 		data_in : in unsigned(15 downto 0)
 		);
 end REG_FILE;
