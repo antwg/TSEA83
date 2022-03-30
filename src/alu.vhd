@@ -24,15 +24,15 @@ signal sub_carry: unsigned(15 downto 0);
 signal log_shift_left: unsigned (15 downto 0);
 signal log_shift_right: unsigned (15 downto 0);
 signal result_large : unsiged(31 downto 0)
-	
-constant NOP 		: unsigned(5 downto 0) := "000000" 
+
+constant NOP 		: unsigned(5 downto 0) := "000000"
 constant RJMP		: unsigned(5 downto 0) := "000001"
 constant BEQ		: unsigned(5 downto 0) := "000010"
 constant BNE 		: unsigned(5 downto 0) := "000011"
 constant BPL 		: unsigned(5 downto 0) := "000100"
 constant BMI 		: unsigned(5 downto 0) := "000101"
 constant BGE 		: unsigned(5 downto 0) := "000111"
-constant BLT 		: unsigned(5 downto 0) := "001000"   
+constant BLT 		: unsigned(5 downto 0) := "001000"
 constant LDI 		: unsigned(5 downto 0) := "001001"
 constant LD 		: unsigned(5 downto 0) := "001010"
 constant STI 		: unsigned(5 downto 0) := "001011"
@@ -70,12 +70,12 @@ sub_carry <= MUX1 - MUX2 - 1;
 ---SUB,SUBI------
 sub <= MUX1 - MUX2;
 ---Send through ----
---ldi, LD, STI, ST, COPY, 
+--ldi, LD, STI, ST, COPY,
 send_through <= MUX2;
 ---mul---
 --mul,muli,muls,mulsi
 mul <= MUX1 * MUX2;
---built in multiplication, how to use? 
+--built in multiplication, how to use?
 --and, andi--
 logical_and <= MUX1 and MUX2;
 --or, ori--
@@ -93,7 +93,7 @@ with op_code select result <=
 	add_carry when ADC,
 	sub_carry when SBC
 	sub when SUB
-	sub when SUBI 
+	sub when SUBI
 	mul when MUL,
 	mul when MULI,
 	mul when MULS,
@@ -105,7 +105,7 @@ with op_code select result <=
 	send_through when others;
 end case;
 
-	-- C flag	
+	-- C flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -117,7 +117,7 @@ begin
 
 end process
 
-	-- V flag	
+	-- V flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -130,7 +130,7 @@ begin
 
 end process
 
-	-- N flag	
+	-- N flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -142,7 +142,7 @@ begin
 
 end process
 
-	-- Z flag	
+	-- Z flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -150,7 +150,7 @@ begin
 			-- when result is zero
 			ADD => Z <= '1' when R(result_large(15 downto 0)) else '0'
 			SUB => Z <= '1' when R(result_large(15 downto 0)) else '0'
-			
+
 			end case;
 	end if;
 

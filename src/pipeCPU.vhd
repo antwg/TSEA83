@@ -16,13 +16,13 @@ signal IR1 : unsigned(25 downto 0); -- Fetch stage
 alias IR1_op : unsigned(5 downto 0) is IR1(25 downto 20);
 alias IR1_rd : unsigned(3 downto 0) is IR1(19 downto 16);
 alias IR1_ra : unsigned(3 downto 0) is IR1(15 downto 12);
-alias IR1_const : unsigned(11 downto 0) is IR1(11 downto 0);
+alias IR1_const : unsigned(15 downto 0) is IR1(15 downto 0);
 
 signal IR2 : unsigned(25 downto 0); -- Decode stage
 alias IR2_op : unsigned(5 downto 0) is IR2(25 downto 20);
 alias IR2_rd : unsigned(3 downto 0) is IR2(19 downto 16);
 alias IR2_ra : unsigned(3 downto 0) is IR2(15 downto 12);
-alias IR2_const : unsigned(11 downto 0) is IR2(11 downto 0);
+alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 
 -- Stack pointer
 signal SP : unsigned(15 downto 0);
@@ -32,8 +32,8 @@ signal status_reg : unsigned(4 downto 0);
 alias ZF : std_logic is status_reg(0);
 alias NF : std_logic is status_reg(1);
 alias CF : std_logic is status_reg(2);
-alias vF : std_logic is status_reg(3);
---alias ZF : std_logic is status_reg(4);
+alias VF : std_logic is status_reg(3);
+--alias F : std_logic is status_reg(4);
 
 signal PC, PC1, PC2 : unsigned(15 downto 0);
 
@@ -41,32 +41,58 @@ signal PMdata_out : unsigned(25 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
 -- Data memory
-signal dm_addr : unsigned(15 downto 0);
+signal dm_addr, dm_data_out, dm_data_in : unsigned(15 downto 0);
 signal dm_we : std_logic;
-signal dm_data_out : unsigned(15 downto 0);
-signal dm_data_in : unsigned(15 downto 0);
 
 -- Sprite memory
 signal sm_addr : unsigned(15 downto 0);
 signal sm_we : std_logic;
 
 -- ALU
-signal alu_out : unsigned(15 downto 0);
-signal alu_in1 : unsigned(15 downto 0);
-signal alu_in2 : unsigned(15 downto 0);
+signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0);
 
 -- Data bus
 signal data_bus : unsigned(15 downto 0);
 
 -- Register file
 signal rf_we : std_logic;
+signal rf_out1, rf_out2 : unsigned(15 downto 0);
 
 -- Instructions
-constant iNOP : unsigned(5 downto 0) := "000000";
-constant iJ 	: unsigned(5 downto 0) := "010101";
-constant iBF 	: unsigned(5 downto 0) := "000100";
-constant iPUSH 	: unsigned(5 downto 0) := "000111"; -- TODO change op code
-constant iPOP 	: unsigned(5 downto 0) := "000110";
+constant NOP 		: unsigned(5 downto 0) := "000000";
+constant RJMP		: unsigned(5 downto 0) := "000001";
+constant BEQ		: unsigned(5 downto 0) := "000010";
+constant BNE 		: unsigned(5 downto 0) := "000011";
+constant BPL 		: unsigned(5 downto 0) := "000100";
+constant BMI 		: unsigned(5 downto 0) := "000101";
+constant BGE 		: unsigned(5 downto 0) := "000111";
+constant BLT 		: unsigned(5 downto 0) := "001000";
+constant LDI 		: unsigned(5 downto 0) := "001001";
+constant LD 		: unsigned(5 downto 0) := "001010";
+constant STI 		: unsigned(5 downto 0) := "001011";
+constant ST  		: unsigned(5 downto 0) := "001100";
+constant COPY		: unsigned(5 downto 0) := "001101";
+constant ADD		: unsigned(5 downto 0) := "001111";
+constant ADDI		: unsigned(5 downto 0) := "010000";
+constant SUB		: unsigned(5 downto 0) := "010001";
+constant SUBI		: unsigned(5 downto 0) := "010010";
+constant CMP		: unsigned(5 downto 0) := "010011";
+constant CMPI		: unsigned(5 downto 0) := "100100";
+constant I_AND	: unsigned(5 downto 0) := "010100";
+constant ANDI		: unsigned(5 downto 0) := "010101";
+constant I_OR		: unsigned(5 downto 0) := "010111";
+constant ORI		: unsigned(5 downto 0) := "011000";
+constant PUSH		: unsigned(5 downto 0) := "011001";
+constant POP		: unsigned(5 downto 0) := "011010";
+constant ADC		: unsigned(5 downto 0) := "011011";
+constant SBC 		: unsigned(5 downto 0) := "011100";
+constant MUL 		: unsigned(5 downto 0) := "011101";
+constant MULI 	: unsigned(5 downto 0) := "011111";
+constant MULS		: unsigned(5 downto 0) := "100000";
+constant MULSI	: unsigned(5 downto 0) := "100001";
+constant LSLS		: unsigned(5 downto 0) := "100010";
+constant LSLR		: unsigned(5 downto 0) := "100011";
+
 
 ------------------------------------ Def components ---------------------------
 
@@ -103,6 +129,15 @@ component REG_FILE is
 		);
 end component;
 
+component ALU is
+	port (
+	MUX1: in unsigned(15 downto 0);
+	MUX2 : in unsigned(15 downto 0);
+	op_code : in unsigned(5 downto 0);
+	result : out unsigned(15 downto 0)
+	);
+end component;
+
 begin
 
 ------------------------------------ Components -------------------------------
@@ -115,37 +150,48 @@ begin
 	reg_file_comp : REG_FILE port map(
 		rd => IR2_rd,
 		ra => IR2_ra,
-		rd_out => alu_in1,
-		ra_out => alu_in2,
+		rd_out => rf_out1,
+		ra_out => rf_out2,
 		we => rf_we,
 		data_in => data_bus,
 		clk => clk
 	);
 
 	data_mem_comp : DATA_MEM port map(
-			addr => dm_addr,
+			addr => alu_out,
 			we => dm_we,
 			data_out => dm_data_out,
 			data_in => dm_data_in,
 			clk => clk
 	);
 
-	-- Parts added
-	-- 	IR1
-	-- 	IR2
-	-- 	PM
-	-- 	Address controller
-	-- 	PC
-	--	Registers
-	--  Status reg
-	--  DM
-
-	-- Parts missing
-	--	ALU
-	--  Data bus
-
+	alu_comp : ALU port map(
+			op_code => IR2_op,
+			result => alu_out,
+			MUX1 => alu_mux1,
+			MUX2 => alu_mux2
+	);
 
 -------------------------------------------------------------------------------
+
+	-- ALU multiplexers
+
+	-- TODO Add i++ for stack pointer
+	alu_mux1 <= rf_out1;
+
+	alu_mux2 <= IR2_const when ((IR2_op = LDI) or (IR2_op = STI) or
+															(IR2_op = ADDI) or (IR2_op = SUBI) or
+															(IR2_op = CMPI) or (IR2_op = ANDI) or
+															(IR2_op = ORI) or (IR2_op = MULI) or
+															(IR2_op = MULSI))
+												else rf_out2;
+
+
+	-- Data bus multiplexer
+	data_bus <= IR2_const when (IR2_op = LDI) else
+							rf_out1 when (IR2_op = COPY) else
+							dm_data_out when (IR2_op = LD) else
+							alu_out;
 
 	-- Address controller
 	dm_addr <= alu_out;
@@ -160,7 +206,7 @@ begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				PC <= (others => '0');
-			elsif (IR2_op = iJ) then
+			elsif (IR2_op = RJMP) then
 				PC <= PC2;
 			else
 				PC <= PC + 1;
@@ -200,8 +246,8 @@ begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				IR1 <= (others => '0');
-			elsif (IR2_op = iJ) then
-				IR1_op <= iNOP;
+			elsif (IR2_op = RJMP) then
+				IR1_op <= NOP;
 			else
 				IR1 <= PMdata_out(25 downto 0);
 			end if;
