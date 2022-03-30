@@ -64,6 +64,8 @@ signal loader_we : std_logic;
 signal loader_addr : unsigned(15 downto 0);
 signal loader_data_Out : unsigned(25 downto 0);
 
+signal boot_done : std_logic;
+
 -- Instructions
 constant NOP 		: unsigned(5 downto 0) := "000000";
 constant RJMP		: unsigned(5 downto 0) := "000001";
@@ -222,7 +224,8 @@ begin
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
-		if rising_edge(clk) then
+		boot_done <= '1';
+		if (rising_edge(clk) and (boot_done = '1')) then
 			if (rst='1') then
 				PC <= (others => '0');
 			elsif ((IR2_op = RJMP) or
@@ -272,6 +275,7 @@ begin
 			if (rst='1') then
 				IR1 <= (others => '0');
 			elsif (IR2_op = RJMP) then
+				-- TODO Add for branches?
 				IR1_op <= NOP;
 			else
 				IR1 <= PMdata_out(25 downto 0);

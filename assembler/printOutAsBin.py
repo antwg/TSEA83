@@ -11,7 +11,7 @@ with open("out.bin", 'rb') as f:
         binary_s = "{:08b}".format(int(byte_s.hex(), 16))
         count += 1
         if count == 4:
-            print(binary_s[::-8] + "\",")
+            print(binary_s[::-7] + "\",")
             count = 0
         elif count == 1:
             print("\"" + binary_s[::-1], end='')

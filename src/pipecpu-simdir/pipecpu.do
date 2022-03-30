@@ -17,6 +17,7 @@ add wave -group reg {sim:/pipecpu_tb/U0/IR2_ra}
 add wave -group reg {sim:/pipecpu_tb/U0/IR2_rd}
 add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux1}
 add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux2}
+<<<<<<< HEAD
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rst}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/done}
@@ -28,6 +29,9 @@ add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/sreg}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_26_cnt_out}
+=======
+add wave {sim:/pipecpu_tb/U0/boot_done}
+>>>>>>> c439844c676b1519923cc484fda5c555d86b6171
 
 restart -f
 run 1000 ns
