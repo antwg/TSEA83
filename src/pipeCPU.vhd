@@ -107,7 +107,7 @@ constant LSLR		: unsigned(5 downto 0) := "100011";
 component PROG_MEM is
 	Port( addr : in unsigned(15 downto 0);
 	      data_out : out unsigned(25 downto 0);
-      	      we : in std_logic;
+      	      clk, we : in std_logic;
 	      wr_addr : in unsigned(15 downto 0);
 	      wr_data : in unsigned(25 downto 0));
 end component;
@@ -157,6 +157,7 @@ begin
 ------------------------------------ Components -------------------------------
 
 	prog_mem_comp : PROG_MEM port map(
+		clk => clk,
 		addr => pm_addr,
 		data_out => PMdata_out,
 		we => loader_we,

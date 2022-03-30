@@ -5,7 +5,7 @@ use IEEE.numeric_std.all;
 entity PROG_MEM is
 	Port( 	addr : in unsigned(15 downto 0);
 		data_out : out unsigned(25 downto 0);
-		we : in std_logic;
+		clk, we : in std_logic;
 		wr_addr : in unsigned(15 downto 0);
 		wr_data : in unsigned(25 downto 0));
 end PROG_MEM;
