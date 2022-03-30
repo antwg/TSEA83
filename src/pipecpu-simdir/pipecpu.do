@@ -17,6 +17,7 @@ add wave -group reg {sim:/pipecpu_tb/U0/IR2_ra}
 add wave -group reg {sim:/pipecpu_tb/U0/IR2_rd}
 add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux1}
 add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux2}
+add wave {sim:/pipecpu_tb/U0/boot_done}
 
 restart -f
 run 1000 ns
