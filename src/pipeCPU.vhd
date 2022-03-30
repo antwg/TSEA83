@@ -28,12 +28,11 @@ alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 signal SP : unsigned(15 downto 0);
 
 -- Status register
-signal status_reg : unsigned(4 downto 0);
+signal status_reg : unsigned(3 downto 0);
 alias ZF : std_logic is status_reg(0);
 alias NF : std_logic is status_reg(1);
 alias CF : std_logic is status_reg(2);
 alias VF : std_logic is status_reg(3);
---alias F : std_logic is status_reg(4);
 
 signal PC, PC1, PC2 : unsigned(15 downto 0);
 
@@ -200,13 +199,19 @@ begin
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out <= x"FC00") else '1';
 
-	-- If jmp instruction, take value from IR2, else increment
+	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				PC <= (others => '0');
-			elsif (IR2_op = RJMP) then
+			elsif ((IR2_op = RJMP) or
+						 (IR2_op = BEQ and ZF = '1') or
+						 (IR2_op = BNE and ZF = '0') or
+						 (IR2_op = BPL and NF = '0') or
+						 (IR2_op = BMI and NF = '1') or
+						 (IR2_op = BGE and (NF xor VF) = '0') or
+						 (IR2_op = BLT and (NF xor VF) = '1')) then
 				PC <= PC2;
 			else
 				PC <= PC + 1;
