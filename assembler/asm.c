@@ -28,14 +28,17 @@ int assemble(char filePath[20], char outputPath[20]) {
         char cmd[3][15] = {"", "", ""};
         int cmdc = 0;
 
+        // parse parts of the file, save opcode/args to cmd
+        // the number of args (+ opcode) is cmdc (thing program arguments)
         parseLine(&line, &cmdc, cmd);
 
         if (cmdc) {
-            u_int32_t instruction = 0;
-            int opcode = getOpCode(cmd[0]);
-            int rD = 0;
-            int rA = 0;
-            unsigned val = 0;
+            u_int32_t instruction = 0; // last 6 bits are unused
+            int oneReg = 0; // is set to true if instruction only passes one register
+            int opcode = getOpCode(cmd[0]); // the OP code of the instruction
+            int rD = 0; // value of rD register (if any)
+            int rA = 0; // value of rA register (if any)
+            unsigned val = 0; // constant passed with the instruction
 
             if (opcode == -1) {
                 printf("Line %i: Couldn't parse opcode: %s", lineN, cmd[0]);
@@ -58,6 +61,8 @@ int assemble(char filePath[20], char outputPath[20]) {
                 if (opcode == LDI || opcode == STI || opcode == ADDI ||
                     opcode == SUBI || opcode == ANDI ||
                     opcode == ORI || opcode == MULI || opcode == MULSI) {
+
+                    oneReg = 1; // only one register is used
 
                     rD = getRegCode(cmd[1]);
 
@@ -88,15 +93,37 @@ int assemble(char filePath[20], char outputPath[20]) {
             printf("argc:%i\ncmd: %s (%i)\nrD: %s (%i)\nrA/val: %s (%i/%i))\n\n",
                    cmdc, cmd[0], opcode, cmd[1], rD, cmd[2], rA, val);
 
-            u_int8_t registers = 0; // holds the registers byte
-            registers |= rD;
-            registers |= (rA << 4);
-            printf("%#x4\n\n", registers);
+            /*
+            ** The instruction is divided like this:
+            **  opcode  rd    ra
+            ** [......][...][....]
+            **
+            ** OR if constant is given instead of ra:
+            **  opcode  rd         const
+            ** [......][...][................]
+             */
 
-            instruction |= opcode; // opcode is 8 bit wide
-            instruction |= (registers << 8);
+            instruction |= opcode;
 
-            instruction |= (val << 16); // last is 16 bit large number
+            // if two registers given
+            if (!oneReg) {
+                u_int8_t registers = 0; // holds the registers byte
+                registers |= rD;
+                registers |= (rA << 4);
+                instruction |= (registers << 8);
+            // if value instead of ra
+            } else {
+                instruction |= rD << 6;
+                instruction |= (val << 10);
+            }
+
+            /*
+            ** Since a file consists of bytes (also filesystems generally), every instruction line
+            ** will have 6 unused bytes at the end of every line in the file.
+            ** If file is inspected with:
+            ** $ xxd -c 4 -b out.bin
+            ** It should be evident.
+             */
 
             fwrite(&instruction, 4, 1, binary);
         }
@@ -210,10 +237,12 @@ int getRegCode(char* text) {
     } else if (!strcmp(text, "N")) {
         return N;
     } else if (!strcmp(text, "O")) {
+        return O;
+    } else if (!strcmp(text, "P")) {
         return P;
     }
 
-    return -1;
+    return UNDEFINED;
 }
 void parseLine(char** line, int* cmdc, char cmd[3][15]) {
     *(cmdc) = 0;
