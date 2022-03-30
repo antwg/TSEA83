@@ -1,4 +1,4 @@
-LDI a,10                       ; Load directly
+LDI b,65535                       ; Load directly
 COPY b,a                        ; Copy two registers
 ;; LDI c,$14
 

@@ -31,70 +31,74 @@ int assemble(char filePath[20], char outputPath[20]) {
         parseLine(&line, &cmdc, cmd);
 
         if (cmdc) {
+            u_int32_t instruction = 0;
             int opcode = getOpCode(cmd[0]);
-            int arg1 = 0;
-            int arg2 = 0;
+            int rD = 0;
+            int rA = 0;
+            unsigned val = 0;
 
             if (opcode == -1) {
-                printf("Line %i!\nCouldn't parse opcode: %s", lineN, cmd[0]);
+                printf("Line %i: Couldn't parse opcode: %s", lineN, cmd[0]);
+                return 1;
             }
 
-            putc(opcode, binary);
-
             if (cmdc == 2) {
-                putc(opcode, binary);
-
                 if (opcode == PUSH || opcode == POP) {
-                    arg1 = getRegCode(cmd[1]);
+                    rD = getRegCode(cmd[1]);
 
-                    if (arg1 == -1) {
-                        printf("Line %i!\nCouldn't parse arg1: %s", lineN, cmd[1]);
+                    if (rD == UNDEFINED) {
+                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        return 1;
                     }
-
-                    putc(arg1, binary);
                 } else {
-                    arg2 = atoi(cmd[1]);
-                    putc(atoi(cmd[1]), binary);
+                    val = atoi(cmd[1]);
                 }
             } else if (cmdc == 3) {
-                putc(opcode, binary);
-
                 // immediate stuff
                 if (opcode == LDI || opcode == STI || opcode == ADDI ||
                     opcode == SUBI || opcode == ANDI ||
                     opcode == ORI || opcode == MULI || opcode == MULSI) {
 
-                    arg1 = getRegCode(cmd[1]);
+                    rD = getRegCode(cmd[1]);
 
-                    if (arg1 == -1) {
-                        printf("Line %i!\nCouldn't parse arg1: %s", lineN, cmd[1]);
+                    if (rD == UNDEFINED) {
+                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        return 1;
                     }
 
-                    putc(arg1, binary);
-
-                    arg2 = atoi(cmd[2]);
-                    putc(arg2, binary);
+                    val = atoi(cmd[2]);
                 } else {
-                    arg1 = getRegCode(cmd[1]);
+                    rD = getRegCode(cmd[1]);
 
-                    if (arg1 == -1) {
-                        printf("Line %i!\nCouldn't parse arg1: %s", lineN, cmd[1]);
+                    if (rD == UNDEFINED) {
+                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        return 1;
                     }
 
-                    arg2 = getRegCode(cmd[2]);
+                    rA = getRegCode(cmd[2]);
 
-                    if (arg2 == -1) {
-                        printf("Line %i!\nCouldn't parse regcode: %s", lineN, cmd[2]);
+                    if (rA == UNDEFINED) {
+                        printf("Line %i: Couldn't parse regcode: %s", lineN, cmd[2]);
+                        return 1;
                     }
-
-                    putc(arg1, binary);
-                    putc(arg2, binary);
                 }
             }
 
             printf("Line: %s", line);
-            printf("argc:%i\ncmd: %s (%#05x)\narg1: %s (%#05x)\narg2: %s (%#05x)\n\n",
-                   cmdc, cmd[0], opcode, cmd[1], arg1, cmd[2], arg2);
+            printf("argc:%i\ncmd: %s (%i)\nrD: %s (%i)\nrA/val: %s (%i/%i))\n\n",
+                   cmdc, cmd[0], opcode, cmd[1], rD, cmd[2], rA, val);
+
+            u_int8_t registers = 0; // holds the registers byte
+            registers |= rD;
+            registers |= (rA << 4);
+            printf("%#x4\n\n", registers);
+
+            instruction |= opcode; // opcode is 8 bit wide
+            instruction |= (registers << 8);
+
+            instruction |= (val << 16); // last is 16 bit large number
+
+            fwrite(&instruction, 4, 1, binary);
         }
 
         lineN++;
@@ -264,8 +268,6 @@ int main(int argc, char** argv) {
             i++;
         }
     }
-
-    printf("Input: %s\nOutput: %s", filePath, outputPath);
 
     return assemble(filePath, outputPath);
 }
