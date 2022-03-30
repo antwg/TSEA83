@@ -4,10 +4,10 @@ use IEEE.numeric_std.all;
 
 entity ALU is
 	port (
-	MUX1: in unsigned(25 downto 0);
-	MUX2 : in unsigned(25 downto 0);
+	MUX1: in unsigned(15 downto 0);
+	MUX2 : in unsigned(15 downto 0);
 	op_code : in unsigned(5 downto 0);
-	result : out unsigned(25 downto 0);
+	result : out unsigned(15 downto 0);
 end ALU;
 
 architecture func of ALU is
@@ -23,15 +23,15 @@ signal add_carry: unsigned(15 downto 0);
 signal sub_carry: unsigned(15 downto 0);
 signal log_shift_left: unsigned (15 downto 0);
 signal log_shift_right: unsigned (15 downto 0);
-	
-constant NOP 		: unsigned(5 downto 0) := "000000" 
+
+constant NOP 		: unsigned(5 downto 0) := "000000"
 constant RJMP		: unsigned(5 downto 0) := "000001"
 constant BEQ		: unsigned(5 downto 0) := "000010"
 constant BNE 		: unsigned(5 downto 0) := "000011"
 constant BPL 		: unsigned(5 downto 0) := "000100"
 constant BMI 		: unsigned(5 downto 0) := "000101"
 constant BGE 		: unsigned(5 downto 0) := "000111"
-constant BLT 		: unsigned(5 downto 0) := "001000"   
+constant BLT 		: unsigned(5 downto 0) := "001000"
 constant LDI 		: unsigned(5 downto 0) := "001001"
 constant LD 		: unsigned(5 downto 0) := "001010"
 constant STI 		: unsigned(5 downto 0) := "001011"
@@ -69,12 +69,12 @@ sub_carry <= MUX1 - MUX2 - 1;
 ---SUB,SUBI------
 sub <= MUX1 - MUX2;
 ---Send through ----
---ldi, LD, STI, ST, COPY, 
+--ldi, LD, STI, ST, COPY,
 send_through <= MUX2;
 ---mul---
 --mul,muli,muls,mulsi
 mul <= MUX1 * MUX2;
---built in multiplication, how to use? 
+--built in multiplication, how to use?
 --and, andi--
 logical_and <= MUX1 and MUX2;
 --or, ori--
@@ -87,11 +87,11 @@ log_shift_right <= shift_left(unsigned(MUX1), 1);
 
 --decide OP code for all operations
 with OP select
-result <= add when 
+result <= add when
 	when others;
 end case;
 
 
 
-	
+
 end architecture;
