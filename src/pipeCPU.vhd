@@ -175,16 +175,16 @@ begin
 -------------------------------------------------------------------------------
 
 	-- ALU multiplexers
-	alu_mux1 <= IR2_const when ((IR2_op = LDI) or (IR2_op = STI) or
+
+	-- TODO Add i++ for stack pointer
+	alu_mux1 <= rf_out1;
+
+	alu_mux2 <= IR2_const when ((IR2_op = LDI) or (IR2_op = STI) or
 															(IR2_op = ADDI) or (IR2_op = SUBI) or
 															(IR2_op = CMPI) or (IR2_op = ANDI) or
 															(IR2_op = ORI) or (IR2_op = MULI) or
 															(IR2_op = MULSI))
-												else rf_out1;
-
-
-	-- TODO Add i++ for stack pointer
-	alu_mux2 <= rf_out2;
+												else rf_out2;
 
 
 	-- Data bus multiplexer
