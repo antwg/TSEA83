@@ -57,6 +57,13 @@ signal data_bus : unsigned(15 downto 0);
 signal rf_we : std_logic;
 signal rf_out1, rf_out2 : unsigned(15 downto 0);
 
+-- Loader signals (testing // Rw)
+signal loader_rx : std_logic;
+signal loader_done : std_logic;
+signal loader_we : std_logic;
+signal loader_addr : unsigned(15 downto 0);
+signal loader_data_Out : unsigned(25 downto 0);
+
 -- Instructions
 constant NOP 		: unsigned(5 downto 0) := "000000";
 constant RJMP		: unsigned(5 downto 0) := "000001";
@@ -77,7 +84,7 @@ constant SUB		: unsigned(5 downto 0) := "010001";
 constant SUBI		: unsigned(5 downto 0) := "010010";
 constant CMP		: unsigned(5 downto 0) := "010011";
 constant CMPI		: unsigned(5 downto 0) := "100100";
-constant I_AND	: unsigned(5 downto 0) := "010100";
+constant I_AND		: unsigned(5 downto 0) := "010100";
 constant ANDI		: unsigned(5 downto 0) := "010101";
 constant I_OR		: unsigned(5 downto 0) := "010111";
 constant ORI		: unsigned(5 downto 0) := "011000";
@@ -86,9 +93,9 @@ constant POP		: unsigned(5 downto 0) := "011010";
 constant ADC		: unsigned(5 downto 0) := "011011";
 constant SBC 		: unsigned(5 downto 0) := "011100";
 constant MUL 		: unsigned(5 downto 0) := "011101";
-constant MULI 	: unsigned(5 downto 0) := "011111";
+constant MULI 		: unsigned(5 downto 0) := "011111";
 constant MULS		: unsigned(5 downto 0) := "100000";
-constant MULSI	: unsigned(5 downto 0) := "100001";
+constant MULSI		: unsigned(5 downto 0) := "100001";
 constant LSLS		: unsigned(5 downto 0) := "100010";
 constant LSLR		: unsigned(5 downto 0) := "100011";
 
@@ -96,20 +103,23 @@ constant LSLR		: unsigned(5 downto 0) := "100011";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-	port(
-		addr : in unsigned(15 downto 0);
-		data_out : out unsigned(25 downto 0)
-		);
+	Port( addr : in unsigned(15 downto 0);
+	      data_out : out unsigned(25 downto 0));
+end component;
+
+component PROG_LOADER is
+	Port( clk, rst, rx : in std_logic;
+              done, we : out std_logic;
+              addr : out unsigned(15 downto 0);
+              data_out : out unsigned(25 downto 0));
 end component;
 
 component DATA_MEM is
-	port(
-		addr : in unsigned(15 downto 0);
-		data_in : in unsigned(15 downto 0);
-		we : in std_logic; -- write enable
-		clk : in std_logic;
-		data_out : out unsigned(15 downto 0)
-		);
+	Port( addr : in unsigned(15 downto 0);
+              data_in : in unsigned(15 downto 0);
+	      we : in std_logic; -- write enable
+	      clk : in std_logic;
+	      data_out : out unsigned(15 downto 0));
 end component;
 
 -- Sprite minne
@@ -144,6 +154,16 @@ begin
 	prog_mem_comp : PROG_MEM port map(
 		addr => pm_addr,
 		data_out => PMdata_out
+	);
+
+	prog_loader_comp : PROG_LOADER port map(
+	 	clk => clk,
+		rst => rst,
+	 	rx => loader_rx,
+		done => loader_done,
+              	we => loader_we,
+              	addr => loader_addr,
+              	data_out => loader_data_out 
 	);
 
 	reg_file_comp : REG_FILE port map(
