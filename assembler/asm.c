@@ -4,7 +4,22 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-int assemble(char filePath[20], char outputPath[20]) {
+// Assumes little endian
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i = 0; i < size; i++) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+    }
+}
+
+int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     FILE* assembly = fopen(filePath, "r");
     FILE* binary = fopen(outputPath, "w");
 
@@ -38,7 +53,7 @@ int assemble(char filePath[20], char outputPath[20]) {
             int opcode = getOpCode(cmd[0]); // the OP code of the instruction
             int rD = 0; // value of rD register (if any)
             int rA = 0; // value of rA register (if any)
-            unsigned val = 0; // constant passed with the instruction
+            int val = 0; // constant passed with the instruction
 
             if (opcode == -1) {
                 printf("Line %i: Couldn't parse opcode: %s", lineN, cmd[0]);
@@ -89,9 +104,9 @@ int assemble(char filePath[20], char outputPath[20]) {
                 }
             }
 
-            printf("Line: %s", line);
-            printf("argc:%i\ncmd: %s (%i)\nrD: %s (%i)\nrA/val: %s (%i/%i))\n\n",
-                   cmdc, cmd[0], opcode, cmd[1], rD, cmd[2], rA, val);
+            if (debug) {
+                printf("Line: %s", line);
+            }
 
             /*
             ** The instruction is divided like this:
@@ -103,18 +118,29 @@ int assemble(char filePath[20], char outputPath[20]) {
             ** [......][...][................]
              */
 
+            u_int8_t registers = 0; // holds the registers byte
+            registers |= rA;
+            registers |= (rD << 4);
+
             instruction |= opcode;
 
             // if two registers given
             if (!oneReg) {
-                u_int8_t registers = 0; // holds the registers byte
-                registers |= rD;
-                registers |= (rA << 4);
                 instruction |= (registers << 8);
             // if value instead of ra
             } else {
-                instruction |= rD << 6;
-                instruction |= (val << 10);
+                instruction |= (rD << 8);
+                instruction |= (val << 16);
+            }
+
+            if (debug) {
+                printf("opcode: ");
+                printBits(1, &opcode);
+                printf("\nregisters(Rd/Ra): ");
+                printBits(1, &registers);
+                printf("\nval: ");
+                printBits(2, &val);
+                printf("\n\n");
             }
 
             /*
@@ -125,7 +151,13 @@ int assemble(char filePath[20], char outputPath[20]) {
             ** It should be evident.
              */
 
-            fwrite(&instruction, 4, 1, binary);
+            if (manual) {
+                printf("\"");
+                printBits(4, &instruction);
+                printf("\",\n");
+            } else {
+                fwrite(&instruction, 4, 1, binary);
+            }
         }
 
         lineN++;
@@ -285,18 +317,24 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    int manual = 0;
+    int debug = 0;
     char filePath[20] = "./input.asm";
     char outputPath[20] = "./out.bin";
 
     for(int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-f")) {
+        if (!strcmp(argv[i], "-i")) {
             strcpy(filePath, argv[i+1]);
             i++;
         } else if (!strcmp(argv[i], "-o")) {
             strcpy(outputPath, argv[i+1]);
             i++;
+        } else if (!strcmp(argv[i], "-m")) {
+            manual = 1;
+        } else if (!strcmp(argv[i], "-d")) {
+            debug = 1;
         }
     }
 
-    return assemble(filePath, outputPath);
+    return assemble(filePath, outputPath, manual, debug);
 }
