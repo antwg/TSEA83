@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.all;
 
 entity PROG_LOADER is
 	Port ( clk, rst, rx : in std_logic;
-	       we : out std_logic;
+	       done, we : out std_logic;
 	       addr : out unsigned(15 downto 0);
 	       data_out : out unsigned(25 downto 0));
 end PROG_LOADER;
@@ -12,7 +12,8 @@ end PROG_LOADER;
 architecture func of PROG_LOADER is
 	signal sreg : unsigned(27 downto 0) := B"0_00000000000000000000000000_0";
 	signal rx1, rx2 : std_logic; -- synkvippor
-	signal sp : std_logic;
+	signal sp : std_logic := '0';
+	signal we_en : std_logic := '0';
 
 	-- addr counter
 	signal addr_cnt_en : std_logic := '0';
@@ -26,11 +27,9 @@ architecture func of PROG_LOADER is
 
 	-- 26 counter
    	signal st_26_cnt_en  : std_logic := '0'; 	-- enable 868 counter
-    	signal st_25_cnt_rst : std_logic := '0'; 	-- reset counter
+    	signal st_26_cnt_rst : std_logic := '0'; 	-- reset counter
     	signal st_26_cnt_out : unsigned(10 downto 0) := B"00000000000"; -- counter out
-
 begin
-
 	-- sync rx
 	process(clk) begin
 		if rising_edge(clk) then
@@ -44,7 +43,7 @@ begin
 	    if rising_edge(clk) then
 		if (rx1 = '0' and rx2 = '1' and st_868_cnt_en = '0') then -- start bit
 			st_868_cnt_en <= '1';
-		elsif ((lp = '1') and (rx2 = '1')) then -- stop bit
+		elsif ((we_en = '1') and (rx2 = '1')) then -- stop bit
 			st_868_cnt_en <= '0';
 		end if;
 	    end if;
@@ -53,20 +52,20 @@ begin
 	-- 868, 26 and addr counters
 	process(clk) begin
 	    if rising_edge(clk) then
-		    if (st_868_cnt_rst='1') then
+		    if (st_868_cnt_rst='1' or rst='1') then
 			st_868_cnt_out <= "00000000000";
 		    elsif (st_868_cnt_en='1') then
 			st_868_cnt_out <= st_868_cnt_out + 1;
 		    end if;
 
-		    if (st_26_cnt_rst='1') then
+		    if (st_26_cnt_rst='1' or rst='1') then
 			st_26_cnt_out <= "00000000000";
 		    elsif (st_26_cnt_en='1') then
 			st_26_cnt_out <= st_26_cnt_out + 1;
 		    end if;
 
-		    if (addr_cnt_rst='1') then
-			addr_cnt_out <= "00000000000";
+		    if (addr_cnt_rst='1' or rst='1') then
+			addr_cnt_out <= "0000000000000000";
 		    elsif (addr_cnt_en='1') then
 			addr_cnt_out <= addr_cnt_out + 1;
 		    end if;
@@ -74,7 +73,8 @@ begin
 	end process;
 
 	-- write to memory when we reach 26 things in shift register
-	we <= '1' when st_26_cnt_out=26 else '0';
+	we_en <= '1' when st_26_cnt_out=26 else '0';
+	we <= we_en;
 
 	-- shift halway through a char
 	sp <= '1' when st_868_cnt_out=434 else '0';
@@ -85,10 +85,14 @@ begin
 	st_26_cnt_rst <= '1' when st_26_cnt_out=26 else '0';
 
 	-- not sure how this will work
-	addr_cnt_enable <= '1' when st_26_cnt_rst='1' else '0';
+	addr_cnt_en <= '1' when st_26_cnt_rst='1' else '0';
 
 	-- addr counter
 	addr <= addr_cnt_out;
+
+	-- done signal
+	done <= '1' when sreg=B"0_11111111111111111111111111_0" else '0';
+	data_out <= sreg(25 downto 0);
 	
 	-- 26 bit shift register
 	process(clk) begin
