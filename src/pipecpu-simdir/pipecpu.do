@@ -1,5 +1,13 @@
-vcom "+acc" ../pipeCPU.vhd ../MEM/DATA_MEM.vhd
+# Documentation: https://www.microsemi.com/document-portal/doc_view/136364-modelsim-me-10-4c-command-reference-manual-for-libero-soc-v11-7
+
+# Build CPU
+vcom "+acc" ../pipeCPU.vhd
+# Build memory files
+vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd
+# Build relevant testbench
 vcom "+acc" ../pipeCPU_tb.vhd
+
+# Simulate testbench
 vsim pipeCPU_tb
 
 config wave -signalnamewidth 1
