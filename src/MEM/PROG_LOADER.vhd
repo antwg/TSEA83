@@ -14,6 +14,7 @@ architecture func of PROG_LOADER is
 	signal rx1, rx2 : std_logic; -- synkvippor
 	signal sp : std_logic := '0';
 	signal we_en : std_logic := '0';
+    signal ke_done : std_logic := '0';
 
 	-- addr counter
 	signal addr_cnt_en : std_logic := '0';
@@ -22,13 +23,13 @@ architecture func of PROG_LOADER is
 
 	-- 868 counter
    	signal st_868_cnt_en  : std_logic := '0'; 	-- enable 868 counter
-    	signal st_868_cnt_rst : std_logic := '0'; 	-- reset counter
-    	signal st_868_cnt_out : unsigned(10 downto 0) := B"00000000000"; -- counter out
+    signal st_868_cnt_rst : std_logic := '0'; 	-- reset counter
+    signal st_868_cnt_out : unsigned(10 downto 0) := B"00000000000"; -- counter out
 
 	-- 26 counter
    	signal st_26_cnt_en  : std_logic := '0'; 	-- enable 868 counter
-    	signal st_26_cnt_rst : std_logic := '0'; 	-- reset counter
-    	signal st_26_cnt_out : unsigned(10 downto 0) := B"00000000000"; -- counter out
+    signal st_26_cnt_rst : std_logic := '0'; 	-- reset counter
+    signal st_26_cnt_out : unsigned(10 downto 0) := B"00000000000"; -- counter out
 begin
 	-- sync rx
 	process(clk) begin
@@ -91,7 +92,7 @@ begin
 	addr <= addr_cnt_out;
 
 	-- done signal
-	done <= '1' when sreg=B"0_11111111111111111111111111_0" else '0';
+	done <= '0' when ke_done='0' else '1';
 	data_out <= sreg(32 downto 1);
 	
 	-- 26 bit shift register

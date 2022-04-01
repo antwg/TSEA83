@@ -18,17 +18,15 @@ architecture behavior of prog_load_tb is
     signal rst : std_logic := '0';
     signal UART_in : std_logic := '0';
 
-    signal rx : std_logic;
-
     constant FPGA_clk_period : time := 10 ns;
 begin
     
 
     -- Component Instantiation
-    U0: lab port map(
+    U0: pipeCPU port map(
         clk => clk,
         rst => rst,
-        UART_in => rx);
+        UART_in => UART_in);
 
     clk_process : process
     begin
@@ -51,29 +49,23 @@ begin
              "11111111"  -- ir2 constant byte2
             );
     begin
-        rst <= '1';
-        wait for FPGA_clk_period * 10; -- wait a while with reset high
-        wait until rising_edge(clk); -- needed? wait until syncron release
-
-        rst <= '0';
-
         for i in patterns'range loop
 
-            rx <= '0'; -- start bit
+            UART_in <= '0'; -- start bit
             wait for FPGA_clk_period;
             
             for j in 0 to 7 loop
-                rx <= patterns(i)(j)
+                UART_in <= patterns(i)(j);
                 wait for 8.68 us;
             end loop; -- j
 
-            rx <= '0'; -- stop bit
+            UART_in <= '0'; -- stop bit
             wait for FPGA_clk_period;
 
         end loop; -- i
         wait; -- wait forever, will finish simulation
     end process;
   
-    rst <= '1', '0' after 25 ns;
+    rst <= '1', '0' after 50 ns;
 END;
 

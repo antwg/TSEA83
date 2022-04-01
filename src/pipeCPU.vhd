@@ -59,7 +59,7 @@ signal rf_we : std_logic;
 signal rf_out1, rf_out2 : unsigned(15 downto 0);
 
 -- Loader signals (testing // Rw)
---signal loader_rx : std_logic;
+signal temp_done : std_logic;
 signal loader_done : std_logic;
 signal loader_we : std_logic;
 signal loader_addr : unsigned(15 downto 0);
@@ -227,11 +227,12 @@ begin
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out <= x"FC00") else '1';
 
+    temp_done <= '1' when loader_done='0' else '1';
+
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
-		loader_done <= '1';
-		if (rising_edge(clk) and (loader_done = '1')) then
+		if (rising_edge(clk) and (temp_done = '1')) then
 			if (rst='1') then
 				PC <= (others => '0');
 			elsif ((IR2_op = RJMP) or
