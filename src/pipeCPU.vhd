@@ -106,25 +106,25 @@ constant LSLR		: unsigned(7 downto 0) := "00100011";
 
 component PROG_MEM is
 	Port( addr : in unsigned(15 downto 0);
-	      data_out : out unsigned(31 downto 0);
+		data_out : out unsigned(31 downto 0);
       	clk, we : in std_logic;
-	      wr_addr : in unsigned(15 downto 0);
-	      wr_data : in unsigned(31 downto 0));
+	    wr_addr : in unsigned(15 downto 0);
+	    wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
 	Port( clk, rst, rx : in std_logic;
-              done, we : out std_logic;
-              addr : out unsigned(15 downto 0);
-              data_out : out unsigned(31 downto 0));
+        done, we : out std_logic;
+        addr : out unsigned(15 downto 0);
+        data_out : out unsigned(31 downto 0));
 end component;
 
 component DATA_MEM is
 	Port( addr : in unsigned(15 downto 0);
-              data_in : in unsigned(15 downto 0);
-	      we : in std_logic; -- write enable
-	      clk : in std_logic;
-	      data_out : out unsigned(15 downto 0));
+        data_in : in unsigned(15 downto 0);
+	    we : in std_logic; -- write enable
+	    clk : in std_logic;
+	    data_out : out unsigned(15 downto 0));
 end component;
 
 -- Sprite minne
@@ -133,8 +133,8 @@ end component;
 
 component REG_FILE is
 	port(
-    		rd : in unsigned(3 downto 0);
-    		ra : in unsigned(3 downto 0);
+		rd : in unsigned(3 downto 0);
+		ra : in unsigned(3 downto 0);
 		we : in std_logic; -- write enable
 		clk : in std_logic;
 		data_in : in unsigned(15 downto 0);
@@ -145,10 +145,10 @@ end component;
 
 component ALU is
 	port (
-	MUX1: in unsigned(15 downto 0);
-	MUX2 : in unsigned(15 downto 0);
-	op_code : in unsigned(7 downto 0);
-	result : out unsigned(15 downto 0)
+		MUX1: in unsigned(15 downto 0);
+		MUX2 : in unsigned(15 downto 0);
+		op_code : in unsigned(7 downto 0);
+		result : out unsigned(15 downto 0)
 	);
 end component;
 
@@ -166,13 +166,13 @@ begin
 	);
 
 	prog_loader_comp : PROG_LOADER port map(
-	 	clk => clk,
+		clk => clk,
 		rst => rst,
 	 	rx => loader_rx,
 		done => loader_done,
-  	we => loader_we,
-  	addr => loader_addr,
-  	data_out => loader_data_out
+	  	we => loader_we,
+	  	addr => loader_addr,
+	  	data_out => loader_data_out
 	);
 
 	reg_file_comp : REG_FILE port map(
@@ -186,18 +186,18 @@ begin
 	);
 
 	data_mem_comp : DATA_MEM port map(
-			addr => alu_out,
-			we => dm_we,
-			data_out => dm_data_out,
-			data_in => dm_data_in,
-			clk => clk
+		addr => alu_out,
+		we => dm_we,
+		data_out => dm_data_out,
+		data_in => dm_data_in,
+		clk => clk
 	);
 
 	alu_comp : ALU port map(
-			op_code => IR2_op,
-			result => alu_out,
-			MUX1 => alu_mux1,
-			MUX2 => alu_mux2
+		op_code => IR2_op,
+		result => alu_out,
+		MUX1 => alu_mux1,
+		MUX2 => alu_mux2
 	);
 
 -------------------------------------------------------------------------------
@@ -208,11 +208,11 @@ begin
 	alu_mux1 <= rf_out1;
 
 	alu_mux2 <= IR2_const when ((IR2_op = LDI) or (IR2_op = STI) or
-															(IR2_op = ADDI) or (IR2_op = SUBI) or
-															(IR2_op = CMPI) or (IR2_op = ANDI) or
-															(IR2_op = ORI) or (IR2_op = MULI) or
-															(IR2_op = MULSI))
-												else rf_out2;
+								(IR2_op = ADDI) or (IR2_op = SUBI) or
+								(IR2_op = CMPI) or (IR2_op = ANDI) or
+								(IR2_op = ORI) or (IR2_op = MULI) or
+								(IR2_op = MULSI))
+								else rf_out2;
 
 
 	-- Data bus multiplexer
@@ -231,17 +231,17 @@ begin
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
-		boot_done <= '1';
+		-- boot_done <= '1';
 		if (rising_edge(clk) and (boot_done = '1')) then
 			if (rst='1') then
 				PC <= (others => '0');
 			elsif ((IR2_op = RJMP) or
-						 (IR2_op = BEQ and ZF = '1') or
-						 (IR2_op = BNE and ZF = '0') or
-						 (IR2_op = BPL and NF = '0') or
-						 (IR2_op = BMI and NF = '1') or
-						 (IR2_op = BGE and (NF xor VF) = '0') or
-						 (IR2_op = BLT and (NF xor VF) = '1')) then
+				   (IR2_op = BEQ and ZF = '1') or
+				   (IR2_op = BNE and ZF = '0') or
+				   (IR2_op = BPL and NF = '0') or
+				   (IR2_op = BMI and NF = '1') or
+				   (IR2_op = BGE and (NF xor VF) = '0') or
+				   (IR2_op = BLT and (NF xor VF) = '1')) then
 				PC <= PC2;
 			else
 				PC <= PC + 1;
