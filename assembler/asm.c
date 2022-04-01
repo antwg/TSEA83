@@ -4,7 +4,36 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-int assemble(char filePath[20], char outputPath[20]) {
+/*
+** TODO:
+** - Labels
+** - Hex input for numbers
+*/
+
+/*
+** Prints out the given amount of bytes ('size') from 'ptr'
+** as if it was encoded with little-endian.
+*/
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i = size - 1; i >= 0; i--) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+    }
+}
+
+/*
+** Fetches a line from inputFile, sends it for parsing,
+** and decode the instruction. Prints to stdout or writes
+** to file depending on given flag in main.
+*/
+int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     FILE* assembly = fopen(filePath, "r");
     FILE* binary = fopen(outputPath, "w");
 
@@ -13,38 +42,37 @@ int assemble(char filePath[20], char outputPath[20]) {
         return 1;
     } else if (!binary) {
         printf("Couldn't open: %s", outputPath);
-        return 1;
+
+        if (!manual)
+            return 1;
     }
 
-    int lineN = 0;
-
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read = 0;
-
-    printf("\n");
+    char* line = NULL; // used to store every line read
+    int lineN = 0; // current line number we're on
+    size_t len = 0; // size of line read
+    ssize_t read = 0; // amount read
 
     while ((read = getline(&line, &len, assembly))) {
-        char cmd[3][15] = {"", "", ""};
+        char cmd[3][15] = {"", "", ""}; // empty array to lose old contents
         int cmdc = 0;
 
-        // parse parts of the file, save opcode/args to cmd
-        // the number of args (+ opcode) is cmdc (thing program arguments)
+        // Parse the line, save all parts of the instruction in cmd, and
+        // keep the numebr of parts in cmdc.
         parseLine(&line, &cmdc, cmd);
 
+        // If we actually read anything from the line.
         if (cmdc) {
-            u_int32_t instruction = 0; // last 6 bits are unused
-            int oneReg = 0; // is set to true if instruction only passes one register
-            int opcode = getOpCode(cmd[0]); // the OP code of the instruction
-            int rD = 0; // value of rD register (if any)
-            int rA = 0; // value of rA register (if any)
-            unsigned val = 0; // constant passed with the instruction
+            u_int8_t opcode = getOpCode(cmd[0]); // the OP code of the instruction
+            u_int8_t rD = 0; // value of rD register
+            u_int8_t rA = 0; // value of rA register
+            int val = 0; // the constant passed
 
-            if (opcode == -1) {
+            if (opcode == UNDEFINED) {
                 printf("Line %i: Couldn't parse opcode: %s", lineN, cmd[0]);
                 return 1;
             }
 
+            // single argument instruction (e.x. PUSH 10)
             if (cmdc == 2) {
                 if (opcode == PUSH || opcode == POP) {
                     rD = getRegCode(cmd[1]);
@@ -56,13 +84,14 @@ int assemble(char filePath[20], char outputPath[20]) {
                 } else {
                     val = atoi(cmd[1]);
                 }
+
+            // double argument instruction (e.x. LD A,B)
             } else if (cmdc == 3) {
-                // immediate stuff
+
+                // immediate stuff uses a constant
                 if (opcode == LDI || opcode == STI || opcode == ADDI ||
                     opcode == SUBI || opcode == ANDI ||
                     opcode == ORI || opcode == MULI || opcode == MULSI) {
-
-                    oneReg = 1; // only one register is used
 
                     rD = getRegCode(cmd[1]);
 
@@ -89,43 +118,43 @@ int assemble(char filePath[20], char outputPath[20]) {
                 }
             }
 
-            printf("Line: %s", line);
-            printf("argc:%i\ncmd: %s (%i)\nrD: %s (%i)\nrA/val: %s (%i/%i))\n\n",
-                   cmdc, cmd[0], opcode, cmd[1], rD, cmd[2], rA, val);
+            u_int8_t registers = 0;
+            registers |= rA;
+            registers |= (rD << 4);
 
-            /*
-            ** The instruction is divided like this:
-            **  opcode  rd    ra
-            ** [......][...][....]
-            **
-            ** OR if constant is given instead of ra:
-            **  opcode  rd         const
-            ** [......][...][................]
-             */
-
-            instruction |= opcode;
-
-            // if two registers given
-            if (!oneReg) {
-                u_int8_t registers = 0; // holds the registers byte
-                registers |= rD;
-                registers |= (rA << 4);
-                instruction |= (registers << 8);
-            // if value instead of ra
-            } else {
-                instruction |= rD << 6;
-                instruction |= (val << 10);
+            if (debug) {
+                printf("\n");
+                printf("Line: %s", line);
+                printf("Cmd0: %s, Cmd1: %s, Cmd2: %s\n", cmd[0], cmd[1], cmd[2]);
+                printf("opcode: ");
+                printBits(1, &opcode);
+                printf("\nregisters(Rd/Ra): ");
+                printBits(1, &registers);
+                printf("\nval:  ");
+                printBits(2, &val);
+                printf("\n\n");
             }
 
             /*
-            ** Since a file consists of bytes (also filesystems generally), every instruction line
-            ** will have 6 unused bytes at the end of every line in the file.
-            ** If file is inspected with:
-            ** $ xxd -c 4 -b out.bin
-            ** It should be evident.
+            ** The instruction is divided like this:
+            **  opcode  rD    rA      const
+            ** [......][...][....][.............]
              */
 
-            fwrite(&instruction, 4, 1, binary);
+            // Print it to stdout or write to file.
+            if (manual) {
+                printf("\"");
+                printBits(1, &opcode);
+                printBits(1, &registers);
+                printBits(2, &val);
+                printf("\",\n");
+            }
+
+            if (binary) {
+                fwrite(&opcode, 1, 1, binary);
+                fwrite(&registers, 1, 1, binary);
+                fwrite(&val, 2, 1, binary);
+            }
         }
 
         lineN++;
@@ -137,6 +166,100 @@ int assemble(char filePath[20], char outputPath[20]) {
     return 0;
 }
 
+/*
+** Parses one 'line' of assembly text. Takes its individual
+** parts and saves it in a string array ('cmd'), the number of
+** parts to the instruction is saved in 'cmdc'.
+**
+** E.g. for instruction: LDI A,B
+** cmd[0] = "LDI"
+** cmd[1] = A
+** cmd[2] = B
+** cmdc = 3
+*/
+void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
+    char* line = lineP[0];
+    *(cmdc) = 0; // number of parts in a instruction
+    int c = 0; // current character of a part in the instruction
+    int i = 0; // current character of line
+
+    // continues to loop as long as a comment char nor newline is met
+    while(1) {
+        // Ignore whitespace/tabs from start of line
+        while(line[i] == ' ' || line[i] == '\t') {
+            i++;
+        }
+
+        // Ignore rest if it's a comment
+        if (line[i] == ';')
+            break;
+
+        // add a part (continous sequence of non-whitespace and non ',' characters)
+        // to parts array
+        while(line[i] != ' ' && line[i] != '\t'
+              && line[i] != ',' && line[i] != '\n') {
+            cmd[*cmdc][c] = toupper(line[i]);
+            c++;
+            i++;
+        }
+
+        // if we've been adding characters, then
+        // a part of the instruction was added to the cmd array
+        if (c)
+            *(cmdc) += 1;
+
+        // If we've reached EOL we can stop parsing
+        if (line[i] == '\n')
+            break;
+
+        // restart
+        c = 0;
+        i++;
+    }
+}
+
+/*
+** Flags:
+** -i ./inputFile.asm [REQUIRED]
+** -o ./outputFile.bin
+** -m [Prints instruction as binary for manual entering into program memory]
+** -d [prints additional debug info]
+*/
+int main(int argc, char** argv) {
+    if (argc <= 1) {
+        printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
+        printf("-i inputFile (default=./example.asm)\n");
+        printf("-o outputFile (default=./out.bin)\n");
+        printf("-m print instructions formatted to terminal\n");
+        printf("-d print debug information\n");
+        return 1;
+    }
+
+    int manual = 0;
+    int debug = 0;
+    char filePath[20] = "./example.asm";
+    char outputPath[20] = "./out.bin";
+
+    for(int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-i")) {
+            strcpy(filePath, argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i], "-o")) {
+            strcpy(outputPath, argv[i+1]);
+            i++;
+        } else if (!strcmp(argv[i], "-m")) {
+            manual = 1;
+        } else if (!strcmp(argv[i], "-d")) {
+            debug = 1;
+        }
+    }
+
+    return assemble(filePath, outputPath, manual, debug);
+}
+
+/*
+** Returns the corresponding number for given instruction.
+*/
 int getOpCode(char* text) {
     if (!strcmp(text, "NOP")) {
         return NOP;
@@ -204,9 +327,12 @@ int getOpCode(char* text) {
         return LSLR;
     }
 
-    return -1;
+    return UNDEFINED;
 }
 
+/*
+** Returns the corresponding number for given register.
+*/
 int getRegCode(char* text) {
     if (!strcmp(text, "A")) {
         return A;
@@ -243,60 +369,4 @@ int getRegCode(char* text) {
     }
 
     return UNDEFINED;
-}
-void parseLine(char** line, int* cmdc, char cmd[3][15]) {
-    *(cmdc) = 0;
-    int cmdi = 0;
-    int i = 0;
-
-    while(1) {
-        // remove whitespace/tabs from start of line
-        while(line[0][i] == ' ' || line[0][i] == '\t') {
-            i++;
-        }
-
-        // ignore rest since it's a comment
-        if (line[0][i] == ';') {
-            break;
-        }
-
-        // add string to cmd array
-        while(line[0][i] != ' ' && line[0][i] != '\t' && line[0][i] != ',' && line[0][i] != '\n') {
-            cmd[*cmdc][cmdi] = toupper(line[0][i]);
-            cmdi++;
-            i++;
-        }
-
-        if (cmdi)
-            *(cmdc) += 1;
-
-        // if EOL
-        if (line[0][i] == '\n')
-            break;
-
-        cmdi = 0;
-        i++;
-    }
-}
-
-int main(int argc, char** argv) {
-    if (argc <= 1) {
-        printf("Syntax: ./asm -f ../assembly.asm -o ./build/output.bin");
-        return 1;
-    }
-
-    char filePath[20] = "./input.asm";
-    char outputPath[20] = "./out.bin";
-
-    for(int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-f")) {
-            strcpy(filePath, argv[i+1]);
-            i++;
-        } else if (!strcmp(argv[i], "-o")) {
-            strcpy(outputPath, argv[i+1]);
-            i++;
-        }
-    }
-
-    return assemble(filePath, outputPath);
 }
