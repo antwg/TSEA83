@@ -33,18 +33,15 @@
 XILINX_INIT = source /opt/xilinx_ise/14.7/settings64.sh;
 PART=xc6slx16-3-csg324
 
-
 pipecpu.%: S=pipeCPU.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PROG_MEM.vhd MEM/PROG_LOADER.vhd
-pipecpu.%: T=pipeCPU_tb.vhd
+pipecpu.%: T=tbs/pipeCPU_tb.vhd
 pipecpu.%: U=Nexys3_Master.ucf
-
 
 # Det här är ett exempel på hur man kan skriva en testbänk som är
 # relevant, även om man kör en simulering i batchläge (make batchlab.simc)
 #batchlab.%: S=cpu_embryo.vhd
 #batchlab.%: T=cpu_embryo_tb.vhd
 #batchlab.%: U=Nexys3_Master.ucf
-
 
 # Misc functions that are good to have
 include ./build/util.mk

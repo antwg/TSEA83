@@ -5,11 +5,12 @@ vcom "+acc" ../pipeCPU.vhd
 # Build memory files
 vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd
 # Build relevant testbench
-vcom "+acc" ../pipeCPU_tb.vhd
+vcom "+acc" ../tbs/pipeCPU_tb.vhd
 
 # Simulate testbench
 vsim pipeCPU_tb
 
+# Wave configurations
 config wave -signalnamewidth 1
 
 add wave {sim:/pipecpu_tb/clk}
@@ -36,7 +37,6 @@ add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/sreg}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_26_cnt_out}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/boot_done}
 
 restart -f
 run 1000 ns
