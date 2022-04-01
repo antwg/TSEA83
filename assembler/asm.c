@@ -6,7 +6,6 @@
 
 /*
 ** TODO:
-** - Negative numbers
 ** - Labels
 ** - Hex input for numbers
 */
@@ -21,7 +20,7 @@ void printBits(size_t const size, void const * const ptr)
     unsigned char byte;
     int i, j;
 
-    for (i = 0; i < size; i++) {
+    for (i = size - 1; i >= 0; i--) {
         for (j = 7; j >= 0; j--) {
             byte = (b[i] >> j) & 1;
             printf("%u", byte);
@@ -43,7 +42,9 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
         return 1;
     } else if (!binary) {
         printf("Couldn't open: %s", outputPath);
-        return 1;
+
+        if (!manual)
+            return 1;
     }
 
     char* line = NULL; // used to store every line read
@@ -61,7 +62,6 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 
         // If we actually read anything from the line.
         if (cmdc) {
-            u_int32_t instruction = 0; // one full instruction
             u_int8_t opcode = getOpCode(cmd[0]); // the OP code of the instruction
             u_int8_t rD = 0; // value of rD register
             u_int8_t rA = 0; // value of rA register
@@ -118,18 +118,11 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                 }
             }
 
-            // this is some ugly hax, yush!
-            int val1 = (val >> 8) & 0xFF;
-            int val2 = val & 0xFF;
-            val = 0;
-            val |= val1;
-            val |= val2 << 8;
+            u_int8_t registers = 0;
+            registers |= rA;
+            registers |= (rD << 4);
 
             if (debug) {
-                u_int8_t registers = 0;
-                registers |= rA;
-                registers |= (rD << 4);
-
                 printf("\n");
                 printf("Line: %s", line);
                 printf("Cmd0: %s, Cmd1: %s, Cmd2: %s\n", cmd[0], cmd[1], cmd[2]);
@@ -137,10 +130,6 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                 printBits(1, &opcode);
                 printf("\nregisters(Rd/Ra): ");
                 printBits(1, &registers);
-                printf("\nval1: ");
-                printBits(1, &val1);
-                printf("\nval2: ");
-                printBits(1, &val2);
                 printf("\nval:  ");
                 printBits(2, &val);
                 printf("\n\n");
@@ -152,18 +141,19 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
             ** [......][...][....][.............]
              */
 
-            instruction |= opcode;
-            instruction |= (rA << 8);
-            instruction |= (rD << 12);
-            instruction |= (val << 16);
-
             // Print it to stdout or write to file.
             if (manual) {
                 printf("\"");
-                printBits(4, &instruction);
+                printBits(1, &opcode);
+                printBits(1, &registers);
+                printBits(2, &val);
                 printf("\",\n");
-            } else {
-                fwrite(&instruction, 4, 1, binary);
+            }
+
+            if (binary) {
+                fwrite(&opcode, 1, 1, binary);
+                fwrite(&registers, 1, 1, binary);
+                fwrite(&val, 2, 1, binary);
             }
         }
 
@@ -231,19 +221,23 @@ void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
 /*
 ** Flags:
 ** -i ./inputFile.asm [REQUIRED]
-** -o ./outputFile.bin [DEFAULT=out.bin]
+** -o ./outputFile.bin
 ** -m [Prints instruction as binary for manual entering into program memory]
 ** -d [prints additional debug info]
 */
 int main(int argc, char** argv) {
     if (argc <= 1) {
-        printf("Syntax: ./asm -f ../assembly.asm -o ./build/output.bin");
+        printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
+        printf("-i inputFile (default=./example.asm)\n");
+        printf("-o outputFile (default=./out.bin)\n");
+        printf("-m print instructions formatted to terminal\n");
+        printf("-d print debug information\n");
         return 1;
     }
 
     int manual = 0;
     int debug = 0;
-    char filePath[20] = "./input.asm";
+    char filePath[20] = "./example.asm";
     char outputPath[20] = "./out.bin";
 
     for(int i = 1; i < argc; i++) {
