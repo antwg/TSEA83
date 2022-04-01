@@ -5,8 +5,9 @@ use IEEE.numeric_std.all;
 entity pipeCPU is
 	port (
 		clk : in std_logic;
-		rst : in std_logic
-	);
+		rst : in std_logic;
+		UART_in : in std_logic;
+		UART_out : out std_logic);
 end pipeCPU;
 
 architecture func of pipeCPU is
@@ -58,13 +59,11 @@ signal rf_we : std_logic;
 signal rf_out1, rf_out2 : unsigned(15 downto 0);
 
 -- Loader signals (testing // Rw)
-signal loader_rx : std_logic;
+--signal loader_rx : std_logic;
 signal loader_done : std_logic;
 signal loader_we : std_logic;
 signal loader_addr : unsigned(15 downto 0);
 signal loader_data_Out : unsigned(31 downto 0);
-
-signal boot_done : std_logic;
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := "00000000";
@@ -168,7 +167,7 @@ begin
 	prog_loader_comp : PROG_LOADER port map(
 		clk => clk,
 		rst => rst,
-	 	rx => loader_rx,
+	 	rx => UART_in,
 		done => loader_done,
 	  	we => loader_we,
 	  	addr => loader_addr,
@@ -231,8 +230,8 @@ begin
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
-		-- boot_done <= '1';
-		if (rising_edge(clk) and (boot_done = '1')) then
+		loader_done <= '1';
+		if (rising_edge(clk) and (loader_done = '1')) then
 			if (rst='1') then
 				PC <= (others => '0');
 			elsif ((IR2_op = RJMP) or
