@@ -6,7 +6,7 @@ entity ALU is
 	port (
 	MUX1: in unsigned(15 downto 0);
 	MUX2 : in unsigned(15 downto 0);
-	op_code : in unsigned(5 downto 0);
+	op_code : in unsigned(7 downto 0);
 	result : out unsigned(15 downto 0);
 end ALU;
 
