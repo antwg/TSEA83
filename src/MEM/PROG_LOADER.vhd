@@ -6,11 +6,11 @@ entity PROG_LOADER is
 	Port ( clk, rst, rx : in std_logic;
 	       done, we : out std_logic;
 	       addr : out unsigned(15 downto 0);
-	       data_out : out unsigned(25 downto 0));
+	       data_out : out unsigned(31 downto 0));
 end PROG_LOADER;
 
 architecture func of PROG_LOADER is
-	signal sreg : unsigned(27 downto 0) := B"0_00000000000000000000000000_0";
+	signal sreg : unsigned(33 downto 0) := B"0_00000000000000000000000000000000_0";
 	signal rx1, rx2 : std_logic; -- synkvippor
 	signal sp : std_logic := '0';
 	signal we_en : std_logic := '0';
@@ -92,7 +92,7 @@ begin
 
 	-- done signal
 	done <= '1' when sreg=B"0_11111111111111111111111111_0" else '0';
-	data_out <= sreg(25 downto 0);
+	data_out <= sreg(32 downto 1);
 	
 	-- 26 bit shift register
 	process(clk) begin
