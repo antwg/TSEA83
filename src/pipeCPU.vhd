@@ -13,16 +13,16 @@ end pipeCPU;
 architecture func of pipeCPU is
 
 ----------------------------- Internal signals --------------------------------
-signal IR1 : unsigned(25 downto 0); -- Fetch stage
-alias IR1_op : unsigned(5 downto 0) is IR1(25 downto 20);
-alias IR1_rd : unsigned(3 downto 0) is IR1(19 downto 16);
-alias IR1_ra : unsigned(3 downto 0) is IR1(15 downto 12);
+signal IR1 : unsigned(31 downto 0); -- Fetch stage
+alias IR1_op : unsigned(7 downto 0) is IR1(31 downto 24);
+alias IR1_rd : unsigned(3 downto 0) is IR1(23 downto 20);
+alias IR1_ra : unsigned(3 downto 0) is IR1(19 downto 16);
 alias IR1_const : unsigned(15 downto 0) is IR1(15 downto 0);
 
-signal IR2 : unsigned(25 downto 0); -- Decode stage
-alias IR2_op : unsigned(5 downto 0) is IR2(25 downto 20);
-alias IR2_rd : unsigned(3 downto 0) is IR2(19 downto 16);
-alias IR2_ra : unsigned(3 downto 0) is IR2(15 downto 12);
+signal IR2 : unsigned(31 downto 0); -- Decode stage
+alias IR2_op : unsigned(7 downto 0) is IR2(31 downto 24);
+alias IR2_rd : unsigned(3 downto 0) is IR2(23 downto 20);
+alias IR2_ra : unsigned(3 downto 0) is IR2(19 downto 16);
 alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 
 -- Stack pointer
@@ -37,7 +37,7 @@ alias VF : std_logic is status_reg(3);
 
 signal PC, PC1, PC2 : unsigned(15 downto 0);
 
-signal PMdata_out : unsigned(25 downto 0);
+signal PMdata_out : unsigned(31 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
 -- Data memory
@@ -63,59 +63,59 @@ signal rf_out1, rf_out2 : unsigned(15 downto 0);
 signal loader_done : std_logic;
 signal loader_we : std_logic;
 signal loader_addr : unsigned(15 downto 0);
-signal loader_data_Out : unsigned(25 downto 0);
+signal loader_data_Out : unsigned(31 downto 0);
 
 -- Instructions
-constant NOP 		: unsigned(5 downto 0) := "000000";
-constant RJMP		: unsigned(5 downto 0) := "000001";
-constant BEQ		: unsigned(5 downto 0) := "000010";
-constant BNE 		: unsigned(5 downto 0) := "000011";
-constant BPL 		: unsigned(5 downto 0) := "000100";
-constant BMI 		: unsigned(5 downto 0) := "000101";
-constant BGE 		: unsigned(5 downto 0) := "000111";
-constant BLT 		: unsigned(5 downto 0) := "001000";
-constant LDI 		: unsigned(5 downto 0) := "001001";
-constant LD 		: unsigned(5 downto 0) := "001010";
-constant STI 		: unsigned(5 downto 0) := "001011";
-constant ST  		: unsigned(5 downto 0) := "001100";
-constant COPY		: unsigned(5 downto 0) := "001101";
-constant ADD		: unsigned(5 downto 0) := "001111";
-constant ADDI		: unsigned(5 downto 0) := "010000";
-constant SUB		: unsigned(5 downto 0) := "010001";
-constant SUBI		: unsigned(5 downto 0) := "010010";
-constant CMP		: unsigned(5 downto 0) := "010011";
-constant CMPI		: unsigned(5 downto 0) := "100100";
-constant I_AND		: unsigned(5 downto 0) := "010100";
-constant ANDI		: unsigned(5 downto 0) := "010101";
-constant I_OR		: unsigned(5 downto 0) := "010111";
-constant ORI		: unsigned(5 downto 0) := "011000";
-constant PUSH		: unsigned(5 downto 0) := "011001";
-constant POP		: unsigned(5 downto 0) := "011010";
-constant ADC		: unsigned(5 downto 0) := "011011";
-constant SBC 		: unsigned(5 downto 0) := "011100";
-constant MUL 		: unsigned(5 downto 0) := "011101";
-constant MULI 		: unsigned(5 downto 0) := "011111";
-constant MULS		: unsigned(5 downto 0) := "100000";
-constant MULSI		: unsigned(5 downto 0) := "100001";
-constant LSLS		: unsigned(5 downto 0) := "100010";
-constant LSLR		: unsigned(5 downto 0) := "100011";
+constant NOP 		: unsigned(7 downto 0) := "00000000";
+constant RJMP		: unsigned(7 downto 0) := "00000001";
+constant BEQ		: unsigned(7 downto 0) := "00000010";
+constant BNE 		: unsigned(7 downto 0) := "00000011";
+constant BPL 		: unsigned(7 downto 0) := "00000100";
+constant BMI 		: unsigned(7 downto 0) := "00000101";
+constant BGE 		: unsigned(7 downto 0) := "00000111";
+constant BLT 		: unsigned(7 downto 0) := "00001000";
+constant LDI 		: unsigned(7 downto 0) := "00001001";
+constant LD 		: unsigned(7 downto 0) := "00001010";
+constant STI 		: unsigned(7 downto 0) := "00001011";
+constant ST  		: unsigned(7 downto 0) := "00001100";
+constant COPY		: unsigned(7 downto 0) := "00001101";
+constant ADD		: unsigned(7 downto 0) := "00001111";
+constant ADDI		: unsigned(7 downto 0) := "00010000";
+constant SUB		: unsigned(7 downto 0) := "00010001";
+constant SUBI		: unsigned(7 downto 0) := "00010010";
+constant CMP		: unsigned(7 downto 0) := "00010011";
+constant CMPI		: unsigned(7 downto 0) := "00100100";
+constant I_AND		: unsigned(7 downto 0) := "00010100";
+constant ANDI		: unsigned(7 downto 0) := "00010101";
+constant I_OR		: unsigned(7 downto 0) := "00010111";
+constant ORI		: unsigned(7 downto 0) := "00011000";
+constant PUSH		: unsigned(7 downto 0) := "00011001";
+constant POP		: unsigned(7 downto 0) := "00011010";
+constant ADC		: unsigned(7 downto 0) := "00011011";
+constant SBC 		: unsigned(7 downto 0) := "00011100";
+constant MUL 		: unsigned(7 downto 0) := "00011101";
+constant MULI 		: unsigned(7 downto 0) := "00011111";
+constant MULS		: unsigned(7 downto 0) := "00100000";
+constant MULSI		: unsigned(7 downto 0) := "00100001";
+constant LSLS		: unsigned(7 downto 0) := "00100010";
+constant LSLR		: unsigned(7 downto 0) := "00100011";
 
 
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
 	Port( addr : in unsigned(15 downto 0);
-	      data_out : out unsigned(25 downto 0);
-      	      clk, we : in std_logic;
+	      data_out : out unsigned(31 downto 0);
+      	clk, we : in std_logic;
 	      wr_addr : in unsigned(15 downto 0);
-	      wr_data : in unsigned(25 downto 0));
+	      wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
 	Port( clk, rst, rx : in std_logic;
               done, we : out std_logic;
               addr : out unsigned(15 downto 0);
-              data_out : out unsigned(25 downto 0));
+              data_out : out unsigned(31 downto 0));
 end component;
 
 component DATA_MEM is
@@ -146,7 +146,7 @@ component ALU is
 	port (
 	MUX1: in unsigned(15 downto 0);
 	MUX2 : in unsigned(15 downto 0);
-	op_code : in unsigned(5 downto 0);
+	op_code : in unsigned(7 downto 0);
 	result : out unsigned(15 downto 0)
 	);
 end component;
@@ -169,9 +169,9 @@ begin
 		rst => rst,
 	 	rx => UART_in,
 		done => loader_done,
-              	we => loader_we,
-              	addr => loader_addr,
-              	data_out => loader_data_out 
+  	we => loader_we,
+  	addr => loader_addr,
+  	data_out => loader_data_out
 	);
 
 	reg_file_comp : REG_FILE port map(
@@ -284,7 +284,7 @@ begin
 				-- TODO Add for branches?
 				IR1_op <= NOP;
 			else
-				IR1 <= PMdata_out(25 downto 0);
+				IR1 <= PMdata_out(31 downto 0);
 			end if;
 		end if;
 	end process;
