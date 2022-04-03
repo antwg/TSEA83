@@ -27,19 +27,28 @@ add wave -group pm {sim:/prog_load_tb/U0/prog_mem_comp/addr}
 add wave -group pm {sim:/prog_load_tb/U0/prog_mem_comp/data_out}
 add wave -group pm {sim:/prog_load_tb/U0/prog_mem_comp/we}
 add wave -group pm {sim:/prog_load_tb/U0/prog_mem_comp/wr_addr}
-add wave -group pm {sim:/prog_load_tb/U0/prog_mem_comp/wr_data}
+add wave -group pm -hex {sim:/prog_load_tb/U0/prog_mem_comp/wr_data}
+add wave -group pm -bin {sim:/prog_load_tb/U0/prog_mem_comp/PM}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/rst}
+add wave -group pmLoader {sim:/prog_load_tb/U0/UART_IN}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/rx}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/done}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/ke_done}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/we}
+add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/we_en}
+add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/we_en1}
+add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/we_en2}
+add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/fullInstr}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/addr}
-add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/data_out}
+add wave -group pmLoader -hex {sim:/prog_load_tb/U0/prog_loader_comp/data_out}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/rx1}
 add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/rx2}
-add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/sreg}
-add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/st_868_cnt_out}
-add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/st_26_cnt_out}
+add wave -group pmLoader -uns {sim:/prog_load_tb/U0/prog_loader_comp/st_868_cnt_out}
+add wave -group pmLoader -uns {sim:/prog_load_tb/U0/prog_loader_comp/st_10_cnt_out}
+add wave -group pmLoader -uns {sim:/prog_load_tb/U0/prog_loader_comp/st_4_cnt_out}
+add wave -group pmLoader {sim:/prog_load_tb/U0/prog_loader_comp/sp}
+add wave -group pmLoader -bin {sim:/prog_load_tb/U0/prog_loader_comp/byteReg}
+add wave -group pmLoader -bin {sim:/prog_load_tb/U0/prog_loader_comp/instrReg}
 
 restart -f
-run 1000 ns
+run 2000000 ns

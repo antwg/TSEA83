@@ -3,11 +3,11 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 entity PROG_MEM is
-	Port( 	addr : in unsigned(15 downto 0);
-		data_out : out unsigned(31 downto 0);
-		clk, we : in std_logic;
-		wr_addr : in unsigned(15 downto 0);
-		wr_data : in unsigned(31 downto 0));
+	Port( 	clk, we : in std_logic;
+            addr : in unsigned(15 downto 0);
+		    data_out : out unsigned(31 downto 0);
+		    wr_addr : in unsigned(15 downto 0);
+		    wr_data : in unsigned(31 downto 0));
 end PROG_MEM;
 
 architecture func of PROG_MEM is
