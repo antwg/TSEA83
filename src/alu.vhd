@@ -13,92 +13,93 @@ entity ALU is
 end ALU;
 
 architecture func of ALU is
-signal Z, N, C, V, Z_sens, N_sens, C_sens, V_sens : unsigned(0 downto 0);
-signal res_add : unsigned(31 downto 0);
-signal res_sub : unsigned(31 downto 0);
-signal send_through : unsigned(31 downto 0);
-signal res_mul : unsigned(15 downto 0);
-signal logical_and : unsigned(31 downto 0);
-signal logical_or : unsigned(31 downto 0);
-signal add_carry: unsigned(31 downto 0);
-signal sub_carry: unsigned(31 downto 0);
-signal log_shift_left: unsigned (31 downto 0);
-signal log_shift_right: unsigned (31 downto 0);
-signal result_large : unsigned(31 downto 0);
-signal alu_op : unsigned(5 downto 0);
+
+signal Z, N, C, V, Z_sens, N_sens, C_sens, V_sens : unsigned(0 downto 0) := 0;
+signal res_add : unsigned(31 downto 0) := 0;
+signal res_sub : unsigned(31 downto 0) := 0;
+signal send_through : unsigned(31 downto 0) := 0;
+signal res_mul : unsigned(31 downto 0) := 0;
+signal logical_and : unsigned(31 downto 0) := 0;
+signal logical_or : unsigned(31 downto 0) := 0;
+signal add_carry: unsigned(31 downto 0) := 0;
+signal sub_carry: unsigned(31 downto 0) := 0;
+signal log_shift_left: unsigned (31 downto 0) := 0;
+signal log_shift_right: unsigned (31 downto 0) := 0;
+signal result_large : unsigned(31 downto 0) := 0;
+signal alu_op : unsigned(2 downto 0) := 0;
 
 
 
 -- branch has not been fully implemented
-constant NOP 		: unsigned(5 downto 0) := "000000";
-constant RJMP		: unsigned(5 downto 0) := "000001";
-constant BEQ		: unsigned(5 downto 0) := "000010";
-constant BNE 		: unsigned(5 downto 0) := "000011";
-constant BPL 		: unsigned(5 downto 0) := "000100";
-constant BMI 		: unsigned(5 downto 0) := "000101";
-constant BGE 		: unsigned(5 downto 0) := "000111";
-constant BLT 		: unsigned(5 downto 0) := "001000";   
-constant LDI 		: unsigned(5 downto 0) := "001001";
-constant LD 		: unsigned(5 downto 0) := "001010";
-constant STI 		: unsigned(5 downto 0) := "001011";
-constant ST  		: unsigned(5 downto 0) := "001100";
-constant COPY		: unsigned(5 downto 0) := "001101";
-constant ADD		: unsigned(5 downto 0) := "001111";
-constant ADDI		: unsigned(5 downto 0) := "010000"; 
-constant SUB		: unsigned(5 downto 0) := "010001";
-constant SUBI		: unsigned(5 downto 0) := "010010";
-constant CMP		: unsigned(5 downto 0) := "010011";
-constant I_AND		: unsigned(5 downto 0) := "010100";
-constant ANDI		: unsigned(5 downto 0) := "010101";
-constant I_OR		: unsigned(5 downto 0) := "010111";
-constant ORI		: unsigned(5 downto 0) := "011000";
-constant PUSH		: unsigned(5 downto 0) := "011001";
-constant POP		: unsigned(5 downto 0) := "011010";
-constant ADC		: unsigned(5 downto 0) := "011011"; 
-constant SBC 		: unsigned(5 downto 0) := "011100";
-constant MUL 		: unsigned(5 downto 0) := "011101";
-constant MULI 		: unsigned(5 downto 0) := "011111";
-constant MULS		: unsigned(5 downto 0) := "100000";
-constant MULSI		: unsigned(5 downto 0) := "100001";
-constant LSLS		: unsigned(5 downto 0) := "100010";
-constant LSLR		: unsigned(5 downto 0) := "100011";
-constant CMPI 		: unsigned(5 downto 0) := "100100";
+constant NOP 		: unsigned(7 downto 0) := "00000000";
+constant RJMP		: unsigned(7 downto 0) := "00000001";
+constant BEQ		: unsigned(7 downto 0) := "00000010";
+constant BNE 		: unsigned(7 downto 0) := "00000011";
+constant BPL 		: unsigned(7 downto 0) := "00000100";
+constant BMI 		: unsigned(7 downto 0) := "00000101";
+constant BGE 		: unsigned(7 downto 0) := "00000111";
+constant BLT 		: unsigned(7 downto 0) := "00001000";
+constant LDI 		: unsigned(7 downto 0) := "00001001";
+constant LD 		: unsigned(7 downto 0) := "00001010";
+constant STI 		: unsigned(7 downto 0) := "00001011";
+constant ST  		: unsigned(7 downto 0) := "00001100";
+constant COPY		: unsigned(7 downto 0) := "00001101";
+constant ADD		: unsigned(7 downto 0) := "00001111";
+constant ADDI		: unsigned(7 downto 0) := "00010000";
+constant SUB		: unsigned(7 downto 0) := "00010001";
+constant SUBI		: unsigned(7 downto 0) := "00010010";
+constant CMP		: unsigned(7 downto 0) := "00010011";
+constant CMPI		: unsigned(7 downto 0) := "00100100";
+constant I_AND		: unsigned(7 downto 0) := "00010100";
+constant ANDI		: unsigned(7 downto 0) := "00010101";
+constant I_OR		: unsigned(7 downto 0) := "00010111";
+constant ORI		: unsigned(7 downto 0) := "00011000";
+constant PUSH		: unsigned(7 downto 0) := "00011001";
+constant POP		: unsigned(7 downto 0) := "00011010";
+constant ADC		: unsigned(7 downto 0) := "00011011";
+constant SBC 		: unsigned(7 downto 0) := "00011100";
+constant MUL 		: unsigned(7 downto 0) := "00011101";
+constant MULI 		: unsigned(7 downto 0) := "00011111";
+constant MULS		: unsigned(7 downto 0) := "00100000";
+constant MULSI		: unsigned(7 downto 0) := "00100001";
+constant LSLS		: unsigned(7 downto 0) := "00100010";
+constant LSLR		: unsigned(7 downto 0) := "00100011";
 
 
-constant alu_add	: unsigned(3 downto 0) := "001";
-constant alu_sub	: unsigned(3 downto 0) := "010";
-constant alu_cmp	: unsigned(3 downto 0) := "011";
-constant alu_mul	: unsigned(3 downto 0) := "100";
-constant alu_RS		: unsigned(3 downto 0) := "100";
-constant alu_LS		: unsigned(3 downto 0) := "100";
+constant alu_add	: unsigned(2 downto 0) := "001";
+constant alu_sub	: unsigned(2 downto 0) := "010";
+constant alu_cmp	: unsigned(2 downto 0) := "011";
+constant alu_mul	: unsigned(2 downto 0) := "100";
+constant alu_RS		: unsigned(2 downto 0) := "101";
+constant alu_LS		: unsigned(2 downto 0) := "110";
 
 
 
 begin
 
 --ADD,ADDI,----------
-res_add <= MUX1 + MUX2;
+res_add <= x"0000"&(MUX1 + MUX2);
 --ADC
-add_carry <= MUX1 + MUX2 + C;
+add_carry <= x"0000"&(MUX1 + MUX2 + C);
 --- sub carry
-sub_carry <= MUX1 - MUX2 - C;
+sub_carry <= x"0000"&(MUX1 - MUX2 - C);
 ---SUB,SUBI------
-res_sub <= MUX1 - MUX2;
+res_sub <= x"0000"&(MUX1 - MUX2);
 ---Send through ----
 --ldi, LD, STI, ST, COPY,
-send_through <= MUX2;
+send_through <= x"0000"&MUX2;
 ---mul---
 --mul,muli,muls,mulsi
 res_mul <= MUX1 * MUX2;
 --built in multiplication, how to use? 
 --and, andi--
-logical_and <= MUX1 and MUX2;
+logical_and <= x"0000"&(MUX1 and MUX2);
 --or, ori--
-logical_or <= MUX1 or MUX2;
+logical_or <= x"0000"&(MUX1 or MUX2);
 --shift left, LSLS
-log_shift_left <= shift_left(unsigned(MUX1), 1);
+log_shift_left <= x"0000"&shift_left(unsigned(MUX1), 1);
 --shift right, LSRS
-log_shift_right <= shift_left(unsigned(MUX1), 1);
+log_shift_right <= x"0000"&shift_left(unsigned(MUX1), 1);
 
 
 -- perform the operation
@@ -169,7 +170,7 @@ begin
 			when alu_add=> C(0) <= result_large(16);
 			when alu_sub => C(0) <= result_large(16);
 			when alu_LS => C(0) <= MUX1(15);
-			when alu_RS => C (0)<= MUX1(0);
+			when alu_RS => C(0)<= MUX1(0);
 			when alu_mul => C(0) <= result_large(31);
 			when others => C(0) <= '0';
 			end case;
@@ -211,14 +212,21 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		case alu_op is
-			-- when result is zero
-			when alu_add => Z(0) <= ('1' when result_large(15 downto 0) = 0 else '0');
-			when alu_sub => Z(0) <= ('1' when (result_large(15 downto 0) = 0) else '0');
-			when alu_cmp => Z(0) <= ('1' when ((MUX1 and MUX2) = MUX1) else '0'); -- when there is no change
-			when others => Z(0) <= '0';
-			end case;
-	end if;
+		if (alu_op = alu_add or alu_op = alu_sub) then
+			if (result_large(15 downto 0) = 0) then
+				Z <= "1";
+			else 
+				Z <= "0";
+			end if;
+
+		elsif (alu_op = alu_cmp) then
+			if ((MUX1 and MUX2) = MUX1) then
+				Z <= "1";
+			else 
+				Z <= "0";
+			end if;
+		end if;
+	end if;	
 
 end process;
 

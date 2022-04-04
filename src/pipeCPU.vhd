@@ -144,11 +144,13 @@ end component;
 
 component ALU is
 	port (
+		
 		MUX1: in unsigned(15 downto 0);
 		MUX2 : in unsigned(15 downto 0);
 		op_code : in unsigned(7 downto 0);
-		result : out unsigned(15 downto 0)
-	);
+		result : out unsigned(15 downto 0);
+		clk : in std_logic	
+		);
 end component;
 
 begin
@@ -185,7 +187,7 @@ begin
 	);
 
 	data_mem_comp : DATA_MEM port map(
-		addr => alu_out,
+		addr => dm_addr,
 		we => dm_we,
 		data_out => dm_data_out,
 		data_in => dm_data_in,
@@ -196,7 +198,8 @@ begin
 		op_code => IR2_op,
 		result => alu_out,
 		MUX1 => alu_mux1,
-		MUX2 => alu_mux2
+		MUX2 => alu_mux2,
+		clk => clk
 	);
 
 -------------------------------------------------------------------------------

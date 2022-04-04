@@ -33,7 +33,7 @@
 XILINX_INIT = source /opt/xilinx_ise/14.7/settings64.sh;
 PART=xc6slx16-3-csg324
 
-pipecpu.%: S=pipeCPU.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PROG_MEM.vhd MEM/PROG_LOADER.vhd
+pipecpu.%: S=pipeCPU.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PROG_MEM.vhd MEM/PROG_LOADER.vhd alu.vhd
 pipecpu.%: T=tbs/pipeCPU_tb.vhd
 pipecpu.%: U=Nexys3_Master.ucf
 
