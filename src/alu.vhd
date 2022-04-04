@@ -78,13 +78,13 @@ constant alu_LS		: unsigned(2 downto 0) := "110";
 begin
 
 --ADD,ADDI,----------
-res_add <= x"0000"&(MUX1 + MUX2);
+res_add <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));
 --ADC
-add_carry <= x"0000"&(MUX1 + MUX2 + C);
+add_carry <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + C);
 --- sub carry
-sub_carry <= x"0000"&(MUX1 - MUX2 - C);
+sub_carry <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - C);
 ---SUB,SUBI------
-res_sub <= x"0000"&(MUX1 - MUX2);
+res_sub <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
 ---Send through ----
 --ldi, LD, STI, ST, COPY,
 send_through <= x"0000"&MUX2;
@@ -99,7 +99,7 @@ logical_or <= x"0000"&(MUX1 or MUX2);
 --shift left, LSLS
 log_shift_left <= x"0000"&shift_left(unsigned(MUX1), 1);
 --shift right, LSRS
-log_shift_right <= x"0000"&shift_left(unsigned(MUX1), 1);
+log_shift_right <= x"0000"&shift_right(unsigned(MUX1), 1);
 
 
 -- perform the operation
