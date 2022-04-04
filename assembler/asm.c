@@ -90,7 +90,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 
                 // immediate stuff uses a constant
                 if (opcode == LDI || opcode == STI || opcode == ADDI ||
-                    opcode == SUBI || opcode == ANDI ||
+                    opcode == SUBI || opcode == ANDI || opcode == CMPI ||
                     opcode == ORI || opcode == MULI || opcode == MULSI) {
 
                     rD = getRegCode(cmd[1]);
@@ -297,6 +297,8 @@ int getOpCode(char* text) {
         return SUBI;
     } else if (!strcmp(text, "CMP")) {
         return CMP;
+    } else if (!strcmp(text, "CMPI")) {
+        return CMPI;
     } else if (!strcmp(text, "AND")) {
         return AND;
     } else if (!strcmp(text, "ANDI")) {
