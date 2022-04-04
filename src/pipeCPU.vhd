@@ -104,7 +104,7 @@ constant LSLR		: unsigned(7 downto 0) := "00100011";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-	Port( addr : in unsigned(15 downto 0);
+	port( addr : in unsigned(15 downto 0);
 		data_out : out unsigned(31 downto 0);
       	clk, we : in std_logic;
 	    wr_addr : in unsigned(15 downto 0);
@@ -112,14 +112,14 @@ component PROG_MEM is
 end component;
 
 component PROG_LOADER is
-	Port( clk, rst, rx : in std_logic;
+	port( clk, rst, rx : in std_logic;
         done, we : out std_logic;
         addr : out unsigned(15 downto 0);
         data_out : out unsigned(31 downto 0));
 end component;
 
 component DATA_MEM is
-	Port( addr : in unsigned(15 downto 0);
+	port( addr : in unsigned(15 downto 0);
         data_in : in unsigned(15 downto 0);
 	    we : in std_logic; -- write enable
 	    clk : in std_logic;
@@ -227,25 +227,27 @@ begin
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out <= x"FC00") else '1';
 
-    temp_done <= '1' when loader_done='0' else '1';
+    temp_done <= '1' when loader_done='1' else '0';
 
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
-		if (rising_edge(clk) and (temp_done = '1')) then
+		if (rising_edge(clk)) then
 			if (rst='1') then
 				PC <= (others => '0');
-			elsif ((IR2_op = RJMP) or
-				   (IR2_op = BEQ and ZF = '1') or
-				   (IR2_op = BNE and ZF = '0') or
-				   (IR2_op = BPL and NF = '0') or
-				   (IR2_op = BMI and NF = '1') or
-				   (IR2_op = BGE and (NF xor VF) = '0') or
-				   (IR2_op = BLT and (NF xor VF) = '1')) then
-				PC <= PC2;
-			else
-				PC <= PC + 1;
-			end if;
+            elsif (temp_done = '1' and rst='0') then
+                if ((IR2_op = RJMP) or
+                       (IR2_op = BEQ and ZF = '1') or
+                       (IR2_op = BNE and ZF = '0') or
+                       (IR2_op = BPL and NF = '0') or
+                       (IR2_op = BMI and NF = '1') or
+                       (IR2_op = BGE and (NF xor VF) = '0') or
+                       (IR2_op = BLT and (NF xor VF) = '1')) then
+                    PC <= PC2;
+                else
+                    PC <= PC + 1;
+                end if;
+            end if;
 		end if;
 	end process;
 

@@ -6,6 +6,8 @@
 
 /*
 ** TODO:
+** - Writes last assembly line twice to output
+** - Check so that we don't allow compiling programs that has more lines than memory has space
 ** - Labels
 ** - Hex input for numbers
 */
