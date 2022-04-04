@@ -1,7 +1,16 @@
-vcom "+acc" ../pipeCPU.vhd ../MEM/DATA_MEM.vhd
-vcom "+acc" ../pipeCPU_tb.vhd
+# Documentation: https://www.microsemi.com/document-portal/doc_view/136364-modelsim-me-10-4c-command-reference-manual-for-libero-soc-v11-7
+
+# Build CPU
+vcom "+acc" ../pipeCPU.vhd
+# Build memory files
+vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd
+# Build relevant testbench
+vcom "+acc" ../tbs/pipeCPU_tb.vhd
+
+# Simulate testbench
 vsim pipeCPU_tb
 
+# Wave configurations
 config wave -signalnamewidth 1
 
 add wave {sim:/pipecpu_tb/clk}
@@ -15,8 +24,19 @@ add wave {sim:/pipecpu_tb/U0/pm_addr}
 add wave -color gold {sim:/pipecpu_tb/U0/PMdata_out}
 add wave -group reg {sim:/pipecpu_tb/U0/IR2_ra}
 add wave -group reg {sim:/pipecpu_tb/U0/IR2_rd}
-add wave -group reg -color gold {sim:/pipecpu_tb/U0/ALU_dummy1}
-add wave -group reg -color gold {sim:/pipecpu_tb/U0/ALU_dummy2}
+add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux1}
+add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux2}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rst}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/done}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/we}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/addr}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/sreg}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_26_cnt_out}
 
 restart -f
 run 1000 ns

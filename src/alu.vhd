@@ -6,7 +6,7 @@ entity ALU is
 	port (
 	MUX1: in unsigned(15 downto 0);
 	MUX2 : in unsigned(15 downto 0);
-	op_code : in unsigned(5 downto 0);
+	op_code : in unsigned(7 downto 0);
 	result : out unsigned(15 downto 0);
 	clk : in std_logic
 	);	
@@ -85,7 +85,7 @@ sub_carry <= MUX1 - MUX2 - C;
 ---SUB,SUBI------
 res_sub <= MUX1 - MUX2;
 ---Send through ----
---ldi, LD, STI, ST, COPY, 
+--ldi, LD, STI, ST, COPY,
 send_through <= MUX2;
 ---mul---
 --mul,muli,muls,mulsi
@@ -161,7 +161,7 @@ with op_code select alu_op <=
 	"000" when others;
 
 
-	-- C flag	
+	-- C flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -176,7 +176,7 @@ begin
 	end if;
 end process;
 
-	-- V flag	
+	-- V flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -192,7 +192,7 @@ begin
 
 end process;
 
-	-- N flag	
+	-- N flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -207,7 +207,7 @@ begin
 
 end process;
 
-	-- Z flag	
+	-- Z flag
 process(clk)
 begin
 	if rising_edge(clk)	then

@@ -10,19 +10,20 @@ architecture sim of pipeCPU_tb is
 component pipeCPU is
 	port(
 		clk : in std_logic;
-		rst : in std_logic
-		);
+		rst : in std_logic;
+        UART_in : in std_logic);
 end component;
 
 	signal clk : std_logic;
 	signal rst : std_logic;
+	signal rx : std_logic;
 
 begin
 
 	U0 : pipeCPU port map(
 		clk => clk,
-		rst => rst
-	);
+		rst => rst,
+		UART_in => rx);
 
 	process
 	begin

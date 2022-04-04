@@ -5,86 +5,125 @@ use IEEE.numeric_std.all;
 entity pipeCPU is
 	port (
 		clk : in std_logic;
-		rst : in std_logic
-	);
+		rst : in std_logic;
+		UART_in : in std_logic;
+		UART_out : out std_logic);
 end pipeCPU;
 
 architecture func of pipeCPU is
 
 ----------------------------- Internal signals --------------------------------
-signal IR1 : unsigned(25 downto 0); -- Fetch stage
-alias IR1_op : unsigned(5 downto 0) is IR1(25 downto 20);
-alias IR1_rd : unsigned(3 downto 0) is IR1(19 downto 16);
-alias IR1_ra : unsigned(3 downto 0) is IR1(15 downto 12);
-alias IR1_const : unsigned(11 downto 0) is IR1(11 downto 0);
+signal IR1 : unsigned(31 downto 0); -- Fetch stage
+alias IR1_op : unsigned(7 downto 0) is IR1(31 downto 24);
+alias IR1_rd : unsigned(3 downto 0) is IR1(23 downto 20);
+alias IR1_ra : unsigned(3 downto 0) is IR1(19 downto 16);
+alias IR1_const : unsigned(15 downto 0) is IR1(15 downto 0);
 
-signal IR2 : unsigned(25 downto 0); -- Decode stage
-alias IR2_op : unsigned(5 downto 0) is IR2(25 downto 20);
-alias IR2_rd : unsigned(3 downto 0) is IR2(19 downto 16);
-alias IR2_ra : unsigned(3 downto 0) is IR2(15 downto 12);
-alias IR2_const : unsigned(11 downto 0) is IR2(11 downto 0);
+signal IR2 : unsigned(31 downto 0); -- Decode stage
+alias IR2_op : unsigned(7 downto 0) is IR2(31 downto 24);
+alias IR2_rd : unsigned(3 downto 0) is IR2(23 downto 20);
+alias IR2_ra : unsigned(3 downto 0) is IR2(19 downto 16);
+alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 
 -- Stack pointer
 signal SP : unsigned(15 downto 0);
 
 -- Status register
-signal status_reg : unsigned(4 downto 0);
+signal status_reg : unsigned(3 downto 0);
 alias ZF : std_logic is status_reg(0);
 alias NF : std_logic is status_reg(1);
 alias CF : std_logic is status_reg(2);
-alias vF : std_logic is status_reg(3);
---alias ZF : std_logic is status_reg(4);
+alias VF : std_logic is status_reg(3);
 
 signal PC, PC1, PC2 : unsigned(15 downto 0);
 
-signal PMdata_out : unsigned(25 downto 0);
+signal PMdata_out : unsigned(31 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
 -- Data memory
-signal dm_addr : unsigned(15 downto 0);
+signal dm_addr, dm_data_out, dm_data_in : unsigned(15 downto 0);
 signal dm_we : std_logic;
-signal dm_data_out : unsigned(15 downto 0);
-signal dm_data_in : unsigned(15 downto 0);
 
 -- Sprite memory
 signal sm_addr : unsigned(15 downto 0);
 signal sm_we : std_logic;
 
 -- ALU
-signal alu_out : unsigned(15 downto 0);
-signal alu_in1 : unsigned(15 downto 0);
-signal alu_in2 : unsigned(15 downto 0);
+signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0);
 
 -- Data bus
 signal data_bus : unsigned(15 downto 0);
 
 -- Register file
 signal rf_we : std_logic;
+signal rf_out1, rf_out2 : unsigned(15 downto 0);
+
+-- Loader signals (testing // Rw)
+signal temp_done : std_logic;
+signal loader_done : std_logic;
+signal loader_we : std_logic;
+signal loader_addr : unsigned(15 downto 0);
+signal loader_data_Out : unsigned(31 downto 0);
 
 -- Instructions
-constant iNOP : unsigned(5 downto 0) := "000000";
-constant iJ 	: unsigned(5 downto 0) := "010101";
-constant iBF 	: unsigned(5 downto 0) := "000100";
-constant iPUSH 	: unsigned(5 downto 0) := "000111"; -- TODO change op code
-constant iPOP 	: unsigned(5 downto 0) := "000110";
+constant NOP 		: unsigned(7 downto 0) := "00000000";
+constant RJMP		: unsigned(7 downto 0) := "00000001";
+constant BEQ		: unsigned(7 downto 0) := "00000010";
+constant BNE 		: unsigned(7 downto 0) := "00000011";
+constant BPL 		: unsigned(7 downto 0) := "00000100";
+constant BMI 		: unsigned(7 downto 0) := "00000101";
+constant BGE 		: unsigned(7 downto 0) := "00000111";
+constant BLT 		: unsigned(7 downto 0) := "00001000";
+constant LDI 		: unsigned(7 downto 0) := "00001001";
+constant LD 		: unsigned(7 downto 0) := "00001010";
+constant STI 		: unsigned(7 downto 0) := "00001011";
+constant ST  		: unsigned(7 downto 0) := "00001100";
+constant COPY		: unsigned(7 downto 0) := "00001101";
+constant ADD		: unsigned(7 downto 0) := "00001111";
+constant ADDI		: unsigned(7 downto 0) := "00010000";
+constant SUB		: unsigned(7 downto 0) := "00010001";
+constant SUBI		: unsigned(7 downto 0) := "00010010";
+constant CMP		: unsigned(7 downto 0) := "00010011";
+constant CMPI		: unsigned(7 downto 0) := "00100100";
+constant I_AND		: unsigned(7 downto 0) := "00010100";
+constant ANDI		: unsigned(7 downto 0) := "00010101";
+constant I_OR		: unsigned(7 downto 0) := "00010111";
+constant ORI		: unsigned(7 downto 0) := "00011000";
+constant PUSH		: unsigned(7 downto 0) := "00011001";
+constant POP		: unsigned(7 downto 0) := "00011010";
+constant ADC		: unsigned(7 downto 0) := "00011011";
+constant SBC 		: unsigned(7 downto 0) := "00011100";
+constant MUL 		: unsigned(7 downto 0) := "00011101";
+constant MULI 		: unsigned(7 downto 0) := "00011111";
+constant MULS		: unsigned(7 downto 0) := "00100000";
+constant MULSI		: unsigned(7 downto 0) := "00100001";
+constant LSLS		: unsigned(7 downto 0) := "00100010";
+constant LSLR		: unsigned(7 downto 0) := "00100011";
+
 
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-	port(
-		addr : in unsigned(15 downto 0);
-		data_out : out unsigned(25 downto 0)
-		);
+	Port( addr : in unsigned(15 downto 0);
+		data_out : out unsigned(31 downto 0);
+      	clk, we : in std_logic;
+	    wr_addr : in unsigned(15 downto 0);
+	    wr_data : in unsigned(31 downto 0));
+end component;
+
+component PROG_LOADER is
+	Port( clk, rst, rx : in std_logic;
+        done, we : out std_logic;
+        addr : out unsigned(15 downto 0);
+        data_out : out unsigned(31 downto 0));
 end component;
 
 component DATA_MEM is
-	port(
-		addr : in unsigned(15 downto 0);
-		data_in : in unsigned(15 downto 0);
-		we : in std_logic; -- write enable
-		clk : in std_logic;
-		data_out : out unsigned(15 downto 0)
-		);
+	Port( addr : in unsigned(15 downto 0);
+        data_in : in unsigned(15 downto 0);
+	    we : in std_logic; -- write enable
+	    clk : in std_logic;
+	    data_out : out unsigned(15 downto 0));
 end component;
 
 -- Sprite minne
@@ -93,8 +132,8 @@ end component;
 
 component REG_FILE is
 	port(
-    rd : in unsigned(3 downto 0);
-    ra : in unsigned(3 downto 0);
+		rd : in unsigned(3 downto 0);
+		ra : in unsigned(3 downto 0);
 		we : in std_logic; -- write enable
 		clk : in std_logic;
 		data_in : in unsigned(15 downto 0);
@@ -103,49 +142,83 @@ component REG_FILE is
 		);
 end component;
 
+component ALU is
+	port (
+		MUX1: in unsigned(15 downto 0);
+		MUX2 : in unsigned(15 downto 0);
+		op_code : in unsigned(7 downto 0);
+		result : out unsigned(15 downto 0)
+	);
+end component;
+
 begin
 
 ------------------------------------ Components -------------------------------
 
 	prog_mem_comp : PROG_MEM port map(
+		clk => clk,
 		addr => pm_addr,
-		data_out => PMdata_out
+		data_out => PMdata_out,
+		we => loader_we,
+		wr_addr => loader_addr,
+		wr_data => loader_data_out
+	);
+
+	prog_loader_comp : PROG_LOADER port map(
+		clk => clk,
+		rst => rst,
+	 	rx => UART_in,
+		done => loader_done,
+	  	we => loader_we,
+	  	addr => loader_addr,
+	  	data_out => loader_data_out
 	);
 
 	reg_file_comp : REG_FILE port map(
 		rd => IR2_rd,
 		ra => IR2_ra,
-		rd_out => alu_in1,
-		ra_out => alu_in2,
+		rd_out => rf_out1,
+		ra_out => rf_out2,
 		we => rf_we,
 		data_in => data_bus,
 		clk => clk
 	);
 
 	data_mem_comp : DATA_MEM port map(
-			addr => dm_addr,
-			we => dm_we,
-			data_out => dm_data_out,
-			data_in => dm_data_in,
-			clk => clk
+		addr => alu_out,
+		we => dm_we,
+		data_out => dm_data_out,
+		data_in => dm_data_in,
+		clk => clk
 	);
 
-	-- Parts added
-	-- 	IR1
-	-- 	IR2
-	-- 	PM
-	-- 	Address controller
-	-- 	PC
-	--	Registers
-	--  Status reg
-	--  DM
-
-	-- Parts missing
-	--	ALU
-	--  Data bus
-
+	alu_comp : ALU port map(
+		op_code => IR2_op,
+		result => alu_out,
+		MUX1 => alu_mux1,
+		MUX2 => alu_mux2
+	);
 
 -------------------------------------------------------------------------------
+
+	-- ALU multiplexers
+
+	-- TODO Add i++ for stack pointer
+	alu_mux1 <= rf_out1;
+
+	alu_mux2 <= IR2_const when ((IR2_op = LDI) or (IR2_op = STI) or
+								(IR2_op = ADDI) or (IR2_op = SUBI) or
+								(IR2_op = CMPI) or (IR2_op = ANDI) or
+								(IR2_op = ORI) or (IR2_op = MULI) or
+								(IR2_op = MULSI))
+								else rf_out2;
+
+
+	-- Data bus multiplexer
+	data_bus <= IR2_const when (IR2_op = LDI) else
+							rf_out1 when (IR2_op = COPY) else
+							dm_data_out when (IR2_op = LD) else
+							alu_out;
 
 	-- Address controller
 	dm_addr <= alu_out;
@@ -154,13 +227,21 @@ begin
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out <= x"FC00") else '1';
 
-	-- If jmp instruction, take value from IR2, else increment
+    temp_done <= '1' when loader_done='0' else '1';
+
+	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
 	begin
-		if rising_edge(clk) then
+		if (rising_edge(clk) and (temp_done = '1')) then
 			if (rst='1') then
 				PC <= (others => '0');
-			elsif (IR2_op = iJ) then
+			elsif ((IR2_op = RJMP) or
+				   (IR2_op = BEQ and ZF = '1') or
+				   (IR2_op = BNE and ZF = '0') or
+				   (IR2_op = BPL and NF = '0') or
+				   (IR2_op = BMI and NF = '1') or
+				   (IR2_op = BGE and (NF xor VF) = '0') or
+				   (IR2_op = BLT and (NF xor VF) = '1')) then
 				PC <= PC2;
 			else
 				PC <= PC + 1;
@@ -200,10 +281,11 @@ begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				IR1 <= (others => '0');
-			elsif (IR2_op = iJ) then
-				IR1_op <= iNOP;
+			elsif (IR2_op = RJMP) then
+				-- TODO Add for branches?
+				IR1_op <= NOP;
 			else
-				IR1 <= PMdata_out(25 downto 0);
+				IR1 <= PMdata_out(31 downto 0);
 			end if;
 		end if;
 	end process;
