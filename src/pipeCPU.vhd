@@ -7,7 +7,9 @@ entity pipeCPU is
 		clk : in std_logic;
 		rst : in std_logic;
 		UART_in : in std_logic;
-		UART_out : out std_logic);
+		UART_out : out std_logic
+		seg : out unsigned(7 downto 0)
+		an : out unsigned(3 downto 0));
 end pipeCPU;
 
 architecture func of pipeCPU is
@@ -41,7 +43,7 @@ signal PMdata_out : unsigned(31 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
 -- Data memory
-signal dm_addr, dm_data_out, dm_data_in : unsigned(15 downto 0);
+signal dm_addr, dm_data_out : unsigned(15 downto 0);
 signal dm_we : std_logic;
 
 -- Sprite memory
@@ -144,7 +146,6 @@ end component;
 
 component ALU is
 	port (
-		
 		MUX1: in unsigned(15 downto 0);
 		MUX2 : in unsigned(15 downto 0);
 		op_code : in unsigned(7 downto 0);
@@ -152,6 +153,13 @@ component ALU is
 		clk : in std_logic	
 		);
 end component;
+
+component leddriver is
+	Port ( clk,rst : in  STD_LOGIC;
+           seg : out  UNSIGNED(7 downto 0);
+           an : out  UNSIGNED (3 downto 0);
+           value : in  UNSIGNED (15 downto 0));
+	end component;
 
 begin
 
@@ -190,7 +198,7 @@ begin
 		addr => dm_addr,
 		we => dm_we,
 		data_out => dm_data_out,
-		data_in => dm_data_in,
+		data_in => data_bus,
 		clk => clk
 	);
 
@@ -200,6 +208,10 @@ begin
 		MUX1 => alu_mux1,
 		MUX2 => alu_mux2,
 		clk => clk
+	);
+
+	leddriver_comp : leddriver port map(
+		clk, rst, an, seg, alu_out 
 	);
 
 -------------------------------------------------------------------------------
@@ -219,16 +231,16 @@ begin
 
 	-- Data bus multiplexer
 	data_bus <= IR2_const when (IR2_op = LDI) else
-							rf_out1 when (IR2_op = COPY) else
-							dm_data_out when (IR2_op = LD) else
-							alu_out;
+								rf_out1 when (IR2_op = COPY) else
+								dm_data_out when (IR2_op = LD) else
+								alu_out;
 
 	-- Address controller
 	dm_addr <= alu_out;
-	dm_we <= '1' when (alu_out <= x"FC00") else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and (IR2_op = STI) or (IR2_op = ST)) else '0';
 
 	sm_addr <= (alu_out and "0000001111111111");
-	sm_we <= '0' when (alu_out <= x"FC00") else '1';
+	sm_we <= '0' when (alu_out < x"FC00") else '1';
 
     temp_done <= '1' when loader_done='0' else '1';
 
