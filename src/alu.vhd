@@ -14,19 +14,19 @@ end ALU;
 
 architecture func of ALU is
 
-signal Z, N, C, V, Z_sens, N_sens, C_sens, V_sens : unsigned(0 downto 0) := 0;
-signal res_add : unsigned(31 downto 0) := 0;
-signal res_sub : unsigned(31 downto 0) := 0;
-signal send_through : unsigned(31 downto 0) := 0;
-signal res_mul : unsigned(31 downto 0) := 0;
-signal logical_and : unsigned(31 downto 0) := 0;
-signal logical_or : unsigned(31 downto 0) := 0;
-signal add_carry: unsigned(31 downto 0) := 0;
-signal sub_carry: unsigned(31 downto 0) := 0;
-signal log_shift_left: unsigned (31 downto 0) := 0;
-signal log_shift_right: unsigned (31 downto 0) := 0;
-signal result_large : unsigned(31 downto 0) := 0;
-signal alu_op : unsigned(2 downto 0) := 0;
+signal Z, N, C, V, Z_sens, N_sens, C_sens, V_sens : unsigned(0 downto 0);
+signal res_add : unsigned(31 downto 0);
+signal res_sub : unsigned(31 downto 0);
+signal send_through : unsigned(31 downto 0);
+signal res_mul : unsigned(31 downto 0);
+signal logical_and : unsigned(31 downto 0);
+signal logical_or : unsigned(31 downto 0);
+signal add_carry: unsigned(31 downto 0);
+signal sub_carry: unsigned(31 downto 0);
+signal log_shift_left: unsigned (31 downto 0);
+signal log_shift_right: unsigned (31 downto 0);
+signal result_large : unsigned(31 downto 0);
+signal alu_op : unsigned(2 downto 0);
 
 
 
