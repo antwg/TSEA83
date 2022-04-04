@@ -7,7 +7,9 @@ entity pipeCPU is
 		clk : in std_logic;
 		rst : in std_logic;
 		UART_in : in std_logic;
-		UART_out : out std_logic);
+		UART_out : out std_logic
+		seg : out unsigned(7 downto 0)
+		an : out unsigned(3 downto 0));
 end pipeCPU;
 
 architecture func of pipeCPU is
@@ -41,7 +43,7 @@ signal PMdata_out : unsigned(31 downto 0);
 signal pm_addr : unsigned(15 downto 0);
 
 -- Data memory
-signal dm_addr, dm_data_out, dm_data_in : unsigned(15 downto 0);
+signal dm_addr, dm_data_out : unsigned(15 downto 0);
 signal dm_we : std_logic;
 
 -- Sprite memory
@@ -66,39 +68,39 @@ signal loader_addr : unsigned(15 downto 0);
 signal loader_data_Out : unsigned(31 downto 0);
 
 -- Instructions
-constant NOP 		: unsigned(7 downto 0) := "00000000";
-constant RJMP		: unsigned(7 downto 0) := "00000001";
-constant BEQ		: unsigned(7 downto 0) := "00000010";
-constant BNE 		: unsigned(7 downto 0) := "00000011";
-constant BPL 		: unsigned(7 downto 0) := "00000100";
-constant BMI 		: unsigned(7 downto 0) := "00000101";
-constant BGE 		: unsigned(7 downto 0) := "00000111";
-constant BLT 		: unsigned(7 downto 0) := "00001000";
-constant LDI 		: unsigned(7 downto 0) := "00001001";
-constant LD 		: unsigned(7 downto 0) := "00001010";
-constant STI 		: unsigned(7 downto 0) := "00001011";
-constant ST  		: unsigned(7 downto 0) := "00001100";
-constant COPY		: unsigned(7 downto 0) := "00001101";
-constant ADD		: unsigned(7 downto 0) := "00001111";
-constant ADDI		: unsigned(7 downto 0) := "00010000";
-constant SUB		: unsigned(7 downto 0) := "00010001";
-constant SUBI		: unsigned(7 downto 0) := "00010010";
-constant CMP		: unsigned(7 downto 0) := "00010011";
-constant CMPI		: unsigned(7 downto 0) := "00100100";
-constant I_AND		: unsigned(7 downto 0) := "00010100";
-constant ANDI		: unsigned(7 downto 0) := "00010101";
-constant I_OR		: unsigned(7 downto 0) := "00010111";
-constant ORI		: unsigned(7 downto 0) := "00011000";
-constant PUSH		: unsigned(7 downto 0) := "00011001";
-constant POP		: unsigned(7 downto 0) := "00011010";
-constant ADC		: unsigned(7 downto 0) := "00011011";
-constant SBC 		: unsigned(7 downto 0) := "00011100";
-constant MUL 		: unsigned(7 downto 0) := "00011101";
-constant MULI 		: unsigned(7 downto 0) := "00011111";
-constant MULS		: unsigned(7 downto 0) := "00100000";
-constant MULSI		: unsigned(7 downto 0) := "00100001";
-constant LSLS		: unsigned(7 downto 0) := "00100010";
-constant LSLR		: unsigned(7 downto 0) := "00100011";
+constant NOP 		: unsigned(7 downto 0) := x"00";
+constant RJMP		: unsigned(7 downto 0) := x"01";
+constant BEQ		: unsigned(7 downto 0) := x"02";
+constant BNE 		: unsigned(7 downto 0) := x"03";
+constant BPL 		: unsigned(7 downto 0) := x"04";
+constant BMI 		: unsigned(7 downto 0) := x"05";
+constant BGE 		: unsigned(7 downto 0) := x"06";
+constant BLT 		: unsigned(7 downto 0) := x"07";
+constant LDI 		: unsigned(7 downto 0) := x"08";
+constant LD 		: unsigned(7 downto 0) := x"09";
+constant STI 		: unsigned(7 downto 0) := x"0A";
+constant ST  		: unsigned(7 downto 0) := x"0B";
+constant COPY		: unsigned(7 downto 0) := x"0C";
+constant ADD		: unsigned(7 downto 0) := x"0D";
+constant ADDI		: unsigned(7 downto 0) := x"0E";
+constant SUB		: unsigned(7 downto 0) := x"0F";
+constant SUBI		: unsigned(7 downto 0) := x"10";
+constant CMP		: unsigned(7 downto 0) := x"11";
+constant CMPI		: unsigned(7 downto 0) := x"12";
+constant I_AND		: unsigned(7 downto 0) := x"13";
+constant ANDI		: unsigned(7 downto 0) := x"14";
+constant I_OR		: unsigned(7 downto 0) := x"15";
+constant ORI		: unsigned(7 downto 0) := x"16";
+constant PUSH		: unsigned(7 downto 0) := x"17";
+constant POP		: unsigned(7 downto 0) := x"18";
+constant ADC		: unsigned(7 downto 0) := x"19";
+constant SBC 		: unsigned(7 downto 0) := x"1A";
+constant MUL 		: unsigned(7 downto 0) := x"1B";
+constant MULI 		: unsigned(7 downto 0) := x"1C";
+constant MULS		: unsigned(7 downto 0) := x"1D";
+constant MULSI		: unsigned(7 downto 0) := x"1E";
+constant LSLS		: unsigned(7 downto 0) := x"1F";
+constant LSLR		: unsigned(7 downto 0) := x"20";
 
 
 ------------------------------------ Def components ---------------------------
@@ -147,9 +149,17 @@ component ALU is
 		MUX1: in unsigned(15 downto 0);
 		MUX2 : in unsigned(15 downto 0);
 		op_code : in unsigned(7 downto 0);
-		result : out unsigned(15 downto 0)
-	);
+		result : out unsigned(15 downto 0);
+		clk : in std_logic	
+		);
 end component;
+
+component leddriver is
+	Port ( clk,rst : in  STD_LOGIC;
+           seg : out  UNSIGNED(7 downto 0);
+           an : out  UNSIGNED (3 downto 0);
+           value : in  UNSIGNED (15 downto 0));
+	end component;
 
 begin
 
@@ -185,10 +195,10 @@ begin
 	);
 
 	data_mem_comp : DATA_MEM port map(
-		addr => alu_out,
+		addr => dm_addr,
 		we => dm_we,
 		data_out => dm_data_out,
-		data_in => dm_data_in,
+		data_in => data_bus,
 		clk => clk
 	);
 
@@ -196,7 +206,12 @@ begin
 		op_code => IR2_op,
 		result => alu_out,
 		MUX1 => alu_mux1,
-		MUX2 => alu_mux2
+		MUX2 => alu_mux2,
+		clk => clk
+	);
+
+	leddriver_comp : leddriver port map(
+		clk, rst, an, seg, alu_out 
 	);
 
 -------------------------------------------------------------------------------
@@ -216,16 +231,16 @@ begin
 
 	-- Data bus multiplexer
 	data_bus <= IR2_const when (IR2_op = LDI) else
-							rf_out1 when (IR2_op = COPY) else
-							dm_data_out when (IR2_op = LD) else
-							alu_out;
+								rf_out1 when (IR2_op = COPY) else
+								dm_data_out when (IR2_op = LD) else
+								alu_out;
 
 	-- Address controller
 	dm_addr <= alu_out;
-	dm_we <= '1' when (alu_out <= x"FC00") else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and (IR2_op = STI) or (IR2_op = ST)) else '0';
 
 	sm_addr <= (alu_out and "0000001111111111");
-	sm_we <= '0' when (alu_out <= x"FC00") else '1';
+	sm_we <= '0' when (alu_out < x"FC00") else '1';
 
     temp_done <= '1' when loader_done='1' else '0';
 
