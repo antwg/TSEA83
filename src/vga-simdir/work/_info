@@ -22,11 +22,11 @@ VMJPT8MnAbe;g=kEiQeKgV2
 !s100 Gd=A`c[_KXBRP`D3?LLdY1
 Z7 OL;C;10.6d;65
 32
-Z8 !s110 1649075668
+Z8 !s110 1649075931
 !i10b 1
-Z9 !s108 1649075668.000000
-Z10 !s90 +acc|../alu.vhd|../MEM/PROG_LOADER.vhd|../MEM/PROG_MEM.vhd|../MEM/REG_FILE.vhd|../MEM/DATA_MEM.vhd|../VGA/VGA_MOTOR.vhd|
-Z11 !s107 ../VGA/VGA_MOTOR.vhd|../MEM/DATA_MEM.vhd|../MEM/REG_FILE.vhd|../MEM/PROG_MEM.vhd|../MEM/PROG_LOADER.vhd|../alu.vhd|
+Z9 !s108 1649075931.000000
+Z10 !s90 +acc|../alu.vhd|../MEM/PROG_LOADER.vhd|../MEM/PROG_MEM.vhd|../MEM/REG_FILE.vhd|../MEM/DATA_MEM.vhd|../VGA_MOTOR.vhd|
+Z11 !s107 ../VGA_MOTOR.vhd|../MEM/DATA_MEM.vhd|../MEM/REG_FILE.vhd|../MEM/PROG_MEM.vhd|../MEM/PROG_LOADER.vhd|../alu.vhd|
 !i113 0
 Z12 o+acc
 Z13 tExplicit 1 CvgOpt 0
@@ -227,7 +227,7 @@ V4c98GZ[PWRccW[bQ_LUGM2
 !s100 <n[mo^`>oi_2Ve09O_?A60
 R7
 32
-!s110 1649075669
+R8
 !i10b 1
 R9
 !s90 +acc|../tbs/VGA_tb.vhd|
@@ -236,13 +236,13 @@ R9
 R12
 R13
 Evga_motor
-Z22 w1649072469
+Z22 w1649075784
 R2
 R3
 R4
 R0
-Z23 8../VGA/VGA_MOTOR.vhd
-Z24 F../VGA/VGA_MOTOR.vhd
+Z23 8../VGA_MOTOR.vhd
+Z24 F../VGA_MOTOR.vhd
 l0
 L15
 VMlHccYGU;Z]>_e6LA@IH41
