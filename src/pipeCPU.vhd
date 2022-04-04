@@ -7,8 +7,8 @@ entity pipeCPU is
 		clk : in std_logic;
 		rst : in std_logic;
 		UART_in : in std_logic;
-		UART_out : out std_logic
-		seg : out unsigned(7 downto 0)
+		UART_out : out std_logic;
+		seg : out unsigned(7 downto 0);
 		an : out unsigned(3 downto 0));
 end pipeCPU;
 
@@ -211,7 +211,7 @@ begin
 	);
 
 	leddriver_comp : leddriver port map(
-		clk, rst, an, seg, alu_out 
+		clk, rst, seg, an, alu_out 
 	);
 
 -------------------------------------------------------------------------------
@@ -237,7 +237,7 @@ begin
 
 	-- Address controller
 	dm_addr <= alu_out;
-	dm_we <= '1' when ((alu_out < x"FC00") and (IR2_op = STI) or (IR2_op = ST)) else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out < x"FC00") else '1';
