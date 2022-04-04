@@ -11,9 +11,9 @@ vsim alu_tb
 config wave -signalnamewidth 1
 
 add wave {sim:/U0/clk}
-add wave {sim:/U0/result}
-add wave {sim:/U0/MUX1}
-add wave {sim:/U0/MUX2}
+add wave -dec {sim:/U0/result}
+add wave -dec {sim:/U0/MUX1}
+add wave -dec {sim:/U0/MUX2}
 add wave {sim:/U0/op_code}
 
 restart -f
