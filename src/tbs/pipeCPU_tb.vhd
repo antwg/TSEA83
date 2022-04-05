@@ -11,10 +11,7 @@ component pipeCPU is
 	port(
 		clk : in std_logic;
 		rst : in std_logic;
-        UART_in : in std_logic;
-		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0)
-		);
+        UART_in : in std_logic);
 end component;
 
 	signal clk : std_logic;

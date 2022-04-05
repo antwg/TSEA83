@@ -15,13 +15,13 @@ end pipeCPU;
 architecture func of pipeCPU is
 
 ----------------------------- Internal signals --------------------------------
-signal IR1 : unsigned(31 downto 0) := (when others => '0'); -- Fetch stage
+signal IR1 : unsigned(31 downto 0); -- Fetch stage
 alias IR1_op : unsigned(7 downto 0) is IR1(31 downto 24);
 alias IR1_rd : unsigned(3 downto 0) is IR1(23 downto 20);
 alias IR1_ra : unsigned(3 downto 0) is IR1(19 downto 16);
 alias IR1_const : unsigned(15 downto 0) is IR1(15 downto 0);
 
-signal IR2 : unsigned(31 downto 0) := (when others =>'0'); -- Decode stage
+signal IR2 : unsigned(31 downto 0); -- Decode stage
 alias IR2_op : unsigned(7 downto 0) is IR2(31 downto 24);
 alias IR2_rd : unsigned(3 downto 0) is IR2(23 downto 20);
 alias IR2_ra : unsigned(3 downto 0) is IR2(19 downto 16);

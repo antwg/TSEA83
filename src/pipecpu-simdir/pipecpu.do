@@ -34,7 +34,9 @@ add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/addr}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/sreg}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
+add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_26_cnt_out}
 
 restart -f
 run 1000 ns
