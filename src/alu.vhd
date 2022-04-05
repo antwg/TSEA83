@@ -27,7 +27,7 @@ signal sub_carry: unsigned(31 downto 0);
 signal log_shift_left: unsigned (31 downto 0);
 signal log_shift_right: unsigned (31 downto 0);
 signal result_large : unsigned(31 downto 0);
-signal alu_op : unsigned(2 downto 0);
+signal alu_op : unsigned(3 downto 0);
 
 
 
@@ -67,14 +67,16 @@ constant LSLS		: unsigned(7 downto 0) := x"1F";
 constant LSLR		: unsigned(7 downto 0) := x"20";
 
 
-constant alu_add	: unsigned(2 downto 0) := "001";
-constant alu_sub	: unsigned(2 downto 0) := "010";
-constant alu_cmp	: unsigned(2 downto 0) := "011";
-constant alu_mul	: unsigned(2 downto 0) := "100";
-constant alu_muls	: unsigned(2 downto 0) := "111";
-constant alu_RS		: unsigned(2 downto 0) := "101";
-constant alu_LS		: unsigned(2 downto 0) := "110";
-
+constant alu_add	: unsigned(3 downto 0) := "0001";
+constant alu_sub	: unsigned(3 downto 0) := "0010";
+constant alu_cmp	: unsigned(3 downto 0) := "0011";
+constant alu_mul	: unsigned(3 downto 0) := "0100";
+constant alu_muls	: unsigned(3 downto 0) := "0111";
+constant alu_RS		: unsigned(3 downto 0) := "0101";
+constant alu_LS		: unsigned(3 downto 0) := "0110";
+constant alu_and	: unsigned(3 downto 0) := "1000";
+constant alu_or		: unsigned(3 downto 0) := "1001";
+constant alu_nop	: unsigned(3 downto 0) := "0000";
 
 
 begin
@@ -89,7 +91,7 @@ sub_carry <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - C);
 res_sub <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
 ---Send through ----
 --ldi, LD, STI, ST, COPY,
-send_through <= x"0000"&MUX2;
+send_through <= x"0000"&MUX1;
 ---mul---
 --mul,muli,muls,mulsi
 res_mul <= MUX1 * MUX2;
@@ -129,30 +131,15 @@ with op_code select result_large <=
 --makes using the alu simplier here but maybe creates an extra "unneccsary" mux
 with op_code select alu_op <=
 	-- 000 noop, 001 add, 010 sub, 011 cmp, 
-	"000" when	NOP, 	
-	"000" when RJMP,
-	"000" when BEQ,		
-	"000" when BNE, 	
-	"000" when BPL, 	
-	"000" when BMI, 	
-	"000" when BGE, 	
-	"000" when BLT, 	 
-	"000" when LDI, 	
-	"000" when LD,		
-	"000" when STI, 	
-	"000" when ST, 	
-	"000" when COPY,						
 	alu_add when ADD,	
 	alu_add when ADDI, 
 	alu_sub when SUB,	
 	alu_sub when SUBI,
 	alu_cmp when CMP,	
-	"000" when I_AND,
-	"000" when ANDI,
-	"000" when I_OR,
-	"000" when ORI	,
-	"000" when PUSH,
-	"000" when POP	,
+	alu_and when I_AND,
+	alu_and when ANDI,
+	alu_or when I_OR,
+	alu_or when ORI	,
 	alu_add when ADC,		
 	alu_sub when SBC, 	
 	alu_mul when MUL ,
@@ -162,7 +149,7 @@ with op_code select alu_op <=
 	alu_LS when LSLS,
 	alu_RS when LSLR,
 	alu_cmp when CMPI,
-	"000" when others;
+alu_nop when others;
 
 
 	-- C flag
@@ -201,13 +188,16 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		case alu_add is
-			when alu_add => N(0) <= result_large(15);
-			when alu_sub => N(0) <= result_large(15);
-			when alu_cmp => N(0) <= result_large(15);
-			when alu_mul => N(0) <= result_large(31);
-			when others => N(0) <= '0';
+		if (alu_op /= alu_nop) then	--if it is an actual alu operation
+			case alu_op is
+				when alu_add => N(0) <= result_large(15);
+				when alu_sub => N(0) <= result_large(15);
+				when alu_cmp => N(0) <= result_large(15);
+				when alu_mul => N(0) <= result_large(31);
+				when alu_muls => N(0) <= result_large(31);
+				when others => N(0) <= '0';
 			end case;
+		end if;
 	end if;
 
 end process;
@@ -216,15 +206,14 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		if (alu_op = alu_add or alu_op = alu_sub or alu_op = alu_mul or alu_op = alu_muls) then
-			if (result_large(15 downto 0) = 0) then
+		if (alu_op = alu_cmp) then
+			if ((MUX1 - MUX2) = 0) then
 				Z <= "1";
 			else 
 				Z <= "0";
 			end if;
-
-		elsif (alu_op = alu_cmp) then
-			if ((MUX1 and MUX2) = MUX1) then
+		elsif (alu_op /= alu_nop) then
+			if (result_large(15 downto 0) = 0) then
 				Z <= "1";
 			else 
 				Z <= "0";
