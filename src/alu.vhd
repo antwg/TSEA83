@@ -19,6 +19,7 @@ signal res_add : unsigned(31 downto 0);
 signal res_sub : unsigned(31 downto 0);
 signal send_through : unsigned(31 downto 0);
 signal res_mul : unsigned(31 downto 0);
+signal res_muls : unsigned(31 downto 0);
 signal logical_and : unsigned(31 downto 0);
 signal logical_or : unsigned(31 downto 0);
 signal add_carry: unsigned(31 downto 0);
@@ -70,6 +71,7 @@ constant alu_add	: unsigned(2 downto 0) := "001";
 constant alu_sub	: unsigned(2 downto 0) := "010";
 constant alu_cmp	: unsigned(2 downto 0) := "011";
 constant alu_mul	: unsigned(2 downto 0) := "100";
+constant alu_muls	: unsigned(2 downto 0) := "111";
 constant alu_RS		: unsigned(2 downto 0) := "101";
 constant alu_LS		: unsigned(2 downto 0) := "110";
 
@@ -91,6 +93,7 @@ send_through <= x"0000"&MUX2;
 ---mul---
 --mul,muli,muls,mulsi
 res_mul <= MUX1 * MUX2;
+res_muls <= unsigned(signed(MUX1) * signed(MUX2));
 --built in multiplication, how to use? 
 --and, andi--
 logical_and <= x"0000"&(MUX1 and MUX2);
@@ -112,8 +115,8 @@ with op_code select result_large <=
 	res_sub when SUBI,
 	res_mul when MUL,
 	res_mul when MULI,
-	res_mul when MULS,
-	res_mul when MULSI,
+	res_muls when MULS,
+	res_muls when MULSI,
 	logical_and when I_AND,
 	logical_or when I_OR,
 	log_shift_left when LSLS,
@@ -172,6 +175,7 @@ begin
 			when alu_LS => C(0) <= MUX1(15);
 			when alu_RS => C(0)<= MUX1(0);
 			when alu_mul => C(0) <= result_large(31);
+			when alu_muls => C(0) <= result_large(31);
 			when others => C(0) <= '0';
 			end case;
 	end if;
@@ -212,7 +216,7 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		if (alu_op = alu_add or alu_op = alu_sub or alu_op = alu_mul) then
+		if (alu_op = alu_add or alu_op = alu_sub or alu_op = alu_mul or alu_op = alu_muls) then
 			if (result_large(15 downto 0) = 0) then
 				Z <= "1";
 			else 
