@@ -8,13 +8,17 @@ entity ALU is
 	MUX2 : in unsigned(15 downto 0);
 	op_code : in unsigned(7 downto 0);
 	result : out unsigned(15 downto 0);
+	status_reg : out unsigned(3 downto 0);
 	clk : in std_logic
 	);	
 end ALU;
 
 architecture func of ALU is
-
-signal Z, N, C, V, Z_sens, N_sens, C_sens, V_sens : unsigned(0 downto 0);
+signal status_reg_out : unsigned(3 downto 0);
+alias Z :std_logic is status_reg_out(0);
+alias N :std_logic is status_reg_out(1);
+alias C :std_logic is status_reg_out(2);
+alias V :std_logic is status_reg_out(3);
 signal res_add : unsigned(31 downto 0);
 signal res_sub : unsigned(31 downto 0);
 signal send_through : unsigned(31 downto 0);
@@ -28,7 +32,6 @@ signal log_shift_left: unsigned (31 downto 0);
 signal log_shift_right: unsigned (31 downto 0);
 signal result_large : unsigned(31 downto 0);
 signal alu_op : unsigned(3 downto 0);
-
 
 
 -- branch has not been fully implemented
@@ -81,12 +84,13 @@ constant alu_nop	: unsigned(3 downto 0) := "0000";
 
 begin
 
+status_reg <= status_reg_out;
 --ADD,ADDI,----------
 res_add <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));
 --ADC
-add_carry <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + C);
+add_carry <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + (""&C));
 --- sub carry
-sub_carry <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - C);
+sub_carry <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
 ---SUB,SUBI------
 res_sub <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
 ---Send through ----
@@ -157,13 +161,13 @@ process(clk)
 begin
 	if rising_edge(clk)	then
 		case alu_op is
-			when alu_add=> C(0) <= result_large(16);
-			when alu_sub => C(0) <= result_large(16);
-			when alu_LS => C(0) <= MUX1(15);
-			when alu_RS => C(0)<= MUX1(0);
-			when alu_mul => C(0) <= result_large(31);
-			when alu_muls => C(0) <= result_large(31);
-			when others => C(0) <= '0';
+			when alu_add=> C <= result_large(16);
+			when alu_sub => C <= result_large(16);
+			when alu_LS => C <= MUX1(15);
+			when alu_RS => C<= MUX1(0);
+			when alu_mul => C <= result_large(31);
+			when alu_muls => C <= result_large(31);
+			when others =>  C <= '0';
 			end case;
 	end if;
 end process;
@@ -173,12 +177,12 @@ process(clk)
 begin
 	if rising_edge(clk)	then
 		case alu_op is
-			when alu_add => V(0) <= ((MUX1(15) and MUX2(15) and not result_large(15))
+			when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
 			or (not MUX1(15) and not MUX2(15) and result_large(15)));
 			
-			when alu_sub => V(0) <= ((not MUX1(15) and MUX2(15) and result_large(15))
+			when alu_sub => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
 			or ( MUX1(15) and not MUX2(15) and not result_large(15)));
-			when others => V(0) <= '0';
+			when others => V <= '0';
 		end case;	
 	end if;
 
@@ -190,12 +194,12 @@ begin
 	if rising_edge(clk)	then
 		if (alu_op /= alu_nop) then	--if it is an actual alu operation
 			case alu_op is
-				when alu_add => N(0) <= result_large(15);
-				when alu_sub => N(0) <= result_large(15);
-				when alu_cmp => N(0) <= result_large(15);
-				when alu_mul => N(0) <= result_large(31);
-				when alu_muls => N(0) <= result_large(31);
-				when others => N(0) <= '0';
+				when alu_add => N <= result_large(15);
+				when alu_sub => N <= result_large(15);
+				when alu_cmp => N <= result_large(15);
+				when alu_mul => N <= result_large(31);
+				when alu_muls => N <= result_large(31);
+				when others => N <= '0';
 			end case;
 		end if;
 	end if;
@@ -208,15 +212,15 @@ begin
 	if rising_edge(clk)	then
 		if (alu_op = alu_cmp) then
 			if ((MUX1 - MUX2) = 0) then
-				Z <= "1";
+				Z <= '1';
 			else 
-				Z <= "0";
+				Z <= '0';
 			end if;
 		elsif (alu_op /= alu_nop) then
 			if (result_large(15 downto 0) = 0) then
-				Z <= "1";
+				Z <= '1';
 			else 
-				Z <= "0";
+				Z <= '0';
 			end if;
 		end if;
 	end if;	
