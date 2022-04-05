@@ -42,9 +42,13 @@ begin
         type pattern_array is array(natural range <>) of unsigned (39 downto 0);
         constant patterns : pattern_array := 
             (x"0D0001FFFF", -- add 1+FFFF, C
-            x"0D00017FFF", -- add 1+7FFF, V
+             x"0D00017FFF", -- add 1+7FFF, V
+             x"1D7FFF7FFF", -- muls 7FFF*7FFF C 
+             x"1D8FFF7FFF", -- muls 8FFF*7FFF N 
+             x"1D8FFF8FFF", -- muls 8FFF*8FFF  
              x"0E00010003", -- addi 1+3 
              x"1D00030008", -- mul 3*8 
+             x"1D0003FFFF", -- mul 3*8 
              x"1A00040004", -- sub 8-4 
              x"0F0008000A", -- subi 8 - 10, V, N
              x"1F00020000", -- logic shift left 010 -> 100 
