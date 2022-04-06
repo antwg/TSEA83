@@ -56,8 +56,15 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 
     while ((read = getline(&line, &len, assembly))) {
         // If we read nothing, EOF
-        if (read == -1)
+        if (read == -1) {
+            // write EOF indicator to file (so PROG_LOAD.vhd knows where to stop reading)
+            if (binary) {
+                u_int32_t eof = 0xFFFFFFFF;
+                fwrite(&eof, 4, 1, binary);
+            }
+
             break;
+        }
 
         char cmd[3][15] = {"", "", ""}; // empty array to lose old contents
         int cmdc = 0;
