@@ -62,5 +62,6 @@ void parseLine(char** line, int* cmdc, char cmd[3][15]);
 int translate(int* cmdc, char cmd[3][15]);
 int getOpCode(char* text);
 int getRegCode(char* text);
+void printHelp();
 
 #endif // ASM_H_

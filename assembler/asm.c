@@ -7,7 +7,6 @@
 
 /*
 ** TODO:
-** - Writes last assembly line twice to output
 ** - Check so that we don't allow compiling programs that has more lines than memory has space
 ** - Labels
 ** - Hex input for numbers
@@ -234,11 +233,7 @@ void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
 */
 int main(int argc, char** argv) {
     if (argc <= 1) {
-        printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
-        printf("-i inputFile (default=./example.asm)\n");
-        printf("-o outputFile (default=./out.bin)\n");
-        printf("-m print instructions formatted to terminal\n");
-        printf("-d print debug information\n");
+        printHelp();
         return 1;
     }
 
@@ -258,10 +253,25 @@ int main(int argc, char** argv) {
             manual = 1;
         } else if (!strcmp(argv[i], "-d")) {
             debug = 1;
+        } else if (!strcmp(argv[i], "-h")) {
+            printHelp();
+            return 0;
         }
     }
 
     return assemble(filePath, outputPath, manual, debug);
+}
+
+
+/*
+** Prints help information.
+**/
+void printHelp() {
+    printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
+    printf("-i inputFile (default=./example.asm)\n");
+    printf("-o outputFile (default=./out.bin)\n");
+    printf("-m print instructions formatted to terminal\n");
+    printf("-d print debug information\n");
 }
 
 /*
