@@ -10,8 +10,7 @@ entity REG_FILE is
 		ra : in unsigned(3 downto 0);
 		ra_out : out unsigned(15 downto 0);
 		we : in std_logic;
-		data_in : in unsigned(15 downto 0)
-		);
+		data_in : in unsigned(15 downto 0));
 end REG_FILE;
 
 architecture func of REG_FILE is

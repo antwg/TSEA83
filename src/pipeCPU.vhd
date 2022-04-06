@@ -109,26 +109,28 @@ constant LSLR		: unsigned(7 downto 0) := x"20";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-	port( addr : in unsigned(15 downto 0);
+    port( 
+        clk : in std_logic;
+        we : std_logic;
+        addr : in unsigned(15 downto 0);
 		data_out : out unsigned(31 downto 0);
-      	clk, we : in std_logic;
 	    wr_addr : in unsigned(15 downto 0);
 	    wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
 	port( clk, rst, rx : in std_logic;
-        done, we : out std_logic;
-        addr : out unsigned(15 downto 0);
-        data_out : out unsigned(31 downto 0));
+          done, we : out std_logic;
+          addr : out unsigned(15 downto 0);
+          data_out : out unsigned(31 downto 0));
 end component;
 
 component DATA_MEM is
-	port( addr : in unsigned(15 downto 0);
-        data_in : in unsigned(15 downto 0);
-	    we : in std_logic; -- write enable
-	    clk : in std_logic;
-	    data_out : out unsigned(15 downto 0));
+	port( clk : in std_logic;
+	      we : in std_logic; -- write enable
+          data_in : in unsigned(15 downto 0);
+          addr : in unsigned(15 downto 0);
+	      data_out : out unsigned(15 downto 0));
 end component;
 
 -- Sprite minne
@@ -199,8 +201,8 @@ begin
 	);
 
 	data_mem_comp : DATA_MEM port map(
-		addr => dm_addr,
 		we => dm_we,
+		addr => dm_addr,
 		data_out => dm_data_out,
 		data_in => data_bus,
 		clk => clk
