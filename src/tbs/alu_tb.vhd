@@ -15,6 +15,7 @@ architecture behavior of alu_tb is
             op_code : in unsigned(7 downto 0);
             result : out unsigned(15 downto 0);
             status_reg : out unsigned(3 downto 0);
+            reset : in std_logic;
             clk : in std_logic
             );
     end component;
@@ -25,6 +26,7 @@ architecture behavior of alu_tb is
     signal MUX2 : unsigned(15 downto 0) := "0000000000000001";
     signal op_code : unsigned(7 downto 0) := "00001111";
     signal status_reg : unsigned(3 downto 0) := "0000";
+    signal reset : std_logic := '0';
     constant FPGA_clk_period : time := 10 ns;
 begin
 
@@ -58,11 +60,11 @@ begin
              x"1F00020000", -- logic shift left 010 -> 100 
              x"2000030000",  -- logic shift right 011 -> 001, carry set 
              x"20FFFF0000",  -- logic shift right  FFFF -> 0..., carry set 
-             x"1FFFFF0000",  -- logic shift left FFFF -> ...0, carry set 
              x"14FFFF0000",  --andi, 0000 and FFFF -> 0000 
              x"13FFFF0F0F",  --and, 0F0F and FFFF -> 0F0F 
              x"150F0F0F0F",  --or, F0F0 or F0F0 -> F0F0 
-             x"16F0F00F0F"  --ori, 0F0F or FFFF -> FFFF
+             x"16F0F00F0F",  --ori, 0F0F or FFFF -> FFFF
+             x"1FFFFF0000"  -- logic shift left FFFF -> ...0, carry set 
             );
     begin
         for i in patterns'range loop
@@ -76,6 +78,7 @@ begin
            wait for 10 us;
            
         end loop; -- i
+        reset <= '1';
         wait; -- wait forever, will finish simulation
     end process;
 
@@ -89,6 +92,7 @@ begin
         op_code => op_code,
         result => result,
         status_reg => status_reg,
+        reset => reset,
         clk => clk);
 
     END;
