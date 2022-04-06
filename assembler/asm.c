@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <sys/types.h>
 
 /*
 ** TODO:
@@ -55,6 +56,10 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     ssize_t read = 0; // amount read
 
     while ((read = getline(&line, &len, assembly))) {
+        // If we read nothing, EOF
+        if (read == -1)
+            break;
+
         char cmd[3][15] = {"", "", ""}; // empty array to lose old contents
         int cmdc = 0;
 
@@ -145,11 +150,14 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 
             // Print it to stdout or write to file.
             if (manual) {
-                printf("\"");
-                printBits(1, &opcode);
-                printBits(1, &registers);
-                printBits(2, &val);
-                printf("\",\n");
+                printf("x\"");
+                //printBits(1, &opcode);
+                //printBits(1, &registers);
+                //printBits(2, &val);
+                printf("%.2X", opcode);
+                printf("%.2X", registers);
+                printf("%.4X", (val & 0xFFFF));
+                printf("\", -- %s", line);
             }
 
             if (binary) {
@@ -160,9 +168,6 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
         }
 
         lineN++;
-
-        if (read == -1)
-            break;
     }
 
     return 0;
