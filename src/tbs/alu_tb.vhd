@@ -10,11 +10,13 @@ architecture behavior of alu_tb is
   -- Component Declaration
     component ALU is
         port(
-            clk : in std_logic;
-            result : out unsigned(15 downto 0);
             MUX1 : in unsigned(15 downto 0);
             MUX2 : in unsigned(15 downto 0);
-            op_code : in unsigned(7 downto 0));
+            op_code : in unsigned(7 downto 0);
+            result : out unsigned(15 downto 0);
+            status_reg : out unsigned(3 downto 0);
+            clk : in std_logic
+            );
     end component;
 
     signal clk : std_logic := '0';
@@ -22,7 +24,7 @@ architecture behavior of alu_tb is
     signal MUX1 : unsigned(15 downto 0) := "0000000000000001";
     signal MUX2 : unsigned(15 downto 0) := "0000000000000001";
     signal op_code : unsigned(7 downto 0) := "00001111";
-
+    signal status_reg : unsigned(3 downto 0) := "0000";
     constant FPGA_clk_period : time := 10 ns;
 begin
 
@@ -82,10 +84,11 @@ begin
 
     -- Component Instantiation
     U0: ALU port map(
-        clk => clk,
-        result => result,
         MUX1 => MUX1,
         MUX2 => MUX2,
-        op_code => op_code);
+        op_code => op_code,
+        result => result,
+        status_reg => status_reg,
+        clk => clk);
 
     END;

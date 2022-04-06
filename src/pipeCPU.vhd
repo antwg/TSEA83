@@ -31,11 +31,11 @@ alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 signal SP : unsigned(15 downto 0);
 
 -- Status register
-signal status_reg : unsigned(3 downto 0);
-alias ZF : std_logic is status_reg(0);
-alias NF : std_logic is status_reg(1);
-alias CF : std_logic is status_reg(2);
-alias VF : std_logic is status_reg(3);
+signal status_reg_out : unsigned(3 downto 0);
+alias ZF : std_logic is status_reg_out(0);
+alias NF : std_logic is status_reg_out(1);
+alias CF : std_logic is status_reg_out(2);
+alias VF : std_logic is status_reg_out(3);
 
 signal PC, PC1, PC2 : unsigned(15 downto 0);
 
@@ -153,6 +153,7 @@ component ALU is
 		MUX2 : in unsigned(15 downto 0);
 		op_code : in unsigned(7 downto 0);
 		result : out unsigned(15 downto 0);
+		status_reg : out unsigned(3 downto 0);
 		clk : in std_logic	
 		);
 end component;
@@ -206,10 +207,11 @@ begin
 	);
 
 	alu_comp : ALU port map(
-		op_code => IR2_op,
-		result => alu_out,
 		MUX1 => alu_mux1,
 		MUX2 => alu_mux2,
+		op_code => IR2_op,
+		result => alu_out,
+		status_reg => status_reg_out,
 		clk => clk
 	);
 
