@@ -15,50 +15,50 @@ end pipeCPU;
 architecture func of pipeCPU is
 
 ----------------------------- Internal signals --------------------------------
-signal IR1 : unsigned(31 downto 0); -- Fetch stage
+signal IR1 : unsigned(31 downto 0) := (others => '0'); -- Fetch stage
 alias IR1_op : unsigned(7 downto 0) is IR1(31 downto 24);
 alias IR1_rd : unsigned(3 downto 0) is IR1(23 downto 20);
 alias IR1_ra : unsigned(3 downto 0) is IR1(19 downto 16);
 alias IR1_const : unsigned(15 downto 0) is IR1(15 downto 0);
 
-signal IR2 : unsigned(31 downto 0); -- Decode stage
+signal IR2 : unsigned(31 downto 0) := (others => '0'); -- Decode stage
 alias IR2_op : unsigned(7 downto 0) is IR2(31 downto 24);
 alias IR2_rd : unsigned(3 downto 0) is IR2(23 downto 20);
 alias IR2_ra : unsigned(3 downto 0) is IR2(19 downto 16);
 alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 
 -- Stack pointer
-signal SP : unsigned(15 downto 0);
+signal SP : unsigned(15 downto 0) := (others => '0');
 
 -- Status register
-signal status_reg_out : unsigned(3 downto 0);
+signal status_reg_out : unsigned(3 downto 0) := (others => '0');
 alias ZF : std_logic is status_reg_out(0);
 alias NF : std_logic is status_reg_out(1);
 alias CF : std_logic is status_reg_out(2);
 alias VF : std_logic is status_reg_out(3);
 
-signal PC, PC1, PC2 : unsigned(15 downto 0);
+signal PC, PC1, PC2 : unsigned(15 downto 0) := (others => '0');
 
-signal PMdata_out : unsigned(31 downto 0);
-signal pm_addr : unsigned(15 downto 0);
+signal PMdata_out : unsigned(31 downto 0) := (others => '0');
+signal pm_addr : unsigned(15 downto 0) := (others => '0');
 
 -- Data memory
-signal dm_addr, dm_data_out : unsigned(15 downto 0);
-signal dm_we : std_logic;
+signal dm_addr, dm_data_out : unsigned(15 downto 0) := (others => '0');
+signal dm_we : std_logic := '0';
 
 -- Sprite memory
-signal sm_addr : unsigned(15 downto 0);
-signal sm_we : std_logic;
+signal sm_addr : unsigned(15 downto 0) := (others => '0');
+signal sm_we : std_logic := '0';
 
 -- ALU
-signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0);
-signal alu_reset : std_logic;
+signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
+signal alu_reset : std_logic := '0';
 -- Data bus
-signal data_bus : unsigned(15 downto 0);
+signal data_bus : unsigned(15 downto 0) := (others => '0');
 
 -- Register file
-signal rf_we : std_logic;
-signal rf_out1, rf_out2 : unsigned(15 downto 0);
+signal rf_we : std_logic := '0';
+signal rf_out1, rf_out2 : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals (testing // Rw)
 signal temp_done : std_logic;
@@ -68,7 +68,7 @@ signal loader_addr : unsigned(15 downto 0);
 signal loader_data_Out : unsigned(31 downto 0);
 
 -- Out to 7seg
-signal led_value : unsigned(15 downto 0);
+signal led_value : unsigned(15 downto 0) := (others => '0');
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
@@ -109,26 +109,28 @@ constant LSLR		: unsigned(7 downto 0) := x"20";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-	port( addr : in unsigned(15 downto 0);
+    port( 
+        clk : in std_logic;
+        we : std_logic;
+        addr : in unsigned(15 downto 0);
 		data_out : out unsigned(31 downto 0);
-      	clk, we : in std_logic;
 	    wr_addr : in unsigned(15 downto 0);
 	    wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
 	port( clk, rst, rx : in std_logic;
-        done, we : out std_logic;
-        addr : out unsigned(15 downto 0);
-        data_out : out unsigned(31 downto 0));
+          done, we : out std_logic;
+          addr : out unsigned(15 downto 0);
+          data_out : out unsigned(31 downto 0));
 end component;
 
 component DATA_MEM is
-	port( addr : in unsigned(15 downto 0);
-        data_in : in unsigned(15 downto 0);
-	    we : in std_logic; -- write enable
-	    clk : in std_logic;
-	    data_out : out unsigned(15 downto 0));
+	port( clk : in std_logic;
+	      we : in std_logic; -- write enable
+          data_in : in unsigned(15 downto 0);
+          addr : in unsigned(15 downto 0);
+	      data_out : out unsigned(15 downto 0));
 end component;
 
 -- Sprite minne
@@ -200,8 +202,8 @@ begin
 	);
 
 	data_mem_comp : DATA_MEM port map(
-		addr => dm_addr,
 		we => dm_we,
+		addr => dm_addr,
 		data_out => dm_data_out,
 		data_in => data_bus,
 		clk => clk
@@ -277,7 +279,7 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= PC(15 downto 0);
+	pm_addr <= PC;--(15 downto 0);
 
 	-- Update PC1 by copying PC
 	process(clk)

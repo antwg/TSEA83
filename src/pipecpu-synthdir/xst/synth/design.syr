@@ -1,0 +1,682 @@
+Release 14.7 - xst P.20131013 (lin64)
+Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+--> 
+Parameter TMPDIR set to tmpdir
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.04 secs
+ 
+--> 
+
+TABLE OF CONTENTS
+  1) Synthesis Options Summary
+  2) HDL Parsing
+  3) HDL Elaboration
+  4) HDL Synthesis
+       4.1) HDL Synthesis Report
+  5) Advanced HDL Synthesis
+       5.1) Advanced HDL Synthesis Report
+  6) Low Level Synthesis
+  7) Partition Report
+  8) Design Summary
+       8.1) Primitive and Black Box Usage
+       8.2) Device utilization summary
+       8.3) Partition Resource Summary
+       8.4) Timing Report
+            8.4.1) Clock Information
+            8.4.2) Asynchronous Control Signals Information
+            8.4.3) Timing Summary
+            8.4.4) Timing Details
+            8.4.5) Cross Clock Domains Report
+
+
+=========================================================================
+*                      Synthesis Options Summary                        *
+=========================================================================
+---- Source Parameters
+Input File Name                    : "design.prj"
+
+---- Target Parameters
+Output File Name                   : "design.ngc"
+Target Device                      : xc6slx16-3-csg324
+
+---- Source Options
+Top Module Name                    : pipeCPU
+
+=========================================================================
+
+WARNING:Xst:29 - Optimization Effort not specified
+The following parameters have been added:
+Optimization Goal                  : SPEED
+
+=========================================================================
+
+=========================================================================
+*                          HDL Parsing                                  *
+=========================================================================
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/pipeCPU.vhd" into library work
+Parsing entity <pipeCPU>.
+Parsing architecture <func> of entity <pipecpu>.
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/MEM/DATA_MEM.vhd" into library work
+Parsing entity <DATA_MEM>.
+Parsing architecture <func> of entity <data_mem>.
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/MEM/REG_FILE.vhd" into library work
+Parsing entity <REG_FILE>.
+Parsing architecture <func> of entity <reg_file>.
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/MEM/PROG_MEM.vhd" into library work
+Parsing entity <PROG_MEM>.
+Parsing architecture <func> of entity <prog_mem>.
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/MEM/PROG_LOADER.vhd" into library work
+Parsing entity <PROG_LOADER>.
+Parsing architecture <func> of entity <prog_loader>.
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/alu.vhd" into library work
+Parsing entity <ALU>.
+Parsing architecture <func> of entity <alu>.
+Parsing VHDL file "/home/antwe841/tsea83/projekt/src/leddriver.vhd" into library work
+Parsing entity <leddriver>.
+Parsing architecture <Behavioral> of entity <leddriver>.
+
+=========================================================================
+*                            HDL Elaboration                            *
+=========================================================================
+
+Elaborating entity <pipeCPU> (architecture <func>) from library <work>.
+
+Elaborating entity <PROG_MEM> (architecture <func>) from library <work>.
+
+Elaborating entity <PROG_LOADER> (architecture <func>) from library <work>.
+WARNING:HDLCompiler:871 - "/home/antwe841/tsea83/projekt/src/MEM/PROG_LOADER.vhd" Line 26: Using initial value '0' for addr_cnt_rst since it is never assigned
+WARNING:HDLCompiler:871 - "/home/antwe841/tsea83/projekt/src/MEM/PROG_LOADER.vhd" Line 41: Using initial value '0' for st_4_cnt_rst since it is never assigned
+WARNING:HDLCompiler:92 - "/home/antwe841/tsea83/projekt/src/MEM/PROG_LOADER.vhd" Line 66: ke_done should be on the sensitivity list of the process
+
+Elaborating entity <REG_FILE> (architecture <func>) from library <work>.
+
+Elaborating entity <DATA_MEM> (architecture <func>) from library <work>.
+
+Elaborating entity <ALU> (architecture <func>) from library <work>.
+
+Elaborating entity <leddriver> (architecture <Behavioral>) from library <work>.
+WARNING:HDLCompiler:1127 - "/home/antwe841/tsea83/projekt/src/pipeCPU.vhd" Line 248: Assignment to sm_addr ignored, since the identifier is never used
+WARNING:HDLCompiler:1127 - "/home/antwe841/tsea83/projekt/src/pipeCPU.vhd" Line 249: Assignment to sm_we ignored, since the identifier is never used
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Synthesizing Unit <pipeCPU>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/pipeCPU.vhd".
+    Found 16-bit register for signal <PC1>.
+    Found 16-bit register for signal <PC2>.
+    Found 32-bit register for signal <IR1>.
+    Found 32-bit register for signal <IR2>.
+    Found 16-bit register for signal <PC>.
+    Found 16-bit adder for signal <PC[15]_GND_4_o_add_43_OUT> created at line 1241.
+    Found 16-bit adder for signal <PC1[15]_IR1[15]_add_51_OUT> created at line 299.
+    Found 16-bit comparator greater for signal <alu_out[15]_PWR_4_o_LessThan_20_o> created at line 245
+    Summary:
+	inferred   2 Adder/Subtractor(s).
+	inferred 112 D-type flip-flop(s).
+	inferred   1 Comparator(s).
+	inferred   6 Multiplexer(s).
+Unit <pipeCPU> synthesized.
+
+Synthesizing Unit <PROG_MEM>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/MEM/PROG_MEM.vhd".
+WARNING:Xst:647 - Input <addr<15:7>> is never used. This port will be preserved and left unconnected if it belongs to a top-level block or it belongs to a sub-block and the hierarchy of this sub-block is preserved.
+WARNING:Xst:647 - Input <wr_addr<15:7>> is never used. This port will be preserved and left unconnected if it belongs to a top-level block or it belongs to a sub-block and the hierarchy of this sub-block is preserved.
+WARNING:Xst:3035 - Index value(s) does not match array range for signal <PM>, simulation mismatch.
+    Found 101x32-bit dual-port RAM <Mram_PM> for signal <PM>.
+    Summary:
+	inferred   1 RAM(s).
+Unit <PROG_MEM> synthesized.
+
+Synthesizing Unit <PROG_LOADER>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/MEM/PROG_LOADER.vhd".
+    Found 1-bit register for signal <rx2>.
+    Found 1-bit register for signal <we_en1>.
+    Found 1-bit register for signal <we_en2>.
+    Found 1-bit register for signal <st_868_cnt_en>.
+    Found 11-bit register for signal <st_868_cnt_out>.
+    Found 4-bit register for signal <st_10_cnt_out>.
+    Found 2-bit register for signal <st_4_cnt_out>.
+    Found 16-bit register for signal <addr_cnt_out>.
+    Found 10-bit register for signal <byteReg>.
+    Found 1-bit register for signal <fullInstr>.
+    Found 32-bit register for signal <instrReg>.
+    Found 1-bit register for signal <ke_done>.
+    Found 1-bit register for signal <rx1>.
+    Found 11-bit adder for signal <st_868_cnt_out[10]_GND_6_o_add_0_OUT> created at line 1241.
+    Found 4-bit adder for signal <st_10_cnt_out[3]_GND_6_o_add_3_OUT> created at line 1241.
+    Found 2-bit adder for signal <st_4_cnt_out[1]_GND_6_o_add_6_OUT> created at line 1241.
+    Found 16-bit adder for signal <addr_cnt_out[15]_GND_6_o_add_9_OUT> created at line 1241.
+    Summary:
+	inferred   4 Adder/Subtractor(s).
+	inferred  82 D-type flip-flop(s).
+	inferred  25 Multiplexer(s).
+Unit <PROG_LOADER> synthesized.
+
+Synthesizing Unit <REG_FILE>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/MEM/REG_FILE.vhd".
+    Found 16x16-bit dual-port RAM <Mram_RF> for signal <RF>.
+    Summary:
+	inferred   1 RAM(s).
+Unit <REG_FILE> synthesized.
+
+Synthesizing Unit <DATA_MEM>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/MEM/DATA_MEM.vhd".
+WARNING:Xst:647 - Input <addr<15:7>> is never used. This port will be preserved and left unconnected if it belongs to a top-level block or it belongs to a sub-block and the hierarchy of this sub-block is preserved.
+WARNING:Xst:3035 - Index value(s) does not match array range for signal <DM>, simulation mismatch.
+    Found 127x16-bit single-port RAM <Mram_DM> for signal <DM>.
+    Summary:
+	inferred   1 RAM(s).
+Unit <DATA_MEM> synthesized.
+
+Synthesizing Unit <ALU>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/alu.vhd".
+    Found 1-bit register for signal <status_reg_out<3>>.
+    Found 1-bit register for signal <status_reg_out<1>>.
+    Found 1-bit register for signal <status_reg_out<0>>.
+    Found 1-bit register for signal <status_reg_out<2>>.
+    Found 20-bit adder for signal <res_add<19:0>> created at line 89.
+    Found 20-bit adder for signal <add_carry<19:0>> created at line 91.
+    Found 20-bit subtractor for signal <res_sub<19:0>> created at line 23.
+    Found 20-bit subtractor for signal <n0080[19:0]> created at line 115.
+    Found 16-bit subtractor for signal <GND_9_o_GND_9_o_sub_57_OUT<15:0>> created at line 214.
+    Found 16x16-bit multiplier for signal <res_mul> created at line 101.
+    Found 16x16-bit multiplier for signal <res_muls> created at line 102.
+    Summary:
+	inferred   2 Multiplier(s).
+	inferred   5 Adder/Subtractor(s).
+	inferred   4 D-type flip-flop(s).
+	inferred  13 Multiplexer(s).
+Unit <ALU> synthesized.
+
+Synthesizing Unit <leddriver>.
+    Related source file is "/home/antwe841/tsea83/projekt/src/leddriver.vhd".
+WARNING:Xst:647 - Input <rst> is never used. This port will be preserved and left unconnected if it belongs to a top-level block or it belongs to a sub-block and the hierarchy of this sub-block is preserved.
+    Found 7-bit register for signal <segments>.
+    Found 4-bit register for signal <an>.
+    Found 18-bit register for signal <counter_r>.
+    Found 18-bit adder for signal <counter_r[17]_GND_12_o_add_2_OUT> created at line 1241.
+    Found 16x7-bit Read Only RAM for signal <v[3]_GND_12_o_wide_mux_3_OUT>
+    Found 4x4-bit Read Only RAM for signal <counter_r[17]_PWR_13_o_wide_mux_4_OUT>
+    Found 1-bit 4-to-1 multiplexer for signal <v<3>> created at line 31.
+    Found 1-bit 4-to-1 multiplexer for signal <v<2>> created at line 31.
+    Found 1-bit 4-to-1 multiplexer for signal <v<1>> created at line 31.
+    Found 1-bit 4-to-1 multiplexer for signal <v<0>> created at line 31.
+    Summary:
+	inferred   2 RAM(s).
+	inferred   1 Adder/Subtractor(s).
+	inferred  29 D-type flip-flop(s).
+	inferred   4 Multiplexer(s).
+Unit <leddriver> synthesized.
+
+=========================================================================
+HDL Synthesis Report
+
+Macro Statistics
+# RAMs                                                 : 5
+ 101x32-bit dual-port RAM                              : 1
+ 127x16-bit single-port RAM                            : 1
+ 16x16-bit dual-port RAM                               : 1
+ 16x7-bit single-port Read Only RAM                    : 1
+ 4x4-bit single-port Read Only RAM                     : 1
+# Multipliers                                          : 2
+ 16x16-bit multiplier                                  : 2
+# Adders/Subtractors                                   : 12
+ 11-bit adder                                          : 1
+ 16-bit adder                                          : 3
+ 16-bit subtractor                                     : 1
+ 18-bit adder                                          : 1
+ 2-bit adder                                           : 1
+ 20-bit adder                                          : 2
+ 20-bit subtractor                                     : 2
+ 4-bit adder                                           : 1
+# Registers                                            : 25
+ 1-bit register                                        : 11
+ 10-bit register                                       : 1
+ 11-bit register                                       : 1
+ 16-bit register                                       : 4
+ 18-bit register                                       : 1
+ 2-bit register                                        : 1
+ 32-bit register                                       : 3
+ 4-bit register                                        : 2
+ 7-bit register                                        : 1
+# Comparators                                          : 1
+ 16-bit comparator greater                             : 1
+# Multiplexers                                         : 48
+ 1-bit 2-to-1 multiplexer                              : 37
+ 1-bit 4-to-1 multiplexer                              : 4
+ 16-bit 2-to-1 multiplexer                             : 5
+ 32-bit 2-to-1 multiplexer                             : 2
+# Xors                                                 : 1
+ 1-bit xor2                                            : 1
+
+=========================================================================
+
+=========================================================================
+*                       Advanced HDL Synthesis                          *
+=========================================================================
+
+
+Synthesizing (advanced) Unit <DATA_MEM>.
+INFO:Xst:3218 - HDL ADVISOR - The RAM <Mram_DM> will be implemented on LUTs either because you have described an asynchronous read or because of currently unsupported block RAM features. If you have described an asynchronous read, making it synchronous would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 127-word x 16-bit                   |          |
+    |     clkA           | connected to signal <clk>           | rise     |
+    |     weA            | connected to signal <we>            | high     |
+    |     addrA          | connected to signal <addr>          |          |
+    |     diA            | connected to signal <data_in>       |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+Unit <DATA_MEM> synthesized (advanced).
+
+Synthesizing (advanced) Unit <PROG_LOADER>.
+The following registers are absorbed into counter <st_868_cnt_out>: 1 register on signal <st_868_cnt_out>.
+The following registers are absorbed into counter <st_10_cnt_out>: 1 register on signal <st_10_cnt_out>.
+The following registers are absorbed into counter <st_4_cnt_out>: 1 register on signal <st_4_cnt_out>.
+The following registers are absorbed into counter <addr_cnt_out>: 1 register on signal <addr_cnt_out>.
+Unit <PROG_LOADER> synthesized (advanced).
+
+Synthesizing (advanced) Unit <PROG_MEM>.
+INFO:Xst:3218 - HDL ADVISOR - The RAM <Mram_PM> will be implemented on LUTs either because you have described an asynchronous read or because of currently unsupported block RAM features. If you have described an asynchronous read, making it synchronous would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 101-word x 32-bit                   |          |
+    |     clkA           | connected to signal <clk>           | rise     |
+    |     weA            | connected to signal <we>            | high     |
+    |     addrA          | connected to signal <wr_addr>       |          |
+    |     diA            | connected to signal <wr_data>       |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 101-word x 32-bit                   |          |
+    |     addrB          | connected to signal <addr>          |          |
+    |     doB            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+Unit <PROG_MEM> synthesized (advanced).
+
+Synthesizing (advanced) Unit <REG_FILE>.
+INFO:Xst:3231 - The small RAM <Mram_RF> will be implemented on LUTs in order to maximize performance and save block RAM resources. If you want to force its implementation on block, use option/constraint ram_style.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 16-word x 16-bit                    |          |
+    |     clkA           | connected to signal <clk>           | rise     |
+    |     weA            | connected to signal <we>            | high     |
+    |     addrA          | connected to signal <rd>            |          |
+    |     diA            | connected to signal <data_in>       |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 16-word x 16-bit                    |          |
+    |     addrB          | connected to signal <ra>            |          |
+    |     doB            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+Unit <REG_FILE> synthesized (advanced).
+
+Synthesizing (advanced) Unit <leddriver>.
+The following registers are absorbed into counter <counter_r>: 1 register on signal <counter_r>.
+INFO:Xst:3231 - The small RAM <Mram_v[3]_GND_12_o_wide_mux_3_OUT> will be implemented on LUTs in order to maximize performance and save block RAM resources. If you want to force its implementation on block, use option/constraint ram_style.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 16-word x 7-bit                     |          |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <v>             |          |
+    |     diA            | connected to signal <GND>           |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+INFO:Xst:3231 - The small RAM <Mram_counter_r[17]_PWR_13_o_wide_mux_4_OUT> will be implemented on LUTs in order to maximize performance and save block RAM resources. If you want to force its implementation on block, use option/constraint ram_style.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 4-word x 4-bit                      |          |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <counter_r>     |          |
+    |     diA            | connected to signal <GND>           |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+Unit <leddriver> synthesized (advanced).
+
+Synthesizing (advanced) Unit <pipeCPU>.
+The following registers are absorbed into counter <PC>: 1 register on signal <PC>.
+Unit <pipeCPU> synthesized (advanced).
+WARNING:Xst:2677 - Node <byteReg_0> of sequential type is unconnected in block <PROG_LOADER>.
+
+=========================================================================
+Advanced HDL Synthesis Report
+
+Macro Statistics
+# RAMs                                                 : 5
+ 101x32-bit dual-port distributed RAM                  : 1
+ 127x16-bit single-port distributed RAM                : 1
+ 16x16-bit dual-port distributed RAM                   : 1
+ 16x7-bit single-port distributed Read Only RAM        : 1
+ 4x4-bit single-port distributed Read Only RAM         : 1
+# Multipliers                                          : 2
+ 16x16-bit multiplier                                  : 2
+# Adders/Subtractors                                   : 6
+ 16-bit adder                                          : 1
+ 16-bit subtractor                                     : 1
+ 17-bit adder                                          : 2
+ 17-bit subtractor                                     : 2
+# Counters                                             : 6
+ 11-bit up counter                                     : 1
+ 16-bit up counter                                     : 2
+ 18-bit up counter                                     : 1
+ 2-bit up counter                                      : 1
+ 4-bit up counter                                      : 1
+# Registers                                            : 159
+ Flip-Flops                                            : 159
+# Comparators                                          : 1
+ 16-bit comparator greater                             : 1
+# Multiplexers                                         : 77
+ 1-bit 2-to-1 multiplexer                              : 68
+ 1-bit 4-to-1 multiplexer                              : 4
+ 16-bit 2-to-1 multiplexer                             : 4
+ 32-bit 2-to-1 multiplexer                             : 1
+# Xors                                                 : 1
+ 1-bit xor2                                            : 1
+
+=========================================================================
+
+=========================================================================
+*                         Low Level Synthesis                           *
+=========================================================================
+WARNING:Xst:2677 - Node <PC1_7> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_8> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_9> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_10> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_11> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_12> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_13> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_14> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC1_15> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_7> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_8> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_9> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_10> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_11> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_12> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_13> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_14> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC2_15> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_7> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_8> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_9> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_10> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_11> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_12> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_13> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_14> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <PC_15> of sequential type is unconnected in block <pipeCPU>.
+
+Optimizing unit <pipeCPU> ...
+
+Optimizing unit <PROG_LOADER> ...
+
+Optimizing unit <ALU> ...
+
+Optimizing unit <leddriver> ...
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_15> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_14> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_13> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_12> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_11> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_10> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_9> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_8> of sequential type is unconnected in block <pipeCPU>.
+WARNING:Xst:2677 - Node <prog_loader_comp/addr_cnt_out_7> of sequential type is unconnected in block <pipeCPU>.
+
+Mapping all equations...
+Building and optimizing final netlist ...
+Found area constraint ratio of 100 (+ 0) on block pipeCPU, actual ratio is 7.
+FlipFlop IR2_24 has been replicated 3 time(s)
+FlipFlop IR2_25 has been replicated 1 time(s)
+FlipFlop IR2_26 has been replicated 1 time(s)
+FlipFlop IR2_27 has been replicated 1 time(s)
+FlipFlop IR2_28 has been replicated 1 time(s)
+
+Final Macro Processing ...
+
+Processing Unit <pipeCPU> :
+	Found 2-bit shift register for signal <prog_loader_comp/byteReg_8>.
+Unit <pipeCPU> processed.
+
+=========================================================================
+Final Register Report
+
+Macro Statistics
+# Registers                                            : 195
+ Flip-Flops                                            : 195
+# Shift Registers                                      : 1
+ 2-bit shift register                                  : 1
+
+=========================================================================
+
+=========================================================================
+*                           Partition Report                            *
+=========================================================================
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
+
+=========================================================================
+*                            Design Summary                             *
+=========================================================================
+
+Top Level Output File Name         : design.ngc
+
+Primitive and Black Box Usage:
+------------------------------
+# BELS                             : 724
+#      GND                         : 1
+#      INV                         : 22
+#      LUT1                        : 55
+#      LUT2                        : 40
+#      LUT3                        : 29
+#      LUT4                        : 127
+#      LUT5                        : 57
+#      LUT6                        : 135
+#      MUXCY                       : 124
+#      VCC                         : 1
+#      XORCY                       : 133
+# FlipFlops/Latches                : 196
+#      FD                          : 36
+#      FDE                         : 44
+#      FDR                         : 85
+#      FDRE                        : 31
+# RAMS                             : 56
+#      RAM128X1S                   : 16
+#      RAM16X1D                    : 16
+#      RAM64M                      : 20
+#      RAM64X1D                    : 4
+# Shift Registers                  : 1
+#      SRLC16E                     : 1
+# Clock Buffers                    : 1
+#      BUFGP                       : 1
+# IO Buffers                       : 14
+#      IBUF                        : 2
+#      OBUF                        : 12
+# DSPs                             : 2
+#      DSP48A1                     : 2
+
+Device utilization summary:
+---------------------------
+
+Selected Device : 6slx16csg324-3 
+
+
+Slice Logic Utilization: 
+ Number of Slice Registers:             196  out of  18224     1%  
+ Number of Slice LUTs:                  618  out of   9112     6%  
+    Number used as Logic:               465  out of   9112     5%  
+    Number used as Memory:              153  out of   2176     7%  
+       Number used as RAM:              152
+       Number used as SRL:                1
+
+Slice Logic Distribution: 
+ Number of LUT Flip Flop pairs used:    655
+   Number with an unused Flip Flop:     459  out of    655    70%  
+   Number with an unused LUT:            37  out of    655     5%  
+   Number of fully used LUT-FF pairs:   159  out of    655    24%  
+   Number of unique control sets:        11
+
+IO Utilization: 
+ Number of IOs:                          15
+ Number of bonded IOBs:                  15  out of    232     6%  
+
+Specific Feature Utilization:
+ Number of BUFG/BUFGCTRLs:                1  out of     16     6%  
+ Number of DSP48A1s:                      2  out of     32     6%  
+
+---------------------------
+Partition Resource Summary:
+---------------------------
+
+  No Partitions were found in this design.
+
+---------------------------
+
+
+=========================================================================
+Timing Report
+
+NOTE: THESE TIMING NUMBERS ARE ONLY A SYNTHESIS ESTIMATE.
+      FOR ACCURATE TIMING INFORMATION PLEASE REFER TO THE TRACE REPORT
+      GENERATED AFTER PLACE-and-ROUTE.
+
+Clock Information:
+------------------
+-----------------------------------+------------------------+-------+
+Clock Signal                       | Clock buffer(FF name)  | Load  |
+-----------------------------------+------------------------+-------+
+clk                                | BUFGP                  | 253   |
+-----------------------------------+------------------------+-------+
+
+Asynchronous Control Signals Information:
+----------------------------------------
+No asynchronous control signals found in this design
+
+Timing Summary:
+---------------
+Speed Grade: -3
+
+   Minimum period: 12.188ns (Maximum Frequency: 82.049MHz)
+   Minimum input arrival time before clock: 4.693ns
+   Maximum output required time after clock: 3.597ns
+   Maximum combinational path delay: No path found
+
+Timing Details:
+---------------
+All values displayed in nanoseconds (ns)
+
+=========================================================================
+Timing constraint: Default period analysis for Clock 'clk'
+  Clock period: 12.188ns (frequency: 82.049MHz)
+  Total number of paths / destination ports: 1464609 / 856
+-------------------------------------------------------------------------
+Delay:               12.188ns (Levels of Logic = 8)
+  Source:            IR2_29 (FF)
+  Destination:       data_mem_comp/Mram_DM3 (RAM)
+  Source Clock:      clk rising
+  Destination Clock: clk rising
+
+  Data Path: IR2_29 to data_mem_comp/Mram_DM3
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FDR:C->Q             10   0.447   0.961  IR2_29 (IR2_29)
+     LUT3:I1->O            2   0.203   0.617  IR2[31]_IR2[31]_OR_130_o_SW0 (N138)
+     LUT6:I5->O           16   0.205   1.005  IR2[31]_IR2[31]_OR_130_o_1 (IR2[31]_IR2[31]_OR_130_o1)
+     LUT3:I2->O            6   0.205   0.744  Mmux_alu_mux271 (alu_mux2<15>)
+     DSP48A1:A15->M12      1   2.835   0.580  alu_comp/Mmult_res_muls (alu_comp/res_muls<12>)
+     LUT6:I5->O            2   0.205   0.721  alu_comp/_n0410<19>5 (alu_comp/_n0410<19>4)
+     LUT4:I2->O            2   0.203   0.961  alu_comp/_n0410<19>6 (alu_out<12>)
+     LUT5:I0->O            1   0.203   0.580  dm_we_SW0 (N134)
+     LUT6:I5->O           16   0.205   1.004  dm_we (dm_we)
+     RAM128X1S:WE              0.304          data_mem_comp/Mram_DM3
+    ----------------------------------------
+    Total                     12.188ns (5.015ns logic, 7.173ns route)
+                                       (41.1% logic, 58.9% route)
+
+=========================================================================
+Timing constraint: Default OFFSET IN BEFORE for Clock 'clk'
+  Total number of paths / destination ports: 124 / 124
+-------------------------------------------------------------------------
+Offset:              4.693ns (Levels of Logic = 2)
+  Source:            rst (PAD)
+  Destination:       prog_loader_comp/st_868_cnt_out_10 (FF)
+  Destination Clock: clk rising
+
+  Data Path: rst to prog_loader_comp/st_868_cnt_out_10
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     IBUF:I->O            96   1.222   1.955  rst_IBUF (rst_IBUF)
+     LUT3:I1->O           11   0.203   0.882  prog_loader_comp/_n01681 (prog_loader_comp/_n0168)
+     FDRE:R                    0.430          prog_loader_comp/st_868_cnt_out_0
+    ----------------------------------------
+    Total                      4.693ns (1.855ns logic, 2.838ns route)
+                                       (39.5% logic, 60.5% route)
+
+=========================================================================
+Timing constraint: Default OFFSET OUT AFTER for Clock 'clk'
+  Total number of paths / destination ports: 11 / 11
+-------------------------------------------------------------------------
+Offset:              3.597ns (Levels of Logic = 1)
+  Source:            leddriver_comp/segments_6 (FF)
+  Destination:       seg<6> (PAD)
+  Source Clock:      clk rising
+
+  Data Path: leddriver_comp/segments_6 to seg<6>
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FD:C->Q               1   0.447   0.579  leddriver_comp/segments_6 (leddriver_comp/segments_6)
+     OBUF:I->O                 2.571          seg_6_OBUF (seg<6>)
+    ----------------------------------------
+    Total                      3.597ns (3.018ns logic, 0.579ns route)
+                                       (83.9% logic, 16.1% route)
+
+=========================================================================
+
+Cross Clock Domains Report:
+--------------------------
+
+Clock to Setup on destination clock clk
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+clk            |   12.188|         |         |         |
+---------------+---------+---------+---------+---------+
+
+=========================================================================
+
+
+Total REAL time to Xst completion: 7.00 secs
+Total CPU time to Xst completion: 5.02 secs
+ 
+--> 
+
+
+Total memory usage is 493044 kilobytes
+
+Number of errors   :    0 (   0 filtered)
+Number of warnings :   49 (   0 filtered)
+Number of infos    :    5 (   0 filtered)
+

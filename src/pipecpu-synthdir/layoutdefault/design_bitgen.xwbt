@@ -1,0 +1,7 @@
+INFILE=/home/antwe841/tsea83/projekt/src/pipecpu-synthdir/layoutdefault/design.ncd
+OUTFILE=/home/antwe841/tsea83/projekt/src/pipecpu-synthdir/layoutdefault/design.bit
+FAMILY=Spartan6
+PART=xc6slx16-3csg324
+WORKINGDIR=/home/antwe841/tsea83/projekt/src/pipecpu-synthdir/layoutdefault
+LICENSE=ISE
+USER_INFO=211887302_1777494980_210602001_508
