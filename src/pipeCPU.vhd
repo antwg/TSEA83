@@ -52,7 +52,7 @@ signal sm_we : std_logic;
 
 -- ALU
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0);
-
+signal alu_reset : std_logic;
 -- Data bus
 signal data_bus : unsigned(15 downto 0);
 
@@ -154,6 +154,7 @@ component ALU is
 		op_code : in unsigned(7 downto 0);
 		result : out unsigned(15 downto 0);
 		status_reg : out unsigned(3 downto 0);
+		reset: in std_logic;
 		clk : in std_logic	
 		);
 end component;
@@ -212,6 +213,7 @@ begin
 		op_code => IR2_op,
 		result => alu_out,
 		status_reg => status_reg_out,
+		reset => alu_reset,
 		clk => clk
 	);
 

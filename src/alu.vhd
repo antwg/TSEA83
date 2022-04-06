@@ -9,6 +9,7 @@ entity ALU is
 	op_code : in unsigned(7 downto 0);
 	result : out unsigned(15 downto 0);
 	status_reg : out unsigned(3 downto 0);
+	reset : in std_logic;
 	clk : in std_logic
 	);	
 end ALU;
@@ -160,15 +161,19 @@ alu_nop when others;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		case alu_op is
-			when alu_add=> C <= result_large(16);
-			when alu_sub => C <= result_large(16);
-			when alu_LS => C <= MUX1(15);
-			when alu_RS => C<= MUX1(0);
-			when alu_mul => C <= result_large(31);
-			when alu_muls => C <= result_large(31);
-			when others =>  C <= '0';
+		if reset = '1' then
+			C <= '0';
+		else
+			case alu_op is
+				when alu_add=> C <= result_large(16);
+				when alu_sub => C <= result_large(16);
+				when alu_LS => C <= MUX1(15);
+				when alu_RS => C<= MUX1(0);
+				when alu_mul => C <= result_large(31);
+				when alu_muls => C <= result_large(31);
+				when others =>  C <= '0';
 			end case;
+		end if;
 	end if;
 end process;
 
@@ -176,14 +181,18 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		case alu_op is
-			when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
-			or (not MUX1(15) and not MUX2(15) and result_large(15)));
-			
-			when alu_sub => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
-			or ( MUX1(15) and not MUX2(15) and not result_large(15)));
-			when others => V <= '0';
-		end case;	
+		if reset = '1' then
+			V <= '0';
+		else
+			case alu_op is
+				when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
+				or (not MUX1(15) and not MUX2(15) and result_large(15)));
+				
+				when alu_sub => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
+				or ( MUX1(15) and not MUX2(15) and not result_large(15)));
+				when others => V <= '0';
+			end case;	
+		end if;
 	end if;
 
 end process;
@@ -192,7 +201,9 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		if (alu_op /= alu_nop) then	--if it is an actual alu operation
+		if reset = '1' then
+			N <= '0';
+		elsif (alu_op /= alu_nop) then	--if it is an actual alu operation
 			case alu_op is
 				when alu_add => N <= result_large(15);
 				when alu_sub => N <= result_large(15);
@@ -210,7 +221,9 @@ end process;
 process(clk)
 begin
 	if rising_edge(clk)	then
-		if (alu_op = alu_cmp) then
+		if reset = '1' then
+			Z <= '0';
+		elsif (alu_op = alu_cmp) then
 			if ((MUX1 - MUX2) = 0) then
 				Z <= '1';
 			else 
