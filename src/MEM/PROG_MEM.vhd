@@ -12,15 +12,15 @@ end PROG_MEM;
 
 architecture func of PROG_MEM is
 
-	type PM_t is array(0 to 4095) of unsigned(31 downto 0);
+	type PM_t is array(0 to 100) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
-        "00001001000000000000000000000100",
-        "00001001000100000000000001000101",
-        "00010010000000000000000000000010",
-        "00001011000100000000000000000000",
-        "00000000000000000000000000000000",
-        "00000001000000001111111111111110",
-		others => (others => '0')
+		x"08000004",
+		x"08100045",
+		x"10000002",
+		x"0B100002",
+		x"00000000",
+		x"0100FFFF",
+	others => (others => '0')
 	);
 
 	signal PM : PM_t := PM_c;

@@ -18,8 +18,6 @@ architecture func of REG_FILE is
 
 	type RF_t is array(0 to 15) of unsigned(15 downto 0);
 	constant RF_c : RF_t := (
-		"1000000000000000",	-- dummy
-
 		others => (others => '0')
 	);
 

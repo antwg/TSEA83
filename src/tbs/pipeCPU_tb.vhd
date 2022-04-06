@@ -28,14 +28,11 @@ begin
 	process
 	begin
 
-		for i in 0 to 1000 loop
-			clk <= '0';
-			wait for 5 ns;
-			clk <= '1';
-			wait for 5 ns;
-		end loop;
+		clk <= '0';
+		wait for 5 ns;
+		clk <= '1';
+		wait for 5 ns;
 
-		wait; -- wait forever, will finish simulation
 	end process;
 
 	rst <= '1', '0' after 7 ns;

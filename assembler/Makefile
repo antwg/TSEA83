@@ -1,2 +1,2 @@
 all:
-	gcc -g -Wall asm.c -o asm
+	gcc -std=c99 -g -Wall asm.c -o asm

@@ -7,7 +7,7 @@ entity pipeCPU is
 		clk : in std_logic;
 		rst : in std_logic;
 		UART_in : in std_logic;
-		UART_out : out std_logic;
+		--UART_out : out std_logic;
 		seg : out unsigned(7 downto 0);
 		an : out unsigned(3 downto 0));
 end pipeCPU;
@@ -66,6 +66,9 @@ signal loader_done : std_logic;
 signal loader_we : std_logic;
 signal loader_addr : unsigned(15 downto 0);
 signal loader_data_Out : unsigned(31 downto 0);
+
+-- Out to 7seg
+signal led_value : unsigned(15 downto 0);
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
@@ -211,7 +214,7 @@ begin
 	);
 
 	leddriver_comp : leddriver port map(
-		clk, rst, seg, an, alu_out 
+		clk => clk, rst => rst, seg => seg, an => an, value => led_value
 	);
 
 -------------------------------------------------------------------------------
@@ -231,18 +234,22 @@ begin
 
 	-- Data bus multiplexer
 	data_bus <= IR2_const when (IR2_op = LDI) else
-								rf_out1 when (IR2_op = COPY) else
+								rf_out2 when (IR2_op = COPY or IR2_op = ST) else
 								dm_data_out when (IR2_op = LD) else
 								alu_out;
 
 	-- Address controller
-	dm_addr <= alu_out;
+	dm_addr <= (alu_out and "0000000001111111");
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
+	led_value <= IR2_const;
 
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out < x"FC00") else '1';
 
-    temp_done <= '1' when loader_done='1' else '0';
+    	temp_done <= '1' when loader_done='0' else '0';
+
+	-- Write enable RF
+	rf_we <= '0' when ((IR2_op = NOP) or (IR2_op = RJMP) or (IR2_op = BEQ) or (IR2_op = BNE) or (IR2_op = BPL) or (IR2_op = BMI) or (IR2_op = BGE) or (IR2_op = BLT) or (IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH)) else '1';
 
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
