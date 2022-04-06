@@ -20,14 +20,14 @@ architecture func of DATA_MEM is
 
 	signal DM : DM_t := DM_c;
 begin
-	process(clk)
-	begin
-	  if rising_edge(clk) then
-	    if we = '1' then
-	      DM(to_integer(addr)) <= data_in;
-	    end if;
-	  end if;
-  	end process;
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if we='1' then
+                DM(to_integer(addr)) <= data_in;
+            end if;
+        end if;
+    end process;
 
 	data_out <= DM(to_integer(addr));
 end func;

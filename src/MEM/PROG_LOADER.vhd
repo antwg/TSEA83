@@ -44,20 +44,26 @@ begin
 	-- control unit
 	process(clk) begin
 	    if rising_edge(clk) then
-            -- sync rx
-			rx1 <= rx;
-			rx2 <= rx1;
+            if rst='1' then
+                rx1 <= '0';
+                rx2 <= '0';
+                we_en1 <= '0';
+                we_en2 <= '0';
+            else
+                -- sync rx
+                rx1 <= rx;
+                rx2 <= rx1;
 
-            -- sync we
-            we_en1 <= we_en;
-            we_en2 <= we_en1;
+                -- sync we
+                we_en1 <= we_en;
+                we_en2 <= we_en1;
 
-            -- start counting as soon as we see a startbit
-            -- then it never has to stop until whole program has been read
-            if (rx1='0' and rx2='1' and st_868_cnt_en='0') then -- start bit
-                st_868_cnt_en <= '1';
+                -- start counting as soon as we see a startbit
+                -- then it never has to stop until whole program has been read
+                if (rx1='0' and rx2='1' and st_868_cnt_en='0') then -- start bit
+                    st_868_cnt_en <= '1';
+                end if;
             end if;
-    
 	    end if;
 	end process;
 
@@ -93,7 +99,9 @@ begin
 	-- 10 bit shift register (holds one byte, 4th of an instruction)
 	process(clk) begin
 	    if rising_edge(clk) then
-            if sp='1' then
+            if rst='1' then
+                byteReg <= (others => '0');
+            elsif sp='1' then
                 byteReg <= byteReg srl 1;
                 byteReg(9) <= rx2;
             else
@@ -105,7 +113,11 @@ begin
 	-- 32 bit shift register (holds one whole instruction)
 	process(clk) begin
 	    if rising_edge(clk) then
-            if st_4_cnt_en='1' then
+            if rst='1' then
+                fullInstr <= '0';
+                instrReg <= (others => '0');
+                ke_done <= '0';
+            elsif st_4_cnt_en='1' then
                 if st_4_cnt_out=0 then -- opcode
                     fullInstr <= '0'; -- we're reading a new instruction now
 
