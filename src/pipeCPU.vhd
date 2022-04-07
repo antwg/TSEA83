@@ -43,7 +43,8 @@ signal PMdata_out : unsigned(31 downto 0) := (others => '0');
 signal pm_addr : unsigned(15 downto 0) := (others => '0');
 
 -- Data memory
-signal dm_addr, dm_data_out : unsigned(15 downto 0) := (others => '0');
+signal dm_addr : unsigned(15 downto 0) := (others => '0');
+signal dm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
 
 -- Sprite memory
@@ -68,6 +69,10 @@ signal loader_data_Out : unsigned(31 downto 0);
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
+signal led_addr :unsigned(3 downto 0) := "0000"; 
+signal led_out : unsigned(15 downto 0) := (others => '0'); 
+signal led_counter : unsigned (15 downto 0) := (others =>'0');
+signal led_out_man : unsigned(15 downto 0) := x"0000";
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
@@ -130,6 +135,8 @@ component DATA_MEM is
           data_in : in unsigned(15 downto 0);
           addr : in unsigned(15 downto 0);
 	      data_out : out unsigned(15 downto 0));
+          --led_addr : in unsigned(15 downto 0); 
+          --led_out : out unsigned(15 downto 0));
 end component;
 
 -- Sprite minne
@@ -144,8 +151,9 @@ component REG_FILE is
 		clk : in std_logic;
 		data_in : in unsigned(15 downto 0);
 		rd_out : out unsigned(15 downto 0);
-		ra_out : out unsigned(15 downto 0)
-		);
+		ra_out : out unsigned(15 downto 0);
+        led_addr : in unsigned(3 downto 0); 
+        led_out : out unsigned(15 downto 0));
 end component;
 
 component ALU is
@@ -197,7 +205,9 @@ begin
 		ra_out => rf_out2,
 		we => rf_we,
 		data_in => data_bus,
-		clk => clk
+		clk => clk,
+        led_out => led_out,
+        led_addr => led_addr
 	);
 
 	data_mem_comp : DATA_MEM port map(
@@ -206,6 +216,8 @@ begin
 		data_out => dm_data_out,
 		data_in => data_bus,
 		clk => clk
+        --led_out => led_out,
+        --led_addr => led_addr
 	);
 
 	alu_comp : ALU port map(
@@ -221,6 +233,31 @@ begin
 	leddriver_comp : leddriver port map(
 		clk => clk, rst => rst, seg => seg, an => an, value => led_value
 	);
+
+------
+
+    -- DEBUGGING
+
+	--led_value <= led_out when (led_out /= x"0000") else x"BBBB";
+	--led_value <= alu_mux1;
+    --led_value <= led_out_man;
+    led_value <= led_out;
+
+--	process(clk)
+--	begin
+--		if (rising_edge(clk)) then
+--			if (rst='1') then
+--                led_out_man <= (others => '0');
+--            else
+--                if (led_counter = x"FFFF") then
+--                    led_out_man <= led_out_man + 1;
+--                    led_counter <= (others => '0');
+--                else
+--                    led_counter <= led_counter + 1;
+--                end if;
+--            end if;
+--		end if;
+--	end process;
 
 -------------------------------------------------------------------------------
 
@@ -238,23 +275,36 @@ begin
 
 
 	-- Data bus multiplexer
-	data_bus <= IR2_const when (IR2_op = LDI) else
-								rf_out2 when (IR2_op = COPY or IR2_op = ST) else
-								dm_data_out when (IR2_op = LD) else
-								alu_out;
+    with IR2_op select
+        data_bus <= IR2_const   when LDI,
+                    rf_out2     when COPY,
+                    rf_out2     when ST,
+                    --dm_data_out when LD,
+                    --alu_out     when others;
+                    x"1234"       when others;
 
 	-- Address controller
 	dm_addr <= (alu_out and "0000000001111111");
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
-	led_value <= IR2_const;
 
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out < x"FC00") else '1';
 
-    	temp_done <= '1' when loader_done='0' else '0';
+    --temp_done <= '1' when loader_done='0' else '0';
 
 	-- Write enable RF
-	rf_we <= '0' when ((IR2_op = NOP) or (IR2_op = RJMP) or (IR2_op = BEQ) or (IR2_op = BNE) or (IR2_op = BPL) or (IR2_op = BMI) or (IR2_op = BGE) or (IR2_op = BLT) or (IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH)) else '1';
+	rf_we <= '0' when ((IR2_op = NOP)
+                        or (IR2_op = RJMP)
+                        or (IR2_op = BEQ)
+                        or (IR2_op = BNE)
+                        or (IR2_op = BPL)
+                        or (IR2_op = BMI)
+                        or (IR2_op = BGE)
+                        or (IR2_op = BLT)
+                        or (IR2_op = STI) 
+                        or (IR2_op = ST)
+                        or (IR2_op = PUSH))
+                        else '1';
 
 	-- If jmp or branch instruction, take value from PC2, else increment
 	process(clk)
@@ -262,18 +312,18 @@ begin
 		if (rising_edge(clk)) then
 			if (rst='1') then
 				PC <= (others => '0');
-            elsif (temp_done = '1' and rst='0') then
-                if ((IR2_op = RJMP) or
-                       (IR2_op = BEQ and ZF = '1') or
-                       (IR2_op = BNE and ZF = '0') or
-                       (IR2_op = BPL and NF = '0') or
-                       (IR2_op = BMI and NF = '1') or
-                       (IR2_op = BGE and (NF xor VF) = '0') or
-                       (IR2_op = BLT and (NF xor VF) = '1')) then
-                    PC <= PC2;
-                else
-                    PC <= PC + 1;
-                end if;
+            --elsif (temp_done = '1' and rst='0') then
+            elsif (IR2_op = RJMP) then
+               --        (IR2_op = RJMP) or
+               --        (IR2_op = BEQ and ZF = '1') or
+               --        (IR2_op = BNE and ZF = '0') or
+               --        (IR2_op = BPL and NF = '0') or
+               --        (IR2_op = BMI and NF = '1') or
+               --        (IR2_op = BGE and (NF xor VF) = '0') or
+               --        (IR2_op = BLT and (NF xor VF) = '1')) then
+                PC <= PC2;
+            else
+                PC <= PC + 1;
             end if;
 		end if;
 	end process;
@@ -346,6 +396,5 @@ begin
 	--		end if;
 	--	end if;
 	--end process;
-
 
 end architecture;
