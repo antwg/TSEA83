@@ -52,7 +52,6 @@ signal sm_we : std_logic := '0';
 
 -- ALU
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
-signal alu_reset : std_logic := '0';
 -- Data bus
 signal data_bus : unsigned(15 downto 0) := (others => '0');
 
@@ -215,7 +214,7 @@ begin
 		op_code => IR2_op,
 		result => alu_out,
 		status_reg => status_reg_out,
-		reset => alu_reset,
+		reset => rst,
 		clk => clk
 	);
 
