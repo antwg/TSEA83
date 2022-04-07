@@ -3,10 +3,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <sys/types.h>
 
 /*
 ** TODO:
-** - Writes last assembly line twice to output
 ** - Check so that we don't allow compiling programs that has more lines than memory has space
 ** - Labels
 ** - Hex input for numbers
@@ -55,6 +55,17 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     ssize_t read = 0; // amount read
 
     while ((read = getline(&line, &len, assembly))) {
+        // If we read nothing, EOF
+        if (read == -1) {
+            // write EOF indicator to file (so PROG_LOAD.vhd knows where to stop reading)
+            if (binary) {
+                u_int32_t eof = 0xFFFFFFFF;
+                fwrite(&eof, 4, 1, binary);
+            }
+
+            break;
+        }
+
         char cmd[3][15] = {"", "", ""}; // empty array to lose old contents
         int cmdc = 0;
 
@@ -145,11 +156,14 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 
             // Print it to stdout or write to file.
             if (manual) {
-                printf("\"");
-                printBits(1, &opcode);
-                printBits(1, &registers);
-                printBits(2, &val);
-                printf("\",\n");
+                printf("x\"");
+                //printBits(1, &opcode);
+                //printBits(1, &registers);
+                //printBits(2, &val);
+                printf("%.2X", opcode);
+                printf("%.2X", registers);
+                printf("%.4X", (val & 0xFFFF));
+                printf("\", -- %s", line);
             }
 
             if (binary) {
@@ -160,9 +174,6 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
         }
 
         lineN++;
-
-        if (read == -1)
-            break;
     }
 
     return 0;
@@ -229,11 +240,7 @@ void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
 */
 int main(int argc, char** argv) {
     if (argc <= 1) {
-        printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
-        printf("-i inputFile (default=./example.asm)\n");
-        printf("-o outputFile (default=./out.bin)\n");
-        printf("-m print instructions formatted to terminal\n");
-        printf("-d print debug information\n");
+        printHelp();
         return 1;
     }
 
@@ -253,10 +260,25 @@ int main(int argc, char** argv) {
             manual = 1;
         } else if (!strcmp(argv[i], "-d")) {
             debug = 1;
+        } else if (!strcmp(argv[i], "-h")) {
+            printHelp();
+            return 0;
         }
     }
 
     return assemble(filePath, outputPath, manual, debug);
+}
+
+
+/*
+** Prints help information.
+**/
+void printHelp() {
+    printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
+    printf("-i inputFile (default=./example.asm)\n");
+    printf("-o outputFile (default=./out.bin)\n");
+    printf("-m print instructions formatted to terminal\n");
+    printf("-d print debug information\n");
 }
 
 /*

@@ -37,19 +37,31 @@ begin
     UART_stimuli : process
         type pattern_array is array(natural range <>) of unsigned (7 downto 0);
         constant patterns : pattern_array :=
-            ("00100100", -- ir1 opcode
-             "00100000", -- ir1 registers
-             "00001010", -- ir1 constant byte1
-             "00000000", -- ir1 constant byte2
-             "00000010", -- ir2 opcode
-             "00000000", -- ir2 registers
-             "11110110", -- ir2 constant byte1
-             "11111111", -- ir2 constant byte2
-             "00110101", -- ir3 opcode
-             "10100010", -- ir3 registers
-             "00111010", -- ir3 constant byte1
-             "11111111", -- ir3 constant byte2
-             "11111111"); -- EOF indicator
+            (x"08", -- ir1 opcode
+             x"00", -- ir1 registers
+             x"04", -- ir1 constant byte1
+             x"00", -- ir1 constant byte2
+             x"08", -- ir2 opcode
+             x"10", -- ir2 registers
+             x"45", -- ir2 constant byte1
+             x"00", -- ir2 constant byte2
+             x"10", -- ir3 opcode
+             x"00", -- ir3 registers
+             x"02", -- ir3 constant byte1
+             x"00", -- ir3 constant byte2
+             x"0b", -- ir4 opcode
+             x"10", -- ir4 registers
+             x"00", -- ir4 constant byte1
+             x"00", -- ir4 constant byte2
+             x"00", -- ir5 opcode
+             x"00", -- ir5 registers
+             x"00", -- ir5 constant byte1
+             x"00", -- ir5 constant byte2
+             x"01", -- ir6 opcode
+             x"00", -- ir6 registers
+             x"FF", -- ir6 constant byte1
+             x"FF", -- ir6 constant byte2
+             x"FF"); -- EOF indicator
     begin
         wait for 1000 ns; -- be idle for a bit at the start
 
