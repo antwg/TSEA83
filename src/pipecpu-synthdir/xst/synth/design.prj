@@ -1,7 +1,0 @@
-vhdl work "../../../pipeCPU.vhd"
-vhdl work "../../../MEM/DATA_MEM.vhd"
-vhdl work "../../../MEM/REG_FILE.vhd"
-vhdl work "../../../MEM/PROG_MEM.vhd"
-vhdl work "../../../MEM/PROG_LOADER.vhd"
-vhdl work "../../../alu.vhd"
-vhdl work "../../../leddriver.vhd"

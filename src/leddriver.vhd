@@ -16,7 +16,7 @@ architecture Behavioral of leddriver is
         signal dp : STD_LOGIC;
 begin
   -- decimal point not used
-  dp <= '1';
+  dp <= '1'; 
   seg <= (dp & segments);
      
    with counter_r(17 downto 16) select
