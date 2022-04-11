@@ -10,7 +10,8 @@ entity REG_FILE is
 		ra : in unsigned(3 downto 0);
 		ra_out : out unsigned(15 downto 0);
 		we : in std_logic;
-		data_in : in unsigned(15 downto 0));
+		data_in : in unsigned(15 downto 0);
+		JA : out unsigned(15 downto 0));
 end REG_FILE;
 
 architecture func of REG_FILE is
@@ -29,9 +30,27 @@ begin
             if we = '1' then
               RF(to_integer(rd)) <= data_in;
             end if;
-          end if;
+			-- IO register on JA
+			JA(0) <= RF(15)(0);
+			JA(1) <= RF(15)(1);
+			JA(2) <= RF(15)(2);
+			JA(3) <= RF(15)(3);
+			JA(4) <= RF(15)(4);
+			JA(5) <= RF(15)(5);
+			JA(6) <= RF(15)(6);
+			JA(7) <= RF(15)(7);
+			JA(8) <= RF(15)(8);
+			JA(9) <= RF(15)(9);
+			JA(10) <= RF(15)(10);
+			JA(11) <= RF(15)(11);
+			JA(12) <= RF(15)(12);
+			JA(13) <= RF(15)(13);
+			JA(14) <= RF(15)(14);
+			JA(15) <= RF(15)(15);
+         end if;
         end process;
 
 	rd_out <= RF(to_integer(rd));
 	ra_out <= RF(to_integer(ra));
+	-- map register 16 with IO pins of fpga
 end func;
