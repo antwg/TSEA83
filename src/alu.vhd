@@ -15,24 +15,24 @@ entity ALU is
 end ALU;
 
 architecture func of ALU is
-signal status_reg_out : unsigned(3 downto 0):= (others => '0');
+signal status_reg_out : unsigned(3 downto 0) := (others => '0');
 alias Z :std_logic is status_reg_out(0);
 alias N :std_logic is status_reg_out(1);
 alias C :std_logic is status_reg_out(2);
 alias V :std_logic is status_reg_out(3);
-signal res_add : unsigned(31 downto 0) := (others => '0');
-signal res_sub : unsigned(31 downto 0):= (others => '0');
-signal send_through : unsigned(31 downto 0):= (others => '0');
-signal res_mul : unsigned(31 downto 0):= (others => '0');
-signal res_muls : unsigned(31 downto 0):= (others => '0');
-signal logical_and : unsigned(31 downto 0):= (others => '0');
-signal logical_or : unsigned(31 downto 0):= (others => '0');
-signal add_carry: unsigned(31 downto 0):= (others => '0');
-signal sub_carry: unsigned(31 downto 0):= (others => '0');
-signal log_shift_left: unsigned (31 downto 0):= (others => '0');
-signal log_shift_right: unsigned (31 downto 0):= (others => '0');
+signal res_add : unsigned(31 downto 0)  := (others => '0');
+signal res_sub : unsigned(31 downto 0) := (others => '0');
+signal send_through : unsigned(31 downto 0) := (others => '0');
+signal res_mul : unsigned(31 downto 0) := (others => '0');
+signal res_muls : unsigned(31 downto 0) := (others => '0');
+signal logical_and : unsigned(31 downto 0) := (others => '0');
+signal logical_or : unsigned(31 downto 0) := (others => '0');
+signal add_carry: unsigned(31 downto 0) := (others => '0');
+signal sub_carry: unsigned(31 downto 0) := (others => '0');
+signal log_shift_left: unsigned (31 downto 0) := (others => '0');
+signal log_shift_right: unsigned (31 downto 0) := (others => '0');
 signal result_large : unsigned(31 downto 0) := (others => '0');
-signal alu_op : unsigned(3 downto 0):= (others => '0');
+signal alu_op : unsigned(3 downto 0) := (others => '0');
 
 
 -- branch has not been fully implemented
@@ -86,26 +86,28 @@ constant alu_sub_carry	: unsigned(3 downto 0) := "1011";
 
 begin
 	
-process(alu_op, MUX1, MUX2, status_reg_out, send_through)
+process(alu_op, MUX1, MUX2, status_reg_out)
 begin
 	result_large <= (others => '0');
 	case alu_op is
-		when alu_add 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));  
+		when alu_add 	    => result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));  
 		when alu_add_carry 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + (""&C));
-		when alu_sub	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
+		when alu_sub	    => result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
 		when alu_sub_carry	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
-		when alu_mul	=> result_large <= MUX1 * MUX2;
-		when alu_muls	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
-		when alu_and	=> result_large <= x"0000"&(MUX1 and MUX2);
-		when alu_or	=> result_large <= x"0000"&(MUX1 or MUX2);
-		when alu_LS	=> result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
-		when alu_RS	=> result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
-		when others => result_large <= send_through;
+		when alu_and    	=> result_large <= x"0000"&(MUX1 and MUX2);
+		when alu_or	        => result_large <= x"0000"&(MUX1 or MUX2);
+		when alu_LS	        => result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
+		when alu_RS	        => result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
+
+        -- Only the following two cases breaks the CPU when jump NOP is set to 1234 at the end...
+	--	when alu_mul    	=> result_large <= MUX1 * MUX2;
+	--	when alu_muls   	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
+		--when others         => result_large <= x"0000" & MUX2;
+		when others         => result_large <= x"00000000";
 	end case;
 end process;
 
 status_reg <= status_reg_out;
-send_through <= x"0000"&MUX1;
 result <= result_large(15 downto 0);
 
 -- choose alu_op code since several codes have the same operations

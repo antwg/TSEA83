@@ -30,9 +30,10 @@ begin
         begin
           if rising_edge(clk) then
             if we = '1' then
-              RF(to_integer(rd)) <= data_in;
+                RF(to_integer(rd)) <= data_in;
             end if;
-			-- IO register on JA
+
+			-- Joystick IO register
 			JA(0) <= RF(15)(0);
 			JA(1) <= RF(15)(1);
 			JA(2) <= RF(15)(2);
@@ -54,5 +55,5 @@ begin
 
 	rd_out <= RF(to_integer(rd));
 	ra_out <= RF(to_integer(ra));
-    --led_out <= RF(to_integer(led_addr));
+    led_out <= RF(to_integer(led_addr));
 end architecture;

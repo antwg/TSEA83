@@ -73,9 +73,7 @@ signal loader_data_Out : unsigned(31 downto 0);
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
 signal led_addr :unsigned(3 downto 0) := "0000"; 
-signal led_out : unsigned(15 downto 0) := (others => '0'); 
-signal led_counter : unsigned (15 downto 0) := (others =>'0');
-signal led_out_man : unsigned(15 downto 0) := x"0000";
+signal led_null : unsigned(15 downto 0) := (others => '0');
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
@@ -209,7 +207,8 @@ begin
 		we => rf_we,
 		data_in => data_bus,
 		clk => clk,
-        led_out => led_out,
+        --led_out => led_null, -- turns of led to be set here
+        led_out => led_value, -- set led value to led_addr in register file
         led_addr => led_addr
 	);
 
@@ -234,48 +233,31 @@ begin
 	);
 
 	leddriver_comp : leddriver port map(
-		clk => clk, rst => rst, seg => seg, an => an, value => led_value
+		clk => clk,
+        rst => rst,
+        seg => seg,
+        an => an,
+        value => led_value
 	);
-
-------
-
-    -- DEBUGGING
-
-	--led_value <= led_out when (led_out /= x"0000") else x"BBBB";
-	--led_value <= alu_mux1;
-    --led_value <= led_out_man;
-    --led_value <= led_out;
-
---	process(clk)
---	begin
---		if (rising_edge(clk)) then
---			if (rst='1') then
---                led_out_man <= (others => '0');
---            else
---                if (led_counter = x"FFFF") then
---                    led_out_man <= led_out_man + 1;
---                    led_counter <= (others => '0');
---                else
---                    led_counter <= led_counter + 1;
---                end if;
---            end if;
---		end if;
---	end process;
 
 -------------------------------------------------------------------------------
 
-	-- ALU multiplexers
+    -- 7 seg debug
+    --led_value <= PC;
 
-	-- TODO Add i++ for stack pointer
+	-- ALU multiplexers
 	alu_mux1 <= rf_out1;
 
-	alu_mux2 <= IR2_const when ((IR2_op = LDI) or (IR2_op = STI) or
-								(IR2_op = ADDI) or (IR2_op = SUBI) or
-								(IR2_op = CMPI) or (IR2_op = ANDI) or
-								(IR2_op = ORI) or (IR2_op = MULI) or
-								(IR2_op = MULSI))
-								else rf_out2;
-
+	alu_mux2 <= IR2_const when ((IR2_op = LD)     or
+                                (IR2_op = LDI)    or
+                                (IR2_op = STI)    or
+								(IR2_op = ADDI)   or 
+                                (IR2_op = SUBI)   or
+								(IR2_op = CMPI)   or 
+                                (IR2_op = ANDI)   or
+								(IR2_op = ORI)    or 
+                                (IR2_op = MULI)   or
+								(IR2_op = MULSI)) else rf_out2;
 
 	-- Data bus multiplexer
     with IR2_op select
@@ -284,8 +266,6 @@ begin
 					rf_out2     when ST,
 					dm_data_out when LD,
 					alu_out     when others;
-
-	led_value <= PC;
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000001111111"); -- TODO mask real length of ipput addr seseee datata mama
@@ -295,23 +275,20 @@ begin
 	--sm_addr <= (alu_out and "0000001111111111");
 	--sm_we <= '0' when (alu_out < x"FC00") else '1';
 
-    --temp_done <= '1' when loader_done='0' else '0';
-
 	-- Write enable RF
-	rf_we <= '0' when ((IR2_op = NOP)
-                        or (IR2_op = RJMP)
-                        or (IR2_op = BEQ)
-                        or (IR2_op = BNE)
-                        or (IR2_op = BPL)
-                        or (IR2_op = BMI)
-                        or (IR2_op = BGE)
-                        or (IR2_op = BLT)
-                        or (IR2_op = STI) 
-                        or (IR2_op = ST)
-                        or (IR2_op = PUSH))
-                        else '1';
+	rf_we <= '0' when ((IR2_op = NOP)   or
+                       (IR2_op = RJMP)  or
+                       (IR2_op = BEQ)   or
+                       (IR2_op = BNE)   or
+                       (IR2_op = BPL)   or
+                       (IR2_op = BMI)   or
+                       (IR2_op = BGE)   or
+                       (IR2_op = BLT)   or
+                       (IR2_op = STI)   or
+                       (IR2_op = ST)    or
+                       (IR2_op = PUSH)) else '1';
 
-	-- handle PC:s and IR:s
+	-- Handle PC:s and IR:s, speciel case when jumps happens
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
@@ -322,15 +299,15 @@ begin
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
 			else
-				JUMP_PC <= PC1 + IR1_const; -- osäker (PC1?)
 				IR2 <= IR1;
+				JUMP_PC <= PC1 + IR1_const;
 
-				if (IR1_op = RJMP) then
+				if (IR1_op = RJMP) then -- if we see a jump, prepare for it
 					PC1 <= PC;
-					IR1 <= x"00001234"; -- hopp nopp
+					IR1 <= x"00001234"; -- jump NOP
 				elsif (IR2_op = RJMP) then
-					PC <= JUMP_PC;
-				else 
+					PC <= JUMP_PC; -- don't increase PC if jump is happening
+				else -- update as per usual if nothing special is happening
 					PC <= PC + 1;
 					PC1 <= PC;
 
@@ -340,7 +317,7 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= PC;--(15 downto 0);
+	pm_addr <= PC;
 
 	-- Update stack pointer
 	-- If push: decrement
