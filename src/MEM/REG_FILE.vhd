@@ -54,5 +54,5 @@ begin
 
 	rd_out <= RF(to_integer(rd));
 	ra_out <= RF(to_integer(ra));
-    led_out <= RF(to_integer(led_addr));
+    --led_out <= RF(to_integer(led_addr));
 end architecture;
