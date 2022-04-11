@@ -14,12 +14,14 @@ architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 100) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
-		x"08000004", -- LDI a,4
+		x"00000001", -- NOP
+	--	x"08000004", -- LDI a,4
 	--	x"08100045", -- LDI b,45
 	--	x"10000002", -- SUBI a,2
 	--	x"0B100002", -- ST b,a (MEM(b) <= a)
-		x"00000003", -- NOP
-		x"0100FFFE", -- RJMP -1
+		x"00000002", -- NOP
+		x"0100FFFF", -- RJMP -1
+		x"00000004", -- debug
 	others => (others => '0')
 	);
 
@@ -35,5 +37,5 @@ begin
           end if;
   	end process;
 
-	data_out <= PM(to_integer(addr));
+	data_out <= PM(to_integer(addr)); -- much hardware with asyn read, same in DM
 end func;

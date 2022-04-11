@@ -40,7 +40,7 @@ alias NF : std_logic is status_reg_out(1);
 alias CF : std_logic is status_reg_out(2);
 alias VF : std_logic is status_reg_out(3);
 
-signal PC, PC1, PC2 : unsigned(15 downto 0) := (others => '0');
+signal PC, PC1, JUMP_PC : unsigned(15 downto 0) := (others => '0');
 
 signal PMdata_out : unsigned(31 downto 0) := (others => '0');
 signal pm_addr : unsigned(15 downto 0) := (others => '0');
@@ -244,7 +244,7 @@ begin
 	--led_value <= led_out when (led_out /= x"0000") else x"BBBB";
 	--led_value <= alu_mux1;
     --led_value <= led_out_man;
-    led_value <= led_out;
+    --led_value <= led_out;
 
 --	process(clk)
 --	begin
@@ -282,20 +282,18 @@ begin
         data_bus <= IR2_const   when LDI,
                     rf_out2     when COPY,
 					rf_out2     when ST,
-					--rf_out2 	when LD,
-                    dm_data_out when LD,
-                    --alu_out     when others;
-                    x"1234"       when others;
+					dm_data_out when LD,
+					alu_out     when others;
 
+	led_value <= PC;
+      
 	-- Address controller
-	--dm_addr <= (alu_out and "0000000001111111");
-	dm_addr <= alu_out;
-	dm_we <= '0';
+	dm_addr <= (alu_out and "0000000001111111"); -- TODO mask real length of ipput addr seseee datata mama
 	--dm_we <= '1' when (IR2_op = STI) else '0';
-	--dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
-	sm_addr <= (alu_out and "0000001111111111");
-	sm_we <= '0' when (alu_out < x"FC00") else '1';
+	--sm_addr <= (alu_out and "0000001111111111");
+	--sm_we <= '0' when (alu_out < x"FC00") else '1';
 
     --temp_done <= '1' when loader_done='0' else '0';
 
@@ -313,80 +311,36 @@ begin
                         or (IR2_op = PUSH))
                         else '1';
 
-	-- If jmp or branch instruction, take value from PC2, else increment
+	-- handle PC:s and IR:s
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
 			if (rst='1') then
 				PC <= (others => '0');
-            --elsif (temp_done = '1' and rst='0') then
-            elsif (IR2_op = RJMP) then
-               --        (IR2_op = RJMP) or
-               --        (IR2_op = BEQ and ZF = '1') or
-               --        (IR2_op = BNE and ZF = '0') or
-               --        (IR2_op = BPL and NF = '0') or
-               --        (IR2_op = BMI and NF = '1') or
-               --        (IR2_op = BGE and (NF xor VF) = '0') or
-               --        (IR2_op = BLT and (NF xor VF) = '1')) then
-                PC <= PC2;
-            else
-                PC <= PC + 1;
-            end if;
+				PC1 <= (others => '0');
+				JUMP_PC <= (others => '0');
+				IR1 <= (others => '0');
+				IR2 <= (others => '0');
+			else
+				JUMP_PC <= PC1 + IR1_const; -- osäker (PC1?)
+				IR2 <= IR1;
+
+				if (IR1_op = RJMP) then
+					PC1 <= PC;
+					IR1 <= x"00001234"; -- hopp nopp
+				elsif (IR2_op = RJMP) then
+					PC <= JUMP_PC;
+				else 
+					PC <= PC + 1;
+					PC1 <= PC;
+
+					IR1 <= PMdata_out;
+				end if;
+			end if;
 		end if;
 	end process;
 
 	pm_addr <= PC;--(15 downto 0);
-
-	-- Update PC1 by copying PC
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if (rst='1') then
-				PC1 <= (others => '0');
-			else
-				PC1 <= PC;
-			end if;
-		end if;
-	end process;
-
-	-- Update PC2, jump if needed
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if (rst='1') then
-				PC2 <= (others => '0');
-			else
-				PC2 <= PC1 + IR1_const;
-			end if;
-		end if;
-	end process;
-
-	-- Load IR1 NOP if jmp instruction, else read from PM
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if (rst='1') then
-				IR1 <= (others => '0');
-			elsif (IR2_op = RJMP) then
-				-- TODO Add for branches?
-				IR1_op <= NOP;
-			else
-				IR1 <= PMdata_out(31 downto 0);
-			end if;
-		end if;
-	end process;
-
-	-- Update IR2, copies IR1
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if (rst='1') then
-				IR2 <= (others => '0');
-			else
-				IR2 <= IR1;
-			end if;
-		end if;
-	end process;
 
 	-- Update stack pointer
 	-- If push: decrement

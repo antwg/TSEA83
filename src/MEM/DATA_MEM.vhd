@@ -26,7 +26,6 @@ begin
     begin
         if rising_edge(clk) then
 			if (we = '1') then
-				--DM(0) <= data_in;
                 DM(to_integer(addr)) <= data_in;
             end if;
         end if;
