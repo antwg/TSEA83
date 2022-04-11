@@ -90,20 +90,19 @@ process(alu_op, MUX1, MUX2, status_reg_out)
 begin
 	result_large <= (others => '0');
 	case alu_op is
-		when alu_add 	    => result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));  
-		when alu_add_carry 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + (""&C));
-		when alu_sub	    => result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
-		when alu_sub_carry	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
-		when alu_and    	=> result_large <= x"0000"&(MUX1 and MUX2);
-		when alu_or	        => result_large <= x"0000"&(MUX1 or MUX2);
-		when alu_LS	        => result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
-		when alu_RS	        => result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
+	--	when alu_add 	    => result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));  
+	--	when alu_add_carry 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + (""&C));
+	--	when alu_sub	    => result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
+	--	when alu_sub_carry	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
+	--	when alu_and    	=> result_large <= x"0000"&(MUX1 and MUX2);
+	--	when alu_or	        => result_large <= x"0000"&(MUX1 or MUX2);
+	--	when alu_LS	        => result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
+	--	when alu_RS	        => result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
 
         -- Only the following two cases breaks the CPU when jump NOP is set to 1234 at the end...
 	--	when alu_mul    	=> result_large <= MUX1 * MUX2;
 	--	when alu_muls   	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
-		--when others         => result_large <= x"0000" & MUX2;
-		when others         => result_large <= x"00000000";
+		when others         => result_large <= (x"0000" & MUX2);
 	end case;
 end process;
 
@@ -114,25 +113,25 @@ result <= result_large(15 downto 0);
 --makes using the alu simplier here but maybe creates an extra "unneccsary" mux
 with op_code select alu_op <=
 	-- 000 noop, 001 add, 010 sub, 011 cmp, 
-	alu_add when ADD,	
-	alu_add when ADDI, 
-	alu_add_carry when ADC,
-	alu_sub when SUB,	
-	alu_sub when SUBI,
-	alu_sub_carry when SBC, 	
-	alu_and when I_AND,
-	alu_and when ANDI,
-	alu_or when I_OR,
-	alu_or when ORI	,
-	alu_mul when MUL ,
-	alu_mul when MULI,
-	alu_muls when MULS,
-	alu_muls when MULSI,
-	alu_LS when LSLS,
-	alu_RS when LSLR,
-	alu_cmp when CMPI,
-	alu_cmp when CMP,
-alu_nop when others;
+	alu_add         when ADD,	
+	alu_add         when ADDI, 
+	alu_add_carry   when ADC,
+	alu_sub         when SUB,	
+	alu_sub         when SUBI,
+	alu_sub_carry   when SBC, 	
+	alu_and         when I_AND,
+	alu_and         when ANDI,
+	alu_or          when I_OR,
+	alu_or          when ORI,
+	alu_mul         when MUL ,
+	alu_mul         when MULI,
+	alu_muls        when MULS,
+	alu_muls        when MULSI,
+	alu_LS          when LSLS,
+	alu_RS          when LSLR,
+	alu_cmp         when CMPI,
+	alu_cmp         when CMP,
+    alu_nop         when others;
 
 
 	-- C flag

@@ -261,8 +261,7 @@ begin
 
 	-- Data bus multiplexer
     with IR2_op select
-        data_bus <= IR2_const   when LDI,
-                    rf_out2     when COPY,
+        data_bus <= rf_out2     when COPY,
 					rf_out2     when ST,
 					dm_data_out when LD,
 					alu_out     when others;
@@ -304,7 +303,7 @@ begin
 
 				if (IR1_op = RJMP) then -- if we see a jump, prepare for it
 					PC1 <= PC;
-					IR1 <= x"00001234"; -- jump NOP
+					IR1 <= x"00000000"; -- jump NOP
 				elsif (IR2_op = RJMP) then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
 				else -- update as per usual if nothing special is happening
