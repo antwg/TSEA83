@@ -261,9 +261,7 @@ begin
 
 	-- Data bus multiplexer
     with IR2_op select
-        data_bus <= rf_out2     when COPY,
-					rf_out2     when ST,
-					dm_data_out when LD,
+        data_bus <= dm_data_out when LD,
 					alu_out     when others;
       
 	-- Address controller

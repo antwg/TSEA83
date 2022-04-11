@@ -4,14 +4,13 @@ use IEEE.numeric_std.all;
 
 entity ALU is
 	port (
-	MUX1: in unsigned(15 downto 0);
-	MUX2 : in unsigned(15 downto 0);
-	op_code : in unsigned(7 downto 0);
-	result : out unsigned(15 downto 0);
-	status_reg : out unsigned(3 downto 0);
-	reset : in std_logic;
-	clk : in std_logic
-	);	
+        MUX1: in unsigned(15 downto 0);
+        MUX2 : in unsigned(15 downto 0);
+        op_code : in unsigned(7 downto 0);
+        result : out unsigned(15 downto 0);
+        status_reg : out unsigned(3 downto 0);
+        reset : in std_logic;
+        clk : in std_logic);	
 end ALU;
 
 architecture func of ALU is
@@ -36,72 +35,71 @@ signal alu_op : unsigned(3 downto 0) := (others => '0');
 
 
 -- branch has not been fully implemented
-constant NOP 		: unsigned(7 downto 0) := x"00";
-constant RJMP		: unsigned(7 downto 0) := x"01";
-constant BEQ		: unsigned(7 downto 0) := x"02";
-constant BNE 		: unsigned(7 downto 0) := x"03";
-constant BPL 		: unsigned(7 downto 0) := x"04";
-constant BMI 		: unsigned(7 downto 0) := x"05";
-constant BGE 		: unsigned(7 downto 0) := x"06";
-constant BLT 		: unsigned(7 downto 0) := x"07";
-constant LDI 		: unsigned(7 downto 0) := x"08";
-constant LD 		: unsigned(7 downto 0) := x"09";
-constant STI 		: unsigned(7 downto 0) := x"0A";
-constant ST  		: unsigned(7 downto 0) := x"0B";
-constant COPY		: unsigned(7 downto 0) := x"0C";
-constant ADD		: unsigned(7 downto 0) := x"0D";
-constant ADDI		: unsigned(7 downto 0) := x"0E";
-constant SUB		: unsigned(7 downto 0) := x"0F";
-constant SUBI		: unsigned(7 downto 0) := x"10";
-constant CMP		: unsigned(7 downto 0) := x"11";
-constant CMPI		: unsigned(7 downto 0) := x"12";
-constant I_AND		: unsigned(7 downto 0) := x"13";
-constant ANDI		: unsigned(7 downto 0) := x"14";
-constant I_OR		: unsigned(7 downto 0) := x"15";
-constant ORI		: unsigned(7 downto 0) := x"16";
-constant PUSH		: unsigned(7 downto 0) := x"17";
-constant POP		: unsigned(7 downto 0) := x"18";
-constant ADC		: unsigned(7 downto 0) := x"19";
-constant SBC 		: unsigned(7 downto 0) := x"1A";
-constant MUL 		: unsigned(7 downto 0) := x"1B";
-constant MULI 		: unsigned(7 downto 0) := x"1C";
-constant MULS		: unsigned(7 downto 0) := x"1D";
-constant MULSI		: unsigned(7 downto 0) := x"1E";
-constant LSLS		: unsigned(7 downto 0) := x"1F";
-constant LSLR		: unsigned(7 downto 0) := x"20";
+constant NOP        : unsigned(7 downto 0) := x"00";
+constant RJMP       : unsigned(7 downto 0) := x"01";
+constant BEQ        : unsigned(7 downto 0) := x"02";
+constant BNE        : unsigned(7 downto 0) := x"03";
+constant BPL        : unsigned(7 downto 0) := x"04";
+constant BMI        : unsigned(7 downto 0) := x"05";
+constant BGE        : unsigned(7 downto 0) := x"06";
+constant BLT        : unsigned(7 downto 0) := x"07";
+constant LDI        : unsigned(7 downto 0) := x"08";
+constant LD         : unsigned(7 downto 0) := x"09";
+constant STI        : unsigned(7 downto 0) := x"0A";
+constant ST         : unsigned(7 downto 0) := x"0B";
+constant COPY       : unsigned(7 downto 0) := x"0C";
+constant ADD        : unsigned(7 downto 0) := x"0D";
+constant ADDI       : unsigned(7 downto 0) := x"0E";
+constant SUB        : unsigned(7 downto 0) := x"0F";
+constant SUBI       : unsigned(7 downto 0) := x"10";
+constant CMP        : unsigned(7 downto 0) := x"11";
+constant CMPI       : unsigned(7 downto 0) := x"12";
+constant I_AND      : unsigned(7 downto 0) := x"13";
+constant ANDI       : unsigned(7 downto 0) := x"14";
+constant I_OR       : unsigned(7 downto 0) := x"15";
+constant ORI        : unsigned(7 downto 0) := x"16";
+constant PUSH       : unsigned(7 downto 0) := x"17";
+constant POP        : unsigned(7 downto 0) := x"18";
+constant ADC        : unsigned(7 downto 0) := x"19";
+constant SBC        : unsigned(7 downto 0) := x"1A";
+constant MUL        : unsigned(7 downto 0) := x"1B";
+constant MULI       : unsigned(7 downto 0) := x"1C";
+constant MULS       : unsigned(7 downto 0) := x"1D";
+constant MULSI      : unsigned(7 downto 0) := x"1E";
+constant LSLS       : unsigned(7 downto 0) := x"1F";
+constant LSLR       : unsigned(7 downto 0) := x"20";
 
-
-constant alu_add	: unsigned(3 downto 0) := "0001";
-constant alu_sub	: unsigned(3 downto 0) := "0010";
-constant alu_cmp	: unsigned(3 downto 0) := "0011";
-constant alu_mul	: unsigned(3 downto 0) := "0100";
-constant alu_muls	: unsigned(3 downto 0) := "0111";
-constant alu_RS		: unsigned(3 downto 0) := "0101";
-constant alu_LS		: unsigned(3 downto 0) := "0110";
-constant alu_and	: unsigned(3 downto 0) := "1000";
-constant alu_or		: unsigned(3 downto 0) := "1001";
-constant alu_nop	: unsigned(3 downto 0) := "0000";
-constant alu_add_carry	: unsigned(3 downto 0) := "1010";
-constant alu_sub_carry	: unsigned(3 downto 0) := "1011";
+constant alu_nop	: unsigned(3 downto 0)      := x"0";
+constant alu_add	: unsigned(3 downto 0)      := x"1";
+constant alu_sub	: unsigned(3 downto 0)      := x"2";
+constant alu_cmp	: unsigned(3 downto 0)      := x"3";
+constant alu_mul	: unsigned(3 downto 0)      := x"4";
+constant alu_muls	: unsigned(3 downto 0)      := x"5";
+constant alu_RS		: unsigned(3 downto 0)      := x"6";
+constant alu_LS		: unsigned(3 downto 0)      := x"7";
+constant alu_and	: unsigned(3 downto 0)      := x"8";
+constant alu_or		: unsigned(3 downto 0)      := x"9";
+constant alu_add_carry	: unsigned(3 downto 0)  := x"A";
+constant alu_sub_carry	: unsigned(3 downto 0)  := x"B";
 
 begin
 	
 process(alu_op, MUX1, MUX2, status_reg_out)
 begin
 	result_large <= (others => '0');
-	case alu_op is
-	--	when alu_add 	    => result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));  
-	--	when alu_add_carry 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + (""&C));
-	--	when alu_sub	    => result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
-	--	when alu_sub_carry	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
-	--	when alu_and    	=> result_large <= x"0000"&(MUX1 and MUX2);
-	--	when alu_or	        => result_large <= x"0000"&(MUX1 or MUX2);
-	--	when alu_LS	        => result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
-	--	when alu_RS	        => result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
 
-        -- Only the following two cases breaks the CPU when jump NOP is set to 1234 at the end...
-	--	when alu_mul    	=> result_large <= MUX1 * MUX2;
-	--	when alu_muls   	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
+	case alu_op is
+		when alu_add 	    => result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2)));
+     -- what happens when we include the carry here?
+--		when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + (""&C)));
+		when alu_sub	    => result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
+--		when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - (""&C)));
+		when alu_and    	=> result_large <= (x"0000" & (MUX1 and MUX2));
+		when alu_or	        => result_large <= (x"0000" & (MUX1 or MUX2));
+    	when alu_LS	        => result_large <= (x"0000" & (shift_left(MUX1, 1)));
+        when alu_RS	        => result_large <= (x"0000" & (shift_right(MUX1, 1)));
+        when alu_mul    	=> result_large <= MUX1 * MUX2;
+		when alu_muls   	=> result_large <= (unsigned(signed(MUX1) * signed(MUX2)));
 		when others         => result_large <= (x"0000" & MUX2);
 	end case;
 end process;
