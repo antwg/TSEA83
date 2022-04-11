@@ -86,100 +86,27 @@ constant alu_sub_carry	: unsigned(3 downto 0) := "1011";
 
 begin
 	
---process(op_code, MUX1, MUX2)
---begin
---	result_large <= (others => '0');
---	case op_code is
---		when ADD 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2)); 
---		when ADDI 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2)); 
---		when ADC 	=> result_large <= x"0000"&((MUX1 + MUX2) + (""&C));
---		--when SUB	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
---		--when SUBI	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
---		--when SBC	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
---		--when MUL	=> result_large <= MUX1 * MUX2;
---		--when MULI	=> result_large <= MUX1 * MUX2;
---		--when MULS	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
---		--when MULSI	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
---		when I_AND	=> result_large <= x"0000"&(MUX1 and MUX2);
---		when ANDI	=> result_large <= x"0000"&(MUX1 and MUX2);
---		when I_OR	=> result_large <= x"0000"&(MUX1 or MUX2);
---		when ORI	=> result_large <= x"0000"&(MUX1 or MUX2);
---		when LSLS	=> result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
---		when LSLR	=> result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
---		when others => result_large <= send_through;
---	end case;
---end process;
-
 process(alu_op, MUX1, MUX2, status_reg_out, send_through)
 begin
 	result_large <= (others => '0');
 	case alu_op is
 		when alu_add 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));  
-		when alu_add_carry 	=> result_large <= x"0000"&((MUX1 + MUX2) + (""&C));
+		when alu_add_carry 	=> result_large <= x"000"&((x"0"&MUX1) + (x"0"&MUX2) + (""&C));
 		when alu_sub	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
-		--when alu_sub_carry	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
-		--when alu_mul	=> result_large <= MUX1 * MUX2;
-		
+		when alu_sub_carry	=> result_large <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
+		when alu_mul	=> result_large <= MUX1 * MUX2;
 		when alu_muls	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
-		--when MULSI	=> result_large <= unsigned(signed(MUX1) * signed(MUX2));
 		when alu_and	=> result_large <= x"0000"&(MUX1 and MUX2);
 		when alu_or	=> result_large <= x"0000"&(MUX1 or MUX2);
-		--when alu_LS	=> result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
+		when alu_LS	=> result_large <= x"0000"&shift_left(unsigned(MUX1), 1);
 		when alu_RS	=> result_large <= x"0000"&shift_right(unsigned(MUX1), 1);
 		when others => result_large <= send_through;
 	end case;
 end process;
 
-
-
-
 status_reg <= status_reg_out;
-----ADD,ADDI,----------
---
---res_add <= x"000"&((x"0"&MUX1) + (x"0"&MUX2));
-----ADC
---
---add_carry <= x"0000"&((MUX1 + MUX2) + (""&C));
------ sub carry
---sub_carry <= x"000"&((x"0"&MUX1) - (x"0"&MUX2) - (""&C));
------SUB,SUBI------
---res_sub <= x"000"&((x"0"&MUX1) - (x"0"&MUX2));
------Send through ----
-----ldi, LD, STI, ST, COPY,
 send_through <= x"0000"&MUX1;
------mul---
-----mul,muli,muls,mulsi
---res_mul <= MUX1 * MUX2;
---res_muls <= unsigned(signed(MUX1) * signed(MUX2));
-----built in multiplication, how to use? 
-----and, andi--
---logical_and <= x"0000"&(MUX1 and MUX2);
-----or, ori--
---logical_or <= x"0000"&(MUX1 or MUX2);
-----shift left, LSLS
---log_shift_left <= x"0000"&shift_left(unsigned(MUX1), 1);
-----shift right, LSRS
---log_shift_right <= x"0000"&shift_right(unsigned(MUX1), 1);
-
----- perform the operation
---with op_code select result_large <=
---	res_add	when ADD,
---	res_add	when ADDI,
---	add_carry when ADC,
---	sub_carry when SBC,
---	res_sub when SUB,
---	res_sub when SUBI,
---	res_mul when MUL,
---	res_mul when MULI,
---	res_muls when MULS,
---	res_muls when MULSI,
---	logical_and when I_AND,
---	logical_or when I_OR,
---	log_shift_left when LSLS,
---	log_shift_right when LSLR,
---	send_through when others;
-
-	result <= result_large(15 downto 0);
+result <= result_large(15 downto 0);
 
 -- choose alu_op code since several codes have the same operations
 --makes using the alu simplier here but maybe creates an extra "unneccsary" mux
@@ -187,22 +114,22 @@ with op_code select alu_op <=
 	-- 000 noop, 001 add, 010 sub, 011 cmp, 
 	alu_add when ADD,	
 	alu_add when ADDI, 
+	alu_add_carry when ADC,
 	alu_sub when SUB,	
 	alu_sub when SUBI,
-	alu_cmp when CMP,	
+	alu_sub_carry when SBC, 	
 	alu_and when I_AND,
 	alu_and when ANDI,
 	alu_or when I_OR,
 	alu_or when ORI	,
-	alu_sub_carry when SBC, 	
 	alu_mul when MUL ,
 	alu_mul when MULI,
-	alu_mul when MULS,
-	alu_mul when MULSI,
+	alu_muls when MULS,
+	alu_muls when MULSI,
 	alu_LS when LSLS,
 	alu_RS when LSLR,
 	alu_cmp when CMPI,
-	alu_add_carry when ADC,
+	alu_cmp when CMP,
 alu_nop when others;
 
 
