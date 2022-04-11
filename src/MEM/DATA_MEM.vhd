@@ -8,6 +8,8 @@ entity DATA_MEM is
 		addr : in unsigned(15 downto 0);
 		data_out : out unsigned(15 downto 0);
 		data_in : in unsigned(15 downto 0);
+--      led_addr : in unsigned(15 downto 0);
+--		led_out : out unsigned(15 downto 0);
 		we : in std_logic);
 end DATA_MEM;
 
@@ -30,4 +32,5 @@ begin
     end process;
 
 	data_out <= DM(to_integer(addr));
+    --led_out <= DM(to_integer(led_addr));
 end func;

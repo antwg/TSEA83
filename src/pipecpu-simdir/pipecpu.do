@@ -41,6 +41,14 @@ add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/data_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/RF}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/DM}
+#add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/led_out}
+#add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/led_addr}
+add wave -group dm {sim:/pipecpu_tb/U0/led_value}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/addr}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_out}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
 
 
 restart -f
