@@ -54,9 +54,5 @@ begin
 
 	rd_out <= RF(to_integer(rd));
 	ra_out <= RF(to_integer(ra));
-<<<<<<< HEAD
-	-- map register 16 with IO pins of fpga
-=======
     led_out <= RF(to_integer(led_addr));
->>>>>>> 53f1f4ee3412d94859bf55b282ae823733469f2e
-end func;
+end architecture;
