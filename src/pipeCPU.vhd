@@ -9,7 +9,10 @@ entity pipeCPU is
 		UART_in : in std_logic;
 		--UART_out : out std_logic;
 		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0));
+		an : out unsigned(3 downto 0)
+		--JA : in unsigned(15 downto 0)
+		);
+
 end pipeCPU;
 
 architecture func of pipeCPU is
