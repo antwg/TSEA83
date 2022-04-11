@@ -278,14 +278,18 @@ begin
     with IR2_op select
         data_bus <= IR2_const   when LDI,
                     rf_out2     when COPY,
-                    rf_out2     when ST,
-                    --dm_data_out when LD,
+					rf_out2     when ST,
+					--rf_out2 	when LD,
+                    dm_data_out when LD,
                     --alu_out     when others;
                     x"1234"       when others;
 
 	-- Address controller
-	dm_addr <= (alu_out and "0000000001111111");
-	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
+	--dm_addr <= (alu_out and "0000000001111111");
+	dm_addr <= alu_out;
+	dm_we <= '0';
+	--dm_we <= '1' when (IR2_op = STI) else '0';
+	--dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	sm_addr <= (alu_out and "0000001111111111");
 	sm_we <= '0' when (alu_out < x"FC00") else '1';

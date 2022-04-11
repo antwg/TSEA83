@@ -15,7 +15,7 @@ end DATA_MEM;
 
 architecture func of DATA_MEM is
 
-	type DM_t is array(0 to 126) of unsigned(15 downto 0);
+	type DM_t is array(0 to 100) of unsigned(15 downto 0);
 	constant DM_c : DM_t := (
 		others => (others => '0')
 	);
@@ -25,7 +25,8 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            if we='1' then
+			if (we = '1') then
+				--DM(0) <= data_in;
                 DM(to_integer(addr)) <= data_in;
             end if;
         end if;
