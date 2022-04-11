@@ -5,6 +5,8 @@ use IEEE.numeric_std.all;
 entity REG_FILE is
 	port(
 		clk : std_logic;
+        led_addr : in unsigned(3 downto 0);
+        led_out : out unsigned(15 downto 0);
 		rd : in unsigned(3 downto 0);
 		rd_out : out unsigned(15 downto 0);
 		ra : in unsigned(3 downto 0);
@@ -52,5 +54,9 @@ begin
 
 	rd_out <= RF(to_integer(rd));
 	ra_out <= RF(to_integer(ra));
+<<<<<<< HEAD
 	-- map register 16 with IO pins of fpga
+=======
+    led_out <= RF(to_integer(led_addr));
+>>>>>>> 53f1f4ee3412d94859bf55b282ae823733469f2e
 end func;

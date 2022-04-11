@@ -35,6 +35,21 @@ add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd_out}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra_out}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/data_in}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/RF}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/DM}
+#add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/led_out}
+#add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/led_addr}
+add wave -group dm {sim:/pipecpu_tb/U0/led_value}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/addr}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_out}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
+add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
+
 
 restart -f
 run 1000 ns
