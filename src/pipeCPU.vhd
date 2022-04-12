@@ -61,7 +61,7 @@ signal data_bus : unsigned(15 downto 0) := (others => '0');
 
 -- Register file
 signal rf_we : std_logic := '0';
-signal rf_out1, rf_out2 : unsigned(15 downto 0) := (others => '0');
+signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals (testing // Rw)
 signal temp_done : std_logic;
@@ -146,8 +146,8 @@ end component;
 
 component REG_FILE is
 	port(
-		rd : in unsigned(3 downto 0);
-		ra : in unsigned(3 downto 0);
+		rd_in : in unsigned(3 downto 0);
+		ra_in : in unsigned(3 downto 0);
 		we : in std_logic; -- write enable
 		clk : in std_logic;
 		data_in : in unsigned(15 downto 0);
@@ -200,10 +200,10 @@ begin
 	);
 
 	reg_file_comp : REG_FILE port map(
-		rd => IR2_rd,
-		ra => IR2_ra,
-		rd_out => rf_out1,
-		ra_out => rf_out2,
+		rd_in => IR2_rd,
+		ra_in => IR2_ra,
+		rd_out => rf_rd,
+		ra_out => rf_ra,
 		we => rf_we,
 		data_in => data_bus,
 		clk => clk,
@@ -243,13 +243,12 @@ begin
 -------------------------------------------------------------------------------
 
     -- 7 seg debug
-    --led_value <= PC;
+    --led_value <= x"9A3C";
 
 	-- ALU multiplexers
-	alu_mux1 <= rf_out1;
+	alu_mux1 <= rf_rd;
 
-	alu_mux2 <= IR2_const when ((IR2_op = LD)     or
-                                (IR2_op = LDI)    or
+	alu_mux2 <= IR2_const when ((IR2_op = LDI)    or
                                 (IR2_op = STI)    or
 								(IR2_op = ADDI)   or 
                                 (IR2_op = SUBI)   or
@@ -257,16 +256,17 @@ begin
                                 (IR2_op = ANDI)   or
 								(IR2_op = ORI)    or 
                                 (IR2_op = MULI)   or
-								(IR2_op = MULSI)) else rf_out2;
+								(IR2_op = MULSI)) else rf_ra;
 
 	-- Data bus multiplexer
     with IR2_op select
-        data_bus <= dm_data_out when LD,
+        data_bus <= rf_ra       when ST,
+                    IR2_const   when STI,
+                    dm_data_out when LD,
 					alu_out     when others;
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000001111111"); -- TODO mask real length of ipput addr seseee datata mama
-	--dm_we <= '1' when (IR2_op = STI) else '0';
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");

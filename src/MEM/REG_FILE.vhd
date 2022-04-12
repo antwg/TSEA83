@@ -7,9 +7,9 @@ entity REG_FILE is
 		clk : std_logic;
         led_addr : in unsigned(3 downto 0);
         led_out : out unsigned(15 downto 0);
-		rd : in unsigned(3 downto 0);
+		rd_in : in unsigned(3 downto 0);
 		rd_out : out unsigned(15 downto 0);
-		ra : in unsigned(3 downto 0);
+		ra_in : in unsigned(3 downto 0);
 		ra_out : out unsigned(15 downto 0);
 		we : in std_logic;
 		data_in : in unsigned(15 downto 0);
@@ -30,7 +30,7 @@ begin
         begin
           if rising_edge(clk) then
             if we = '1' then
-                RF(to_integer(rd)) <= data_in;
+                RF(to_integer(rd_in)) <= data_in;
             end if;
 
 			-- Joystick IO register
@@ -53,7 +53,7 @@ begin
          end if;
         end process;
 
-	rd_out <= RF(to_integer(rd));
-	ra_out <= RF(to_integer(ra));
+	rd_out <= RF(to_integer(rd_in));
+	ra_out <= RF(to_integer(ra_in));
     led_out <= RF(to_integer(led_addr));
 end architecture;
