@@ -50,7 +50,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     }
 
     char* line = NULL; // used to store every line read
-    int lineN = 0; // current line number we're on
+    int lineN = 1; // current line number we're on
     size_t len = 0; // size of line read
     ssize_t read = 0; // amount read
 
@@ -87,7 +87,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 
             // single argument instruction (e.x. PUSH 10)
             if (cmdc == 2) {
-                if (opcode == PUSH || opcode == POP) {
+                if (opcode == PUSH || opcode == POP || opcode == LSLS || opcode == LSRS) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
@@ -136,8 +136,10 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
             registers |= (rD << 4);
 
             if (debug) {
-                printf("\n");
+                printf("\n\n");
+                printf("-------------------------\n");
                 printf("Line: %s", line);
+                printf("Args: %d", cmdc);
                 printf("Cmd0: %s, Cmd1: %s, Cmd2: %s\n", cmd[0], cmd[1], cmd[2]);
                 printf("opcode: ");
                 printBits(1, &opcode);
@@ -349,8 +351,8 @@ int getOpCode(char* text) {
         return MULSI;
     } else if (!strcmp(text, "LSLS")) {
         return LSLS;
-    } else if (!strcmp(text, "LSLR")) {
-        return LSLR;
+    } else if (!strcmp(text, "LSRS")) {
+        return LSRS;
     }
 
     return UNDEFINED;

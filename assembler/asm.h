@@ -34,7 +34,7 @@ enum OP {
     MULS      = 0x1D,
     MULSI     = 0x1E,
     LSLS      = 0x1F,
-    LSLR      = 0x20,
+    LSRS      = 0x20,
     UNDEFINED = 0xFF
 };
 
