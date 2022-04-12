@@ -40,10 +40,10 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     FILE* binary = fopen(outputPath, "w");
 
     if (!assembly)  {
-        printf("Couldn't open: %s", filePath);
+        printf("Couldn't open: %s\n", filePath);
         return 1;
     } else if (!binary) {
-        printf("Couldn't open: %s", outputPath);
+        printf("Couldn't open: %s\n", outputPath);
 
         if (!manual)
             return 1;
@@ -81,7 +81,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
             int val = 0; // the constant passed
 
             if (opcode == UNDEFINED) {
-                printf("Line %i: Couldn't parse opcode: %s", lineN, cmd[0]);
+                printf("Line %i: Couldn't parse opcode: %s\n", lineN, cmd[0]);
                 return 1;
             }
 
@@ -91,7 +91,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
-                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        printf("Line %i: Couldn't parse rD: %s\n", lineN, cmd[1]);
                         return 1;
                     }
                 } else {
@@ -109,7 +109,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
-                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        printf("Line %i: Couldn't parse rD: %s\n", lineN, cmd[1]);
                         return 1;
                     }
 
@@ -118,14 +118,14 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
-                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        printf("Line %i: Couldn't parse rD: %s\n", lineN, cmd[1]);
                         return 1;
                     }
 
                     rA = getRegCode(cmd[2]);
 
                     if (rA == UNDEFINED) {
-                        printf("Line %i: Couldn't parse regcode: %s", lineN, cmd[2]);
+                        printf("Line %i: Couldn't parse regcode: %s\n", lineN, cmd[2]);
                         return 1;
                     }
                 }
