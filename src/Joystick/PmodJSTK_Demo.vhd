@@ -136,18 +136,18 @@ begin
 					CLKOUT=>sndRec
 			);
 
---
---						-- Data to be sent to PmodJSTK, lower two bits will turn on leds on PmodJSTK
---			sndData <= "100000" & SW(1) & SW(2);
---
---			-- Assign PmodJSTK button status to LED[2:0]
---			process(sndRec, RST) begin
---					if(RST = '1') then
---							LED <= "000";
---					elsif rising_edge(sndRec) then
---							LED <= jstkData(1) & jstkData(2) & jstkData(0);
---					end if;
---			end process;
+
+						-- Data to be sent to PmodJSTK, lower two bits will turn on leds on PmodJSTK
+			sndData <= "100000" & SW(1) & SW(2);
+
+			-- Assign PmodJSTK button status to LED[2:0]
+			process(sndRec, RST) begin
+					if(RST = '1') then
+							LED <= "000";
+					elsif rising_edge(sndRec) then
+							LED <= jstkData(1) & jstkData(2) & jstkData(0);
+					end if;
+			end process;
 
 end Behavioral;
 
