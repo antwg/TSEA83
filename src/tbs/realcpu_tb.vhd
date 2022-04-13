@@ -7,13 +7,11 @@ end realcpu_tb;
 
 architecture sim of realcpu_tb is
 
-component pipeCPU is
-	port(
-		clk : in std_logic;
-		rst : in std_logic;
-        UART_in : in std_logic;
-        UART_out : in std_logic);
-end component;
+    component pipeCPU is
+        port( clk, rst : in std_logic;
+              UART_in : in std_logic;
+              UART_out : out std_logic);
+    end component;
 
 	signal clk : std_logic;
 	signal rst : std_logic;

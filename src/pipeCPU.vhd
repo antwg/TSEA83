@@ -4,14 +4,12 @@ use IEEE.numeric_std.all;
 
 entity pipeCPU is
 	port (
-		clk : in std_logic;
-		rst : in std_logic;
+		clk, rst : in std_logic;
 		UART_in : in std_logic;
 		UART_out : out std_logic;
+		--JA : in unsigned(15 downto 0);
 		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0)
-		--JA : in unsigned(15 downto 0)
-		);
+		an : out unsigned(3 downto 0));
 
 end pipeCPU;
 
@@ -64,16 +62,22 @@ signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals
-signal loader_done : std_logic;
-signal loader_we : std_logic;
-signal loader_addr : unsigned(15 downto 0);
-signal loader_data_Out : unsigned(31 downto 0);
-signal debug_uart : unsigned(8 downto 0);
+signal boot_done : std_logic;
+signal boot_we : std_logic;
+signal boot_addr : unsigned(15 downto 0);
+signal boot_data_out : unsigned(31 downto 0);
 signal boot_on : std_logic := '0'; -- if set, expects bootloader to load the program
+
+-- UART com
+signal com_send_byte : unsigned (7 downto 0) := (others => '0');
+signal com_sent : std_logic := '0';
+signal com_send : std_logic := '0';
+signal com_debug_value : unsigned(7 downto 0) := (others => '1');
+signal com_debug : std_logic := '1';
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
-signal led_addr :unsigned(3 downto 0) := "0000"; 
+signal led_addr : unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
 -- Instructions
@@ -115,13 +119,12 @@ constant LSLR		: unsigned(7 downto 0) := x"20";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-    port( 
-        clk : in std_logic;
-        we : std_logic;
-        addr : in unsigned(15 downto 0);
-		data_out : out unsigned(31 downto 0);
-	    wr_addr : in unsigned(15 downto 0);
-	    wr_data : in unsigned(31 downto 0));
+    port( clk : in std_logic;
+          we : std_logic;
+          addr : in unsigned(15 downto 0);
+		  data_out : out unsigned(31 downto 0);
+	      wr_addr : in unsigned(15 downto 0);
+	      wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
@@ -129,6 +132,14 @@ component PROG_LOADER is
           done, we : out std_logic;
           addr : out unsigned(15 downto 0);
           data_out : out unsigned(31 downto 0));
+end component;
+
+component UART_COM is
+    port( clk, rst : in std_logic;
+          bit_out : out std_logic;
+          send_byte : in unsigned(7 downto 0);
+          send : in std_logic;
+          sent : out std_logic);
 end component;
 
 component DATA_MEM is
@@ -155,15 +166,13 @@ component REG_FILE is
 end component;
 
 component ALU is
-	port (
-		MUX1: in unsigned(15 downto 0);
-		MUX2 : in unsigned(15 downto 0);
-		op_code : in unsigned(7 downto 0);
-		result : out unsigned(15 downto 0);
-		status_reg : out unsigned(3 downto 0);
-		reset: in std_logic;
-		clk : in std_logic	
-		);
+	port ( MUX1: in unsigned(15 downto 0);
+		   MUX2 : in unsigned(15 downto 0);
+	   	   op_code : in unsigned(7 downto 0);
+	   	   result : out unsigned(15 downto 0);
+	   	   status_reg : out unsigned(3 downto 0);
+	   	   reset: in std_logic;
+	   	   clk : in std_logic);
 end component;
 
 component leddriver is
@@ -171,7 +180,7 @@ component leddriver is
            seg : out  UNSIGNED(7 downto 0);
            an : out  UNSIGNED (3 downto 0);
            value : in  UNSIGNED (15 downto 0));
-	end component;
+end component;
 
 begin
 
@@ -181,21 +190,27 @@ begin
 		clk => clk,
 		addr => pm_addr,
 		data_out => PMdata_out,
-		we => loader_we,
-		wr_addr => loader_addr,
-		wr_data => loader_data_out
-	);
+		we => boot_we,
+		wr_addr => boot_addr,
+		wr_data => boot_data_out);
 
 	prog_loader_comp : PROG_LOADER port map(
 		clk => clk,
 		rst => rst,
 	 	rx => UART_in,
         boot_on => boot_on,
-		done => loader_done,
-	  	we => loader_we,
-	  	addr => loader_addr,
-	  	data_out => loader_data_out
-	);
+		done => boot_done,
+	  	we => boot_we,
+	  	addr => boot_addr,
+	  	data_out => boot_data_out);
+
+    uart_com_comp : UART_COM port map(
+        clk => clk,
+        rst => rst,
+        send => com_send,
+        bit_out => UART_out,
+        send_byte => com_send_byte,
+        sent => com_sent);
 
 	reg_file_comp : REG_FILE port map(
 		rd_in => IR2_rd,
@@ -207,8 +222,7 @@ begin
 		clk => clk,
         --led_out => led_null, -- turns of led to be set here
         led_out => led_value, -- set led value to led_addr in register file
-        led_addr => led_addr
-	);
+        led_addr => led_addr);
 
 	data_mem_comp : DATA_MEM port map(
 		we => dm_we,
@@ -227,25 +241,36 @@ begin
 		result => alu_out,
 		status_reg => status_reg_out,
 		reset => rst,
-		clk => clk
-	);
+		clk => clk);
 
 	leddriver_comp : leddriver port map(
 		clk => clk,
         rst => rst,
         seg => seg,
         an => an,
-        value => led_value
-	);
+        value => led_value);
 
 -------------------------------------------------------------------------------
 
     -- DEBUG
     -- 7 seg debug
     --led_value <= x"9A3C";
+
     -- UART debug
-    --UART_out <= debug_uart;
-    UART_out <= '1';
+    process(clk) begin
+        if (rising_edge(clk) and com_debug='1') then
+            if (com_sent='1') then
+                com_send_byte <= com_debug_value;
+                com_send <= '1';
+            elsif (com_send='1') then
+                com_send <= '0';
+                com_debug_value <= com_debug_value - 1;
+            elsif (com_send <= '0' and com_debug_value = 0) then
+                com_debug <= '0';
+            end if;
+        end if;
+    end process;
+
 
 	-- ALU multiplexers
 	alu_mux1 <= rf_rd;
@@ -297,7 +322,7 @@ begin
 				JUMP_PC <= (others => '0');
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
-            elsif (loader_done='0' and boot_on='1') then
+            elsif (boot_done='0' and boot_on='1') then
                 PC <= PC;
 			else
 				IR2 <= IR1;
