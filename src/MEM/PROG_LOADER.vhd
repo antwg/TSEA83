@@ -3,7 +3,7 @@ use IEEE.std_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.all;
 
 entity PROG_LOADER is
-	Port ( clk, rst, rx : in std_logic;
+	Port ( clk, rst, rx, boot_on : in std_logic;
 	       done, we : out std_logic;
 	       addr : out unsigned(15 downto 0);
 	       data_out : out unsigned(31 downto 0));
@@ -23,7 +23,6 @@ architecture func of PROG_LOADER is
 
 	-- addr counter
 	signal addr_cnt_en : std_logic := '0';
-	signal addr_cnt_rst : std_logic := '0';
 	signal addr_cnt_out : unsigned(15 downto 0);
 
 	-- 868 counter
@@ -38,13 +37,12 @@ architecture func of PROG_LOADER is
 
 	-- 4 counter
    	signal st_4_cnt_en  : std_logic := '0'; 	-- enable counter
-    signal st_4_cnt_rst : std_logic := '0'; 	-- reset counter
     signal st_4_cnt_out : unsigned(1 downto 0) := B"00"; -- counter out
 begin
 	-- control unit
 	process(clk) begin
 	    if rising_edge(clk) then
-            if rst='1' then
+            if (rst='1' or boot_on='0') then
                 rx1 <= '0';
                 rx2 <= '0';
                 we_en1 <= '0';
@@ -82,13 +80,13 @@ begin
                 st_10_cnt_out <= st_10_cnt_out + 1;
 		    end if;
 
-		    if (st_4_cnt_rst='1' or rst='1') then
+		    if (rst='1') then
                 st_4_cnt_out <= (others => '0');
 		    elsif (st_4_cnt_en='1') then
                 st_4_cnt_out <= st_4_cnt_out + 1;
 		    end if;
 
-		    if (addr_cnt_rst='1' or rst='1') then
+		    if (rst='1') then
                 addr_cnt_out <= (others => '0');
 		    elsif (addr_cnt_en='1') then
                 addr_cnt_out <= addr_cnt_out + 1;
@@ -111,7 +109,7 @@ begin
 	end process;
 	
 	-- 32 bit shift register (holds one whole instruction)
-	process(clk) begin
+	process(clk, ke_done) begin
 	    if rising_edge(clk) then
             if rst='1' then
                 fullInstr <= '0';

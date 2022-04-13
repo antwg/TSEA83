@@ -7,7 +7,7 @@ entity pipeCPU is
 		clk : in std_logic;
 		rst : in std_logic;
 		UART_in : in std_logic;
-		--UART_out : out std_logic;
+		UART_out : out std_logic;
 		seg : out unsigned(7 downto 0);
 		an : out unsigned(3 downto 0)
 		--JA : in unsigned(15 downto 0)
@@ -63,12 +63,13 @@ signal data_bus : unsigned(15 downto 0) := (others => '0');
 signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
--- Loader signals (testing // Rw)
-signal temp_done : std_logic;
+-- Loader signals
 signal loader_done : std_logic;
 signal loader_we : std_logic;
 signal loader_addr : unsigned(15 downto 0);
 signal loader_data_Out : unsigned(31 downto 0);
+signal debug_uart : unsigned(8 downto 0);
+signal boot_on : std_logic := '0'; -- if set, expects bootloader to load the program
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
@@ -124,7 +125,7 @@ component PROG_MEM is
 end component;
 
 component PROG_LOADER is
-	port( clk, rst, rx : in std_logic;
+	port( clk, rst, rx, boot_on : in std_logic;
           done, we : out std_logic;
           addr : out unsigned(15 downto 0);
           data_out : out unsigned(31 downto 0));
@@ -139,10 +140,6 @@ component DATA_MEM is
           --led_addr : in unsigned(15 downto 0); 
           --led_out : out unsigned(15 downto 0));
 end component;
-
--- Sprite minne
--- address
--- we
 
 component REG_FILE is
 	port(
@@ -193,6 +190,7 @@ begin
 		clk => clk,
 		rst => rst,
 	 	rx => UART_in,
+        boot_on => boot_on,
 		done => loader_done,
 	  	we => loader_we,
 	  	addr => loader_addr,
@@ -242,8 +240,12 @@ begin
 
 -------------------------------------------------------------------------------
 
+    -- DEBUG
     -- 7 seg debug
     --led_value <= x"9A3C";
+    -- UART debug
+    --UART_out <= debug_uart;
+    UART_out <= '1';
 
 	-- ALU multiplexers
 	alu_mux1 <= rf_rd;
@@ -266,7 +268,7 @@ begin
 					alu_out     when others;
       
 	-- Address controller
-	dm_addr <= (alu_out and "0000000001111111"); -- TODO mask real length of ipput addr seseee datata mama
+	dm_addr <= (alu_out and x"0011"); -- Currently only allow 256 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
@@ -295,6 +297,8 @@ begin
 				JUMP_PC <= (others => '0');
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
+            elsif (loader_done='0' and boot_on='1') then
+                PC <= PC;
 			else
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const;
