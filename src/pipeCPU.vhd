@@ -75,6 +75,11 @@ signal led_value : unsigned(15 downto 0) := (others => '0');
 signal led_addr :unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
+--joystick out 
+signal joy_res : unsigned (1 downto 0);
+signal joy_finished : std_logic;
+signal SW : STD_LOGIC_VECTOR(2 downto 0);
+
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
 constant RJMP		: unsigned(7 downto 0) := x"01";
@@ -176,11 +181,28 @@ component leddriver is
            value : in  UNSIGNED (15 downto 0));
 	end component;
 
+	component joystick is
+    Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
+           RST : in  STD_LOGIC;								-- Button D
+           SW : in  STD_LOGIC_VECTOR (2 downto 0);		-- Switches 2, 1, and 0
+           joy_out : out unsigned (1 downto 0);
+		   finished : out std_logic
+   ); -- Cathodes for Seven Segment Display
+end component;
+
 begin
 
 ------------------------------------ Components -------------------------------
+	joystick_comp : joystick port map( 	
+		CLK => clk,
+		RST => rst,
+		SW => SW,
+		joy_out => joy_res,
+		finished => joy_finished 
+   );
 
-	prog_mem_comp : PROG_MEM port map(
+
+   prog_mem_comp : PROG_MEM port map(
 		clk => clk,
 		addr => pm_addr,
 		data_out => PMdata_out,
