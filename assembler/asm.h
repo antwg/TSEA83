@@ -57,9 +57,8 @@ enum REG {
     P = 0xF,
 };
 
-int assemble(char filePath[20], char outputPath[20], int manual, int debug);
-void parseLine(char** line, int* cmdc, char cmd[3][15]);
-int translate(int* cmdc, char cmd[3][15]);
+int assemble(char filePath[40], char outputPath[40], int manual, int debug);
+void parseLine(char** line, int* cmdc, char cmd[3][40]);
 int getOpCode(char* text);
 int getRegCode(char* text);
 void printHelp();
