@@ -62,11 +62,12 @@ signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals
-signal boot_done : std_logic;
-signal boot_we : std_logic;
-signal boot_addr : unsigned(15 downto 0);
-signal boot_data_out : unsigned(31 downto 0);
-signal boot_on : std_logic := '0'; -- if set, expects bootloader to load the program
+signal boot_done : std_logic := '0';
+signal boot_we : std_logic := '0';
+signal boot_addr : unsigned(15 downto 0) := (others => '0');
+signal boot_data_out : unsigned(31 downto 0) := (others => '0');
+signal boot_en : std_logic := '1';
+signal boot_wait_cnt : unsigned(13 downto 0) := (others => '0');
 
 -- UART com
 signal com_send_byte : unsigned (7 downto 0) := (others => '0');
@@ -128,7 +129,7 @@ component PROG_MEM is
 end component;
 
 component PROG_LOADER is
-	port( clk, rst, rx, boot_on : in std_logic;
+	port( clk, rst, rx, boot_en : in std_logic;
           done, we : out std_logic;
           addr : out unsigned(15 downto 0);
           data_out : out unsigned(31 downto 0));
@@ -198,7 +199,7 @@ begin
 		clk => clk,
 		rst => rst,
 	 	rx => UART_in,
-        boot_on => boot_on,
+        boot_en => boot_en,
 		done => boot_done,
 	  	we => boot_we,
 	  	addr => boot_addr,
@@ -257,20 +258,37 @@ begin
     --led_value <= x"9A3C";
 
     -- UART debug
-    process(clk) begin
-        if (rising_edge(clk) and com_debug='1') then
-            if (com_sent='1') then
-                com_send_byte <= com_debug_value;
-                com_send <= '1';
-            elsif (com_send='1') then
-                com_send <= '0';
-                com_debug_value <= com_debug_value - 1;
-            elsif (com_send <= '0' and com_debug_value = 0) then
-                com_debug <= '0';
-            end if;
-        end if;
-    end process;
+   -- process(clk) begin
+   --     if (rising_edge(clk) and com_debug='1') then
+   --         if (com_sent='1') then
+   --             com_send_byte <= com_debug_value;
+   --             com_send <= '1';
+   --         elsif (com_send='1') then
+   --             com_send <= '0';
+   --             com_debug_value <= com_debug_value - 1;
+   --         elsif (com_send <= '0' and com_debug_value = 0) then
+   --             com_debug <= '0';
+   --         end if;
+   --     end if;
+   -- end process;
 
+    -- PM Debug
+    ---
+    -- Prints the contents of the program memory after the bootloader
+    -- has loaded something to it.
+   -- process(clk) begin
+   --     if (rising_edge(clk) and com_debug='1') then
+   --         if (com_sent='1') then
+   --             com_send_byte <= com_debug_value;
+   --             com_send <= '1';
+   --         elsif (com_send='1') then
+   --             com_send <= '0';
+   --             com_debug_value <= com_debug_value - 1;
+   --         elsif (com_send <= '0' and com_debug_value = 0) then
+   --             com_debug <= '0';
+   --         end if;
+   --     end if;
+   -- end process;
 
 	-- ALU multiplexers
 	alu_mux1 <= rf_rd;
@@ -312,7 +330,11 @@ begin
                        (IR2_op = ST)    or
                        (IR2_op = PUSH)) else '1';
 
-	-- Handle PC:s and IR:s, speciel case when jumps happens
+	-- Handle PC:s and IR:s
+    ---
+    -- We only execute as per usual when the bootloader is done loading a program.
+    -- There's one special case while executing, when we want to jump. Then we
+    -- need to insert a jump nop, stop counting PC and set PC to the correct jump addr.
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
@@ -322,11 +344,11 @@ begin
 				JUMP_PC <= (others => '0');
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
-            elsif (boot_done='0' and boot_on='1') then
-                PC <= PC;
-			else
+
+            -- run as per usual when bootloader has loaded a program
+			elsif (boot_done='1') then
 				IR2 <= IR1;
-				JUMP_PC <= PC1 + IR1_const;
+				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
 
 				if (IR1_op = RJMP) then -- if we see a jump, prepare for it
 					PC1 <= PC;

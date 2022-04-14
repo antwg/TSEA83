@@ -49,7 +49,7 @@ add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/addr}
 add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/data_out}
 add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/we}
-add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/boot_on}
+add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/boot_en}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rst}
 add wave -group boot {sim:/realcpu_tb/U0/UART_IN}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx}
