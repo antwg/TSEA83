@@ -268,7 +268,7 @@ begin
 					alu_out     when others;
       
 	-- Address controller
-	dm_addr <= (alu_out and x"0011"); -- Currently only allow 256 addresses
+	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
@@ -318,7 +318,7 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= PC;
+	pm_addr <= (PC and "0000000011111111"); -- Currently only allow 256 addresses
 
 	-- Update stack pointer
 	-- If push: decrement

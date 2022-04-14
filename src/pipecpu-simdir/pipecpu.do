@@ -52,7 +52,7 @@ add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/addr}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_out}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
-add wave {sim:/pipecpu_tb/U0/leddriver_comp/value}
+add wave -dec {sim:/pipecpu_tb/U0/leddriver_comp/value}
 
 
 restart -f
