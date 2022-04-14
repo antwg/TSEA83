@@ -41,8 +41,8 @@ entity VGA_MOTOR is
   spriteType      : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
   spriteListPos   : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
   spriteX         : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
-  spriteY         : in  unsigned(6 downto 0);	
-  spriteOut       : out unsigned(16 downto 0)
+  spriteY         : in  unsigned(5 downto 0);	
+  spriteOut       : out unsigned(15 downto 0)
   );
   
 
@@ -141,11 +141,11 @@ architecture Behavioral of VGA_MOTOR is
       -- 0 - blank
       -- 1 - space ship
       -- 2 - asteroid -big
-    type ram_3 is array (0 to 31) of unsigned(30 downto 0);
-    signal spriteList : ram_3 := ("001"&"0001000"&"0001000"&"0010111"&"0010111", 
-                                  "011"&"1100000"&"1100000"&"1101111"&"1101111", 
-                                  "011"&"0010000"&"0010000"&"0011111"&"0011111", 
-                                  "010"&"0011000"&"0011000"&"0100111"&"0100111", 
+    type ram_3 is array (0 to 31) of unsigned(28 downto 0);
+    signal spriteList : ram_3 := ("001"&"0001000"&"001000"&"0010111"&"010111", 
+                                  "011"&"1100000"&"100000"&"1101111"&"101111", 
+                                  "011"&"0010000"&"010000"&"0011111"&"011111", 
+                                  "010"&"0011000"&"011000"&"0100111"&"100111", 
                                   others => (others => '0'));
 
     -- 0 black/ transparent
@@ -367,13 +367,13 @@ begin
   -- How spriteList is structured:
   -- Since we are using 8x8 big pixels we need to remove the last 3 bits from cordinates
   -- varibles startX, startY, endX, endY, sprite_type
-  --> size 7 bit * 4 + (5 decimal = 3 bit) --> 31 bits
+  --> size 7 bit * 2 + 6 bit * 2 + (5 decimal = 3 bit) --> 29 bits
 
-  -- spriteList(1)(30 downto 28) --> sprite_type
-  -- spriteList(1)(27 downto 21) --> startX
-  -- spriteList(1)(20 downto 14) --> startY
-  -- spriteList(1)(13 downto 7 ) --> endX
-  -- spriteList(1)(6 downto  0 ) --> endY
+  -- spriteList(1)(28 downto 26) --> sprite_type
+  -- spriteList(1)(25 downto 19) --> startX
+  -- spriteList(1)(18 downto 13) --> startY
+  -- spriteList(1)(12 downto 6 ) --> endX
+  -- spriteList(1)(5 downto  0 ) --> endY
 
   -- change / read sprite mem
   process(clk)
@@ -382,172 +382,40 @@ begin
       if (spriteWrite = '1') then
         spriteList(to_integer(spriteListPos)) <= spriteType & spriteX & spriteY & (spriteX+"1111") & (spriteY+"1111");
       else
-        spriteOut <= spriteList(to_integer(spriteListPos))(30 downto 14);
+        spriteOut <= spriteList(to_integer(spriteListPos))(28 downto 13);
       end if;
     end if;
   end process;
   
   -- We are using 4 bit color (15 colors)
-  sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(0)(30 downto 28)))  + ((16*(Ypixel(9 downto 2) - spriteList(0)(20 downto 14))) + (Xpixel(9 downto 2) - spriteList(0)(27 downto 21) + spriteList(0)(30 downto 28)))  )) 
+  sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(0)(28 downto 26)))  + ((16*(Ypixel(9 downto 2) - spriteList(0)(18 downto 13))) + (Xpixel(9 downto 2) - spriteList(0)(25 downto 19) + spriteList(0)(28 downto 26)))  )) 
                   when   
-                 Xpixel(9 downto 2) >= spriteList(0)(27 downto 21) and 
-                 Xpixel(9 downto 2) <= spriteList(0)(13 downto 7 ) and
-                 Ypixel(9 downto 2) >= spriteList(0)(20 downto 14) and 
-                 Ypixel(9 downto 2) <= spriteList(0)(6  downto 0 ) 
+                 Xpixel(9 downto 2) >= spriteList(0)(25 downto 19) and 
+                 Xpixel(9 downto 2) <= spriteList(0)(12 downto 6 ) and
+                 Ypixel(9 downto 2) >= spriteList(0)(18 downto 13) and 
+                 Ypixel(9 downto 2) <= spriteList(0)(5 downto  0 ) 
                  else "0000" ;
 
-  sprite1pix <= spriteMem(to_integer( (255* to_integer(spriteList(1)(30 downto 28)))  + ((16*(Ypixel(9 downto 2) - spriteList(1)(20 downto 14))) + (Xpixel(9 downto 2) - spriteList(1)(27 downto 21) + spriteList(1)(30 downto 28)))  )) 
-               when   
-                Xpixel(9 downto 2) >= spriteList(1)(27 downto 21) and 
-                Xpixel(9 downto 2) <= spriteList(1)(13 downto 7 ) and
-                Ypixel(9 downto 2) >= spriteList(1)(20 downto 14) and 
-                Ypixel(9 downto 2) <= spriteList(1)(6  downto 0 ) 
-                else "0000" ;
-
-  sprite2pix <= spriteMem(to_integer( (255* to_integer(spriteList(2)(30 downto 28)))  + ((16*(Ypixel(9 downto 2) - spriteList(2)(20 downto 14))) + (Xpixel(9 downto 2) - spriteList(2)(27 downto 21) + spriteList(2)(30 downto 28)))  )) 
-                when   
-                 Xpixel(9 downto 2) >= spriteList(2)(27 downto 21) and 
-                 Xpixel(9 downto 2) <= spriteList(2)(13 downto 7 ) and
-                 Ypixel(9 downto 2) >= spriteList(2)(20 downto 14) and 
-                 Ypixel(9 downto 2) <= spriteList(2)(6  downto 0 ) 
-                 else "0000" ;
-
-  sprite3pix <= spriteMem(to_integer( (255* to_integer(spriteList(3)(30 downto 28)))  + ((16*(Ypixel(9 downto 2) - spriteList(3)(20 downto 14))) + (Xpixel(9 downto 2) - spriteList(3)(27 downto 21) + spriteList(3)(30 downto 28)))  )) 
-                 when   
-                  Xpixel(9 downto 2) >= spriteList(3)(27 downto 21) and 
-                  Xpixel(9 downto 2) <= spriteList(3)(13 downto 7 ) and
-                  Ypixel(9 downto 2) >= spriteList(3)(20 downto 14) and 
-                  Ypixel(9 downto 2) <= spriteList(3)(6  downto 0 ) 
-                  else "0000" ;
-
-
-  -- Changing the formating of the code. this is because i can change all the sprite list numbers att the same time. It is the same code as the blocks above
-  sprite4pix <= spriteMem(to_integer( (255* to_integer(spriteList(4)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(4)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(4)(27 downto 21) + 
-                                                       spriteList(4)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(4)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(4)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(4)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(4)(6  downto 0 ) else "0000" ;
   
-  sprite5pix <= spriteMem(to_integer( (255* to_integer(spriteList(5)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(5)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(5)(27 downto 21) + 
-                                                       spriteList(5)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(5)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(5)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(5)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(5)(6  downto 0 ) else "0000" ;
- 
-  sprite6pix <= spriteMem(to_integer( (255* to_integer(spriteList(6)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(6)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(6)(27 downto 21) + 
-                                                       spriteList(6)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(6)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(6)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(6)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(6)(6  downto 0 ) else "0000" ;
-
-  sprite7pix <= spriteMem(to_integer( (255* to_integer(spriteList(7)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(7)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(7)(27 downto 21) + 
-                                                       spriteList(7)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(7)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(7)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(7)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(7)(6  downto 0 ) else "0000" ;
-       
-  sprite8pix <= spriteMem(to_integer( (255* to_integer(spriteList(8)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(8)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(8)(27 downto 21) + 
-                                                       spriteList(8)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(8)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(8)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(8)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(8)(6  downto 0 ) else "0000" ;
-      
-  sprite9pix <= spriteMem(to_integer( (255* to_integer(spriteList(9)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(9)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(9)(27 downto 21) + 
-                                                       spriteList(9)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(9)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(9)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(9)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(9)(6  downto 0 ) else "0000" ;
-
-  sprite10pix<= spriteMem(to_integer( (255* to_integer(spriteList(10)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(10)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(10)(27 downto 21) + 
-                                                       spriteList(10)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(10)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(10)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(10)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(10)(6  downto 0 ) else "0000" ;
-  
-  sprite11pix<= spriteMem(to_integer( (255* to_integer(spriteList(11)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(11)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(11)(27 downto 21) + 
-                                                       spriteList(11)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(11)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(11)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(11)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(11)(6  downto 0 ) else "0000" ;
- 
-  sprite12pix<= spriteMem(to_integer( (255* to_integer(spriteList(12)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(12)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(12)(27 downto 21) + 
-                                                       spriteList(12)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(12)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(12)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(12)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(12)(6  downto 0 ) else "0000" ;
-
-  sprite13pix<= spriteMem(to_integer( (255* to_integer(spriteList(13)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(13)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(13)(27 downto 21) + 
-                                                       spriteList(13)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(13)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(13)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(13)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(13)(6  downto 0 ) else "0000" ;
-       
-  sprite14pix<= spriteMem(to_integer( (255* to_integer(spriteList(14)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(14)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(14)(27 downto 21) + 
-                                                       spriteList(14)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(14)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(14)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(14)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(14)(6  downto 0 ) else "0000" ;
-      
-  sprite15pix<= spriteMem(to_integer( (255* to_integer(spriteList(15)(30 downto 28)))  + 
-                            ((16*(Ypixel(9 downto 2) - spriteList(15)(20 downto 14))) + 
-                                 (Xpixel(9 downto 2) - spriteList(15)(27 downto 21) + 
-                                                       spriteList(15)(30 downto 28)))  ))  when   
-                                 Xpixel(9 downto 2) >= spriteList(15)(27 downto 21) and 
-                                 Xpixel(9 downto 2) <= spriteList(15)(13 downto 7 ) and
-                                 Ypixel(9 downto 2) >= spriteList(15)(20 downto 14) and 
-                                 Ypixel(9 downto 2) <= spriteList(15)(6  downto 0 ) else "0000" ;
 
 
   -- Pixel chooser
   outputPixel_4bit <= sprite0pix  when sprite0pix /= 0 else
-                      sprite1pix  when sprite1pix /= 0 else
-                      sprite2pix  when sprite2pix /= 0 else
-                      sprite3pix  when sprite3pix /= 0 else
-                      sprite4pix  when sprite0pix /= 0 else
-                      sprite5pix  when sprite1pix /= 0 else
-                      sprite6pix  when sprite2pix /= 0 else
-                      sprite7pix  when sprite3pix /= 0 else
-                      sprite8pix  when sprite0pix /= 0 else
-                      sprite9pix  when sprite1pix /= 0 else
-                      sprite10pix when sprite2pix /= 0 else
-                      sprite11pix when sprite3pix /= 0 else
-                      sprite12pix when sprite0pix /= 0 else
-                      sprite13pix when sprite1pix /= 0 else
-                      sprite14pix when sprite2pix /= 0 else
-                      sprite15pix when sprite3pix /= 0 else
+                      --sprite1pix  when sprite1pix /= 0 else
+                      --sprite2pix  when sprite2pix /= 0 else
+                      --sprite3pix  when sprite3pix /= 0 else
+                      --sprite4pix  when sprite0pix /= 0 else
+                      --sprite5pix  when sprite1pix /= 0 else
+                      --sprite6pix  when sprite2pix /= 0 else
+                      --sprite7pix  when sprite3pix /= 0 else
+                      --sprite8pix  when sprite0pix /= 0 else
+                      --sprite9pix  when sprite1pix /= 0 else
+                      --sprite10pix when sprite2pix /= 0 else
+                      --sprite11pix when sprite3pix /= 0 else
+                      --sprite12pix when sprite0pix /= 0 else
+                      --sprite13pix when sprite1pix /= 0 else
+                      --sprite14pix when sprite2pix /= 0 else
+                      --sprite15pix when sprite3pix /= 0 else
                       tilePixel;
 
   --pixel decoder
