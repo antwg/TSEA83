@@ -31,12 +31,12 @@ architecture func of PROG_MEM is
     x"14000007", -- andi a, 7  ; a = 4
     x"08100008", -- ldi b, 8
     x"15010000", -- or a, b ; a = 12  
+    x"16000000", -- ori a, 16; a = 28
+    x"13000000", -- and a, b; a = 8
+    x"1D000000", -- muls a, a ; a = 64
     x"00000000", -- nop
     x"0100FFFF", -- rjmp -1
 
-
-    
-    
 	    others => (others => '0')
 	);
 
