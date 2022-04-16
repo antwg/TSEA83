@@ -25,6 +25,8 @@ component joystick is
     constant FPGA_clk_period : time := 10 ns;
     
 begin
+	rst <= '1', '0' after 7 ns;
+    
 
     clk_process : process
     begin 

@@ -14,8 +14,12 @@ config wave -signalnamewidth 1
 
 add wave {sim:/joystick_tb/J_CMP/joystick_sync_cnt}
 add wave {sim:/joystick_tb/J_CMP/SCLK}
-add wave {sim:/joystick_tb/clk}
-add wave {sim:/joytick_tb/rst}
+add wave {sim:/joystick_tb/J_CMP/clk}
+add wave {sim:/joystick_tb/J_CMP/PmodJTK_Demo/sndRec}
+add wave {sim:/joystick_tb/J_CMP/PmodJTK_Demo/genSndRec/CLKOUT}
+add wave {sim:/joystick_tb/J_CMP/PmodJTK_Demo/genSndRec/RST}
+add wave {sim:/joystick_tb/J_CMP/PmodJTK_Demo/genSndRec/clkCount}
+
 
 restart -f
-run 100 us
+run 600 ms 

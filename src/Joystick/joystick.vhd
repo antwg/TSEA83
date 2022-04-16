@@ -17,16 +17,17 @@ entity joystick is
 end joystick;
 
 architecture Behavioural of joystick is
-component PmodJSTK_Demo is
+component PmodJSTK is
     Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
-           RST : in  STD_LOGIC;								-- Button D
-           MISO : in  STD_LOGIC;								-- Master In Slave Out, JA3
-           SW : in  STD_LOGIC_VECTOR (2 downto 0);		-- Switches 2, 1, and 0
-           SS : out  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
-           MOSI : out  STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
-           SCLK: out  STD_LOGIC;							-- Serial Clock, Pin 4, Port JA
-           LED : out  STD_LOGIC_VECTOR (2 downto 0));	-- LEDs 2, 1, and 0
-    end component;
+            RST : in  STD_LOGIC;           								-- Button DNN
+            sndRec : in std_logic;
+            DIN : in STD_LOGIC_VECTOR (7 downto 0);
+            MISO : in  STD_LOGIC;								-- Master In Slave Out, JA3
+            SS : out  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
+            SCLK: out  STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
+            MOSI : out  STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
+            DOUT : inout STD_LOGIC_VECTOR (39 downto 0));
+        end component;
 
 
     signal MISO_master : STD_logic;         -- sets the leds on the joystick
@@ -46,6 +47,7 @@ component PmodJSTK_Demo is
 
     signal joystick_sync_cnt: unsigned(7 downto 0) := (others => '0');
     signal joystick_recived: std_logic := '0';
+    signal SCLK_onepuls : std_logic := '1';
 begin
 
 -- read from mosi to get the joystick values 
@@ -56,7 +58,7 @@ PmodJTK_Demo : PmodJSTK_Demo port map(
     MISO => joystick_shift_in(39),
     SW => SW,
     MOSI => MOSI,
-    SCLK=> SCLK,
+    SCLK => SCLK,
     LED  => LED ,
     SS => SS
 );
@@ -69,17 +71,10 @@ process(clk)
 begin 
     if rising_edge(clk) then
        if (SCLK = '1') then
-                    
-        if ( joystick_sync_cnt = 39 ) then -- when counter has counted 40 times all bytes have been read
-                joystick_sync_cnt <= x"00";
-                joystick_value_in <= "0000001100000000000000000000000000000000";
-                joystick_recived <= '1';
-            else
-                joystick_recived <= '0';
-                joystick_value_in <=  joystick_shift_in(39 downto 0); -- shift left and put mosi on lowest
-                joystick_value <=  joystick_shift(39 downto 0); -- shift left and put mosi on lowest
-                joystick_sync_cnt <= joystick_sync_cnt + 1;
-            end if;    
+            if (SCLK_onepuls = '0') then
+                SCLK_onepuls <='1';
+
+            end if;
         end if;
     end if;
 end process;
