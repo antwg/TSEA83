@@ -303,11 +303,24 @@ begin
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const;
 
-				if (IR1_op = RJMP) then -- if we see a jump, prepare for it
-					PC1 <= PC;
-					IR1 <= x"00000000"; -- jump NOP
+				if (IR1_op = RJMP) then -- if we see a jump, prepare for it, TODO add all branching instr?
+				-- (IR1_op = BEQ and ZF = 1) or
+				-- (IR1_op = BNE and ZF = 0) or
+				-- (IR1_op = BPL and NF = 0) or
+				-- (IR1_op = BMI and NF = 1)or
+				-- (IR1_op = BGE and ((NF xor VF) = 0) or
+				-- (IR1_op = BLT and ((NF xor VF) = 1) then
+						PC1 <= PC;
+						IR1 <= x"00000000"; -- jump NOP
 				elsif (IR2_op = RJMP) then
+					--	(IR2_op = BEQ and ZF = 1) or
+					--  (IR2_op = BNE and ZF = 0) or
+					--  (IR2_op = BPL and NF = 0) or
+					--  (IR2_op = BMI and NF = 1)or
+					--  (IR2_op = BGE and ((NF xor VF) = 0) or
+					--  (IR2_op = BLT and ((NF xor VF) = 1) then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
+				
 				else -- update as per usual if nothing special is happening
 					PC <= PC + 1;
 					PC1 <= PC;
