@@ -28,7 +28,7 @@ and a, b        ; a = 8
 
 ; --- test muls ---
 muls a, a       ; a = 64
-
+ 
 ; --- test beq ---
 cmpi a, 64
 beq 2           ; Should branch
