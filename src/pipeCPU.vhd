@@ -285,6 +285,8 @@ begin
                        (IR2_op = BLT)   or
                        (IR2_op = STI)   or
                        (IR2_op = ST)    or
+					   (IR2_op = CMP)	or
+					   (IR2_op = CMPI)	or
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s, speciel case when jumps happens
@@ -303,22 +305,25 @@ begin
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const;
 
-				if (IR1_op = RJMP) then -- if we see a jump, prepare for it, TODO add all branching instr?
-				-- (IR1_op = BEQ and ZF = 1) or
-				-- (IR1_op = BNE and ZF = 0) or
-				-- (IR1_op = BPL and NF = 0) or
-				-- (IR1_op = BMI and NF = 1)or
-				-- (IR1_op = BGE and ((NF xor VF) = 0) or
-				-- (IR1_op = BLT and ((NF xor VF) = 1) then
-						PC1 <= PC;
-						IR1 <= x"00000000"; -- jump NOP
-				elsif (IR2_op = RJMP) then
-					--	(IR2_op = BEQ and ZF = 1) or
-					--  (IR2_op = BNE and ZF = 0) or
-					--  (IR2_op = BPL and NF = 0) or
-					--  (IR2_op = BMI and NF = 1)or
-					--  (IR2_op = BGE and ((NF xor VF) = 0) or
-					--  (IR2_op = BLT and ((NF xor VF) = 1) then
+				-- Flags are not tested since they hane not been set yet.
+				-- This can lead to uneccesary NOPs but this is better than
+				-- having to add NOPs manually
+				if (IR1_op = RJMP) or -- if we see a jump, prepare for it
+				   (IR1_op = BEQ) or 
+				   (IR1_op = BNE) or
+				   (IR1_op = BPL) or
+				   (IR1_op = BMI) or
+				   (IR1_op = BGE) or
+				   (IR1_op = BLT) then
+					 	PC1 <= PC;
+						IR1 <= (others => '0'); -- jump NOP
+				elsif (IR2_op = RJMP) or
+					  	((IR2_op = BEQ) and ZF = '1') or
+					    ((IR2_op = BNE) and ZF = '0') or
+					    ((IR2_op = BPL) and NF = '0') or
+					    ((IR2_op = BMI) and NF = '1')or
+					    ((IR2_op = BGE) and ((NF xor VF) = '0')) or
+					    ((IR2_op = BLT) and ((NF xor VF) = '1')) then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
 				
 				else -- update as per usual if nothing special is happening

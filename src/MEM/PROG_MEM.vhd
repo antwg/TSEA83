@@ -34,9 +34,54 @@ architecture func of PROG_MEM is
     x"16000010", -- ori a, 16; a = 28
     x"13010000", -- and a, b; a = 8
     x"1D000000", -- muls a, a ; a = 64
+    x"12000040", -- cmpi a, 64
+    x"02000002", -- beq 2
+    x"08000000", -- ldi a, 0
+    x"0E000006", -- addi a, 6 ; a = 70 if beq and flags work
+    x"1200003F", -- cmpi a, 63 
+    x"02000002", -- beq 2 ; false
+    x"0E000002", -- addi 2 ; a = 72 
+    x"12000002", -- cmpi a, 2 
+    x"03000002", -- bne 2 ; false
+    x"08000000", -- ldi a, 0
+    x"11000000", -- cmp a, a 
+    x"03000002", -- bne 2 ; true
+    x"0E000002", -- addi a, 2 ; a = 74
+    x"12000001", -- cmpi a, 1
+    x"04000002", -- bpl 2 ; true
+    x"08000000", -- ldi a, 0
+    x"12000064", -- cmpi a, 100
+    x"04000002", -- bpl 2 ; false
+    x"0E000002", -- addi a, 2 ; a = 76
+    x"12000064", -- cmpi a, 100
+    x"05000002", -- bmi 2 ; true
+    x"08000000", -- ldi a, 0
+    x"12000001", -- cmpi a, 1
+    x"05000002", -- bmi 2 ; false
+    x"0E000002", -- addi a, 2 ; a = 78
+    x"1200000A", -- cmpi a, 10 ; is greater
+    x"06000002", -- bge 2 ; true
+    x"08000000", -- ldi a, 0
+    x"11000000", -- cmp a, a 
+    x"06000002", -- bge 2 ; true
+    x"08000000", -- ldi a, 0
+    x"12000064", -- cmpi a, 100; is lower
+    x"06000002", -- bge 2 ; fail
+    x"0E000002", -- addi a, 2 ; a = 80
+    x"12000064", -- cmpi a, 100
+    x"07000002", -- blt 2 ; true
+    x"08000000", -- ldi a, 0
+    x"11000000", -- cmp a, a 
+    x"07000002", -- blt 2 ; false
+    x"0E000002", -- addi a, 2 ; a = 82
+    x"12000004", -- cmpi a, 4
+    x"07000002", -- blt 2 ; false
+    x"0E000002", -- addi a, 2 ; a = 84
+    x"20000000", -- lsrs a ; a = 42
+    x"20000000", -- lsrs a ; a = 21
+    x"10000010", -- subi a, 16 ; a = 5
     x"00000000", -- nop
-    x"0100FFFF", -- rjmp -1
-
+    x"0100FFFF", -- rjmp -1      
 
 	    others => (others => '0')
 	);
