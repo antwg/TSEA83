@@ -396,13 +396,34 @@ begin
                  Ypixel(9 downto 2) <= spriteList(0)(5 downto  0 ) 
                  else "0000" ;
 
+
+  sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(1)(28 downto 26))) + 
+                            ((16*(Ypixel(9 downto 2) - spriteList(1)(18 downto 13))) + 
+                                 (Xpixel(9 downto 2) - spriteList(1)(25 downto 19)   +
+                                                       spriteList(1)(28 downto 26))))) when   
+                                 Xpixel(9 downto 2) >= spriteList(1)(25 downto 19) and 
+                                 Xpixel(9 downto 2) <= spriteList(1)(12 downto 6 ) and
+                                 Ypixel(9 downto 2) >= spriteList(1)(18 downto 13) and 
+                                 Ypixel(9 downto 2) <= spriteList(1)(5 downto  0 ) 
+                                 else "0000" ;
+
+  sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(2)(28 downto 26))) + 
+                            ((16*(Ypixel(9 downto 2) - spriteList(2)(18 downto 13))) + 
+                                 (Xpixel(9 downto 2) - spriteList(2)(25 downto 19)   +
+                                                       spriteList(2)(28 downto 26))))) when   
+                                 Xpixel(9 downto 2) >= spriteList(2)(25 downto 19) and 
+                                 Xpixel(9 downto 2) <= spriteList(2)(12 downto 6 ) and
+                                 Ypixel(9 downto 2) >= spriteList(2)(18 downto 13) and 
+                                 Ypixel(9 downto 2) <= spriteList(2)(5 downto  0 ) 
+                                 else "0000" ;
+
   
 
 
   -- Pixel chooser
   outputPixel_4bit <= sprite0pix  when sprite0pix /= 0 else
-                      --sprite1pix  when sprite1pix /= 0 else
-                      --sprite2pix  when sprite2pix /= 0 else
+                      sprite1pix  when sprite1pix /= 0 else
+                      sprite2pix  when sprite2pix /= 0 else
                       --sprite3pix  when sprite3pix /= 0 else
                       --sprite4pix  when sprite0pix /= 0 else
                       --sprite5pix  when sprite1pix /= 0 else
