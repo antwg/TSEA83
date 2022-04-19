@@ -54,7 +54,7 @@ add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rst}
 add wave -group boot {sim:/realcpu_tb/U0/UART_IN}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/done}
-add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/ke_done}
+add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/finished}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/we}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/we_en}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/we_en1}
@@ -74,4 +74,4 @@ add wave {sim:/realcpu_tb/U0/leddriver_comp/value}
 
 
 restart -f
-run 3 ms
+run 10 ms

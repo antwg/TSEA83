@@ -10,44 +10,56 @@ entity PROG_LOADER is
 end PROG_LOADER;
 
 architecture func of PROG_LOADER is
+    -- holds one byte (4th of instructions), fetched from UART rx
 	signal byteReg : unsigned(9 downto 0) := (others => '0');
+
+    -- holds a full instruction, where byteReg stores each byte
 	signal instrReg : unsigned(31 downto 0) := (others => '0');
-	signal rx1, rx2 : std_logic := '1'; -- synkvippor
+
+    -- sync for rx signal
+	signal rx1, rx2 : std_logic := '1';
+
+    -- sync for write enable signal (to PM)
+    signal we_en, we_en1, we_en2 : std_logic := '0';
+
+    -- shiftpulse for the byteReg shift register
 	signal sp : std_logic := '0';
-	signal w_instr : std_logic := '0';
-    signal ke_done : std_logic := '0';
-    signal we_en : std_logic := '0';
-    signal we_en1 : std_logic := '0';
-    signal we_en2 : std_logic := '0';
+
+    -- is set when we've read one full instruction through UART
     signal fullInstr : std_logic := '0';
 
-	-- addr counter
+    -- is set to 1 when we've read up to EOF
+    signal finished : std_logic := '0';
+
+	-- which addr to write to in PM (increases every instruction fetch)
 	signal addr_cnt_en : std_logic := '0';
 	signal addr_cnt_out : unsigned(15 downto 0) := (others => '0');
 
-	-- 868 counter
+	-- 868 counter, for syncing with the UART clock
    	signal st_868_cnt_en  : std_logic := '0'; 	-- enable counter
-    signal st_868_cnt_rst : std_logic := '0'; 	-- reset counter
     signal st_868_cnt_out : unsigned(10 downto 0) := (others => '0'); -- counter out
 
-    -- char counter
-   	signal st_10_cnt_en  : std_logic := '0'; 	-- enable counter
-    signal st_10_cnt_rst : std_logic := '0'; 	-- reset counter
+    -- char counter, keep tracks of each fetched byte
+   	--signal st_10_cnt_en  : std_logic := '0'; 	-- enable counter
     signal st_10_cnt_out : unsigned(3 downto 0) := (others => '0'); -- counter out
 
-	-- 4 counter
-   	signal st_4_cnt_en  : std_logic := '0'; 	-- enable counter
+	-- 4 counter, keep tracks on what in the instruction we're fetching (opcode et.c...)
+   	--signal st_4_cnt_en  : std_logic := '0'; 	-- enable counter
     signal st_4_cnt_out : unsigned(1 downto 0) := (others => '0'); -- counter out
+
+    constant max_cnt : unsigned(11 downto 0) := x"363"; -- 363_16 is 867_10, which works in sim
 begin
 	-- control unit
 	process(clk) begin
-	    if (rising_edge(clk) and ke_done='0') then
+	    if (rising_edge(clk)) then
             if (rst='1' or boot_en='0') then
-                rx1 <= '0';
-                rx2 <= '0';
+                rx1 <= '1';
+                rx2 <= '1';
                 we_en1 <= '0';
                 we_en2 <= '0';
-            else
+            end if;
+
+            if (finished='0' and boot_en='1') then
                 -- sync rx
                 rx1 <= rx;
                 rx2 <= rx1;
@@ -67,39 +79,47 @@ begin
 
 	-- all counters
 	process(clk) begin
-	    if (rising_edge(clk) and ke_done='0') then
-		    if (st_868_cnt_rst='1' or rst='1') then
+	    if (rising_edge(clk)) then
+            if (rst='1') then
                 st_868_cnt_out <= (others => '0');
-		    elsif (st_868_cnt_en='1') then
-                st_868_cnt_out <= st_868_cnt_out + 1;
-		    end if;
-
-		    if (st_10_cnt_rst='1' or rst='1') then
                 st_10_cnt_out <= (others => '0');
-		    elsif (st_10_cnt_en='1') then
-                st_10_cnt_out <= st_10_cnt_out + 1;
-		    end if;
-
-		    if (rst='1') then
                 st_4_cnt_out <= (others => '0');
-		    elsif (st_4_cnt_en='1') then
-                st_4_cnt_out <= st_4_cnt_out + 1;
+                addr_cnt_out <= (others => '0');
 		    end if;
 
-		    if (rst='1') then
-                addr_cnt_out <= (others => '0');
-		    elsif (addr_cnt_en='1') then
-                addr_cnt_out <= addr_cnt_out + 1;
-		    end if;
+            if (finished='0') then
+                if (st_868_cnt_en='1') then 
+                    if (st_868_cnt_out=max_cnt) then
+                        st_868_cnt_out <= (others => '0');
+                    else
+                        st_868_cnt_out <= st_868_cnt_out + 1;
+                    end if;
+
+                    if (st_868_cnt_out=max_cnt and st_10_cnt_out=9) then
+                        st_10_cnt_out <= (others => '0');
+                        st_4_cnt_out <= st_4_cnt_out + 1;
+                    elsif (st_868_cnt_out=max_cnt and st_10_cnt_out < 9) then
+                        st_10_cnt_out <= st_10_cnt_out + 1;
+                    end if;
+                    
+                    if (st_868_cnt_out=max_cnt and st_10_cnt_out=9 and st_4_cnt_out=3) then
+                        st_4_cnt_out <= (others => '0');
+                    end if;
+                end if;
+
+                if (addr_cnt_en='1') then
+                    addr_cnt_out <= addr_cnt_out + 1;
+                end if;
+            end if;
 	    end if;
 	end process;
 	
-	-- 10 bit shift register (holds one byte, 4th of an instruction)
+	-- 10 bit shift register (holds the fetched byte + stop/start bits, 4th of an instruction)
 	process(clk) begin
-	    if rising_edge(clk) then
-            if (rst='1' or ke_done='1') then
+	    if (rising_edge(clk)) then
+            if (rst='1' or finished='1') then
                 byteReg <= (others => '0');
-            elsif sp='1' then
+            elsif (sp='1') then
                 byteReg <= byteReg srl 1;
                 byteReg(9) <= rx2;
             else
@@ -109,48 +129,42 @@ begin
 	end process;
 	
 	-- 32 bit shift register (holds one whole instruction)
-	process(clk, ke_done) begin
-	    if rising_edge(clk) then
-            if (rst='1' or ke_done='1') then
+	process(clk) begin
+	    if (rising_edge(clk)) then
+            if (rst='1') then
                 fullInstr <= '0';
                 instrReg <= (others => '0');
-                ke_done <= '0';
-            elsif st_4_cnt_en='1' then
-                if st_4_cnt_out=0 then -- opcode
+                finished <= '0';
+            end if;
+            
+            -- only do stuff when we're at an end of a sent byte
+            if (st_868_cnt_out=max_cnt and st_10_cnt_out=9) then
+                
+                -- add to instruction register depending on what part of the instruction
+                -- we're currently fetching
+                if (st_4_cnt_out=0) then -- opcode
                     fullInstr <= '0'; -- we're reading a new instruction now
 
                     instrReg(31 downto 24) <= byteReg(8 downto 1);
 
                     -- opcode 0xFF signals EOF
-                    if (byteReg(8 downto 1) = B"11111111") then
-                        ke_done <= '1';
+                    if (byteReg(8 downto 1) = x"FF") then
+                        finished <= '1';
                     end if;
-                elsif st_4_cnt_out=1 then -- registers
+                elsif (st_4_cnt_out=1) then -- registers
                     instrReg(23 downto 16) <= byteReg(8 downto 1);
-                elsif st_4_cnt_out=2 then -- second part of 16bit constant
+                elsif (st_4_cnt_out=2) then -- second part of 16bit constant
                     instrReg(7 downto 0) <= byteReg(8 downto 1);
                 elsif (st_4_cnt_out=3) then -- first part of 16bit constant
                     instrReg(15 downto 8) <= byteReg(8 downto 1);
                     fullInstr <= '1'; -- we've read a full instruction now
                 end if;
-            else
-                instrReg <= instrReg;
             end if;
 	    end if;
 	end process;
 
 	-- shift the byte shiftregister halfway through a sent bit
 	sp <= '1' when st_868_cnt_out=434 else '0';
-
-    -- we reset 10 cnt when 868 resets, we've read one char
-	st_10_cnt_en <= '1' when st_868_cnt_rst='1' else '0';
-
-    -- we count everytime we've gotten one byte
-    st_4_cnt_en <= '1' when st_10_cnt_out=10 else '0';
-
-    -- reset counters
-	st_868_cnt_rst <= '1' when st_868_cnt_out=868 else '0';
-	st_10_cnt_rst <= '1' when st_10_cnt_out=10 else '0';
 
     -- increase addr after a write
 	addr_cnt_en <= '1' when (we_en1='1' and we_en2='0') else '0';
@@ -159,9 +173,11 @@ begin
     -- been read, and the shift register has been updated with it (e.g. st_4_cnt_out=0)
     we_en <= '1' when (st_4_cnt_out=0 and fullInstr='1') else '0';
 
+    -- one pulse the write enable signal
+    we <= '1' when (we_en1='1' and we_en2='0') else '0'; 
+
     -- passive passing
 	data_out <= instrReg(31 downto 0);
-    we <= '1' when (we_en1='1' and we_en2='0') else '0'; -- one pulse the we signal
 	addr <= addr_cnt_out;
-    done <= ke_done;
+    done <= finished;
 end func;

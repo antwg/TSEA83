@@ -37,12 +37,12 @@ void printBits(size_t const size, void const * const ptr)
 */
 int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     FILE* assembly = fopen(filePath, "r");
-    FILE* binary = fopen(outputPath, "w");
+    FILE* binaryOutput = fopen(outputPath, "w");
 
     if (!assembly)  {
         printf("Couldn't open: %s\n", filePath);
         return 1;
-    } else if (!binary) {
+    } else if (!binaryOutput) {
         printf("Couldn't open: %s\n", outputPath);
 
         if (!manual)
@@ -57,10 +57,10 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
     while ((read = getline(&line, &len, assembly))) {
         // If we read nothing, EOF
         if (read == -1) {
-            // write EOF indicator to file (so PROG_LOAD.vhd knows where to stop reading)
-            if (binary) {
-                u_int32_t eof = 0xFFFFFFFF;
-                fwrite(&eof, 4, 1, binary);
+            // write EOF indicator to file (so bootloader knows where to stop reading)
+            if (binaryOutput) {
+                u_int32_t eof = 0xFF;
+                fwrite(&eof, 1, 1, binaryOutput);
             }
 
             break;
@@ -139,14 +139,17 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                 printf("\n\n");
                 printf("-------------------------\n");
                 printf("Line: %s", line);
-                printf("Args: %d", cmdc);
-                printf("Cmd0: %s, Cmd1: %s, Cmd2: %s\n", cmd[0], cmd[1], cmd[2]);
+                printf("Args: %d\n", cmdc);
+                printf("Arg0: %s, Arg1: %s, Arg2: %s\n", cmd[0], cmd[1], cmd[2]);
                 printf("opcode: ");
                 printBits(1, &opcode);
+                printf(" (%.2X)", opcode);
                 printf("\nregisters(Rd/Ra): ");
                 printBits(1, &registers);
+                printf(" (%.2X)", registers);
                 printf("\nval:  ");
                 printBits(2, &val);
+                printf(" (%.4X)", (val & 0xFFFF));
                 printf("\n\n");
             }
 
@@ -168,10 +171,10 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                 printf("\", -- %s", line);
             }
 
-            if (binary) {
-                fwrite(&opcode, 1, 1, binary);
-                fwrite(&registers, 1, 1, binary);
-                fwrite(&val, 2, 1, binary);
+            if (binaryOutput) {
+                fwrite(&opcode, 1, 1, binaryOutput);
+                fwrite(&registers, 1, 1, binaryOutput);
+                fwrite(&val, 2, 1, binaryOutput);
             }
         }
 

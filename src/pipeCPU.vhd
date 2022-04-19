@@ -62,11 +62,11 @@ signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals
+signal boot_en : std_logic := '1';
 signal boot_done : std_logic := '0';
 signal boot_we : std_logic := '0';
 signal boot_addr : unsigned(15 downto 0) := (others => '0');
 signal boot_data_out : unsigned(31 downto 0) := (others => '0');
-signal boot_en : std_logic := '1';
 signal boot_wait_cnt : unsigned(13 downto 0) := (others => '0');
 
 -- UART com
@@ -75,6 +75,9 @@ signal com_sent : std_logic := '0';
 signal com_send : std_logic := '0';
 signal com_debug_value : unsigned(7 downto 0) := (others => '1');
 signal com_debug : std_logic := '1';
+
+signal com_pm_val : unsigned(31 downto 0) := (others => '0');
+signal com_pm_part : unsigned(4 downto 0) := (others => '0');
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
@@ -276,19 +279,19 @@ begin
     ---
     -- Prints the contents of the program memory after the bootloader
     -- has loaded something to it.
-   -- process(clk) begin
-   --     if (rising_edge(clk) and com_debug='1') then
-   --         if (com_sent='1') then
-   --             com_send_byte <= com_debug_value;
-   --             com_send <= '1';
-   --         elsif (com_send='1') then
-   --             com_send <= '0';
-   --             com_debug_value <= com_debug_value - 1;
-   --         elsif (com_send <= '0' and com_debug_value = 0) then
-   --             com_debug <= '0';
-   --         end if;
-   --     end if;
-   -- end process;
+--    process(clk) begin
+--        if (rising_edge(clk) and boot_en='1') then
+--            if (boot_we='1') then
+--                com_pm_val <= boot_data_out;
+--                com_send <= '1';
+--            elsif (com_send='1') then
+--                com_send <= '0';
+--                com_debug_value <= com_debug_value - 1;
+--            elsif (com_send <= '0' and com_debug_value = 0) then
+--                com_debug <= '0';
+--            end if;
+--        end if;
+--    end process;
 
 	-- ALU multiplexers
 	alu_mux1 <= rf_rd;
