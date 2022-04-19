@@ -48,6 +48,7 @@ signal pm_addr : unsigned(15 downto 0) := (others => '0');
 -- Data memory
 signal dm_addr : unsigned(15 downto 0) := (others => '0');
 signal dm_data_out : unsigned(15 downto 0) := (others => '0');
+signal dm_and_sm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
 
 -- Sprite memory
@@ -74,6 +75,14 @@ signal loader_data_Out : unsigned(31 downto 0);
 signal led_value : unsigned(15 downto 0) := (others => '0');
 signal led_addr :unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
+
+-- VGA_MOTOR                      
+signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
+signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+signal spriteY          :  unsigned(5 downto 0);
+signal spriteOut        :  unsigned(15 downto 0);
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
@@ -141,8 +150,19 @@ component DATA_MEM is
 end component;
 
 -- Sprite minne
--- address
--- we
+component VGA_MOTOR is
+    port ( 
+	   clk	            : in std_logic;                         -- system clock
+	   rst              : in std_logic;                         -- reset
+	   spriteWrite      : in  std_logic;            -- 1 -> writing   0 -> reading
+	   spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+	   spriteListPos    : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+	   spriteX          : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+	   spriteY          : in  unsigned(5 downto 0);
+	   spriteOut        : out unsigned(15 downto 0)
+	   
+	   );    -- VGA blue
+end component;
 
 component REG_FILE is
 	port(
@@ -179,6 +199,17 @@ component leddriver is
 begin
 
 ------------------------------------ Components -------------------------------
+
+	sprite_mem_comp : VGA_MOTOR port map(
+		clk => clk,
+		rst => rst,  
+		spriteWrite => spriteWrite,  
+		spriteType => spriteType,  
+		spriteListPos => spriteListPos, 
+		spriteX => spriteX, 
+		spriteY => spriteY,
+		spriteOut => spriteOut 
+	);
 
 	prog_mem_comp : PROG_MEM port map(
 		clk => clk,
@@ -262,15 +293,21 @@ begin
     with IR2_op select
         data_bus <= rf_ra       when ST,
                     IR2_const   when STI,
-                    dm_data_out when LD,
+                    dm_and_sm_data_out when LD,
 					alu_out     when others;
+
+	dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000001111111"); -- TODO mask real length of ipput addr seseee datata mama
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
-	--sm_addr <= (alu_out and "0000001111111111");
-	--sm_we <= '0' when (alu_out < x"FC00") else '1';
+	-- sprite mem
+	spriteListPos <= alu_out(4 downto 0);
+	spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
+	spriteType 		<= data_bus(15 downto 13);
+	spriteX 		<= data_bus(12  downto 6);
+	spriteY			<= data_bus(5  downto 0);
 
 	-- Write enable RF
 	rf_we <= '0' when ((IR2_op = NOP)   or
