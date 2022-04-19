@@ -92,6 +92,8 @@ begin
             UART_in <= '1'; -- stop bit
             wait for 8.68 us;
 
+            --wait for 4 us; -- some random waiting
+
         end loop; -- i
         wait; -- wait forever, will finish simulation
     end process;

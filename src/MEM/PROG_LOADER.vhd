@@ -39,17 +39,16 @@ architecture func of PROG_LOADER is
    	signal st_868_cnt_en  : std_logic := '0'; 	-- enable counter
     signal st_868_cnt_out : unsigned(10 downto 0) := (others => '0'); -- counter out
 
-    -- char counter, keep tracks of each fetched byte
-   	--signal st_10_cnt_en  : std_logic := '0'; 	-- enable counter
+    -- char counter, keep tracks of the bits for the byte currently fetching
     signal st_10_cnt_out : unsigned(3 downto 0) := (others => '0'); -- counter out
 
 	-- 4 counter, keep tracks on what in the instruction we're fetching (opcode et.c...)
    	--signal st_4_cnt_en  : std_logic := '0'; 	-- enable counter
     signal st_4_cnt_out : unsigned(1 downto 0) := (others => '0'); -- counter out
 
-    constant max_cnt : unsigned(11 downto 0) := x"363"; -- 363_16 is 867_10, which works in sim
+    constant max_cnt : unsigned(11 downto 0) := x"340"; -- 363_16 is 867_10, which works in sim
 begin
-	-- control unit
+	-- syncing
 	process(clk) begin
 	    if (rising_edge(clk)) then
             if (rst='1' or boot_en='0') then
@@ -67,12 +66,6 @@ begin
                 -- sync we
                 we_en1 <= we_en;
                 we_en2 <= we_en1;
-
-                -- start counting as soon as we see a startbit
-                -- then it never has to stop until whole program has been read
-                if (rx1='0' and rx2='1' and st_868_cnt_en='0') then -- start bit
-                    st_868_cnt_en <= '1';
-                end if;
             end if;
 	    end if;
 	end process;
@@ -88,23 +81,39 @@ begin
 		    end if;
 
             if (finished='0') then
-                if (st_868_cnt_en='1') then 
+                -- start counting if we see a startbit
+                if (st_868_cnt_en='0' and rx1='0' and rx2='1') then 
+                    st_868_cnt_en <= '1';
+
+                -- we've fetched a byte, wait for next startbit
+                elsif (st_868_cnt_en='1' and st_868_cnt_out=max_cnt and st_10_cnt_out=9 and rx1='1') then
+                    st_868_cnt_en <= '0';
+                    st_868_cnt_out <= (others => '0');
+                    st_10_cnt_out <= (others => '0');
+
+                    -- we've also fetched a full instruction
+                    if (st_4_cnt_out=3) then
+                        st_4_cnt_out <= (others => '0');
+                    -- or not
+                    else
+                        st_4_cnt_out <= st_4_cnt_out + 1;
+                    end if;
+
+                -- if we're still fetching the same byte
+                elsif (st_868_cnt_en='1') then
+                    
+                    -- reset the 868 counter when we reach max_cnt, else just count
                     if (st_868_cnt_out=max_cnt) then
                         st_868_cnt_out <= (others => '0');
                     else
                         st_868_cnt_out <= st_868_cnt_out + 1;
                     end if;
 
-                    if (st_868_cnt_out=max_cnt and st_10_cnt_out=9) then
-                        st_10_cnt_out <= (others => '0');
-                        st_4_cnt_out <= st_4_cnt_out + 1;
-                    elsif (st_868_cnt_out=max_cnt and st_10_cnt_out < 9) then
+                    -- we've fetched one bit
+                    if (st_868_cnt_out=max_cnt and st_10_cnt_out < 9) then
                         st_10_cnt_out <= st_10_cnt_out + 1;
                     end if;
                     
-                    if (st_868_cnt_out=max_cnt and st_10_cnt_out=9 and st_4_cnt_out=3) then
-                        st_4_cnt_out <= (others => '0');
-                    end if;
                 end if;
 
                 if (addr_cnt_en='1') then

@@ -64,6 +64,7 @@ add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/addr}
 add wave -group boot -hex {sim:/realcpu_tb/U0/prog_loader_comp/data_out}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx1}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx2}
+add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_868_cnt_en}
 add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_868_cnt_out}
 add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_10_cnt_out}
 add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_4_cnt_out}
