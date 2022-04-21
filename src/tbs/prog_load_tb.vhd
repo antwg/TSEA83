@@ -9,9 +9,9 @@ architecture behavior of prog_load_tb is
 
   -- Component Declaration
     component pipeCPU is
-        port(
-            clk, rst : in std_logic;
-            UART_in : in std_logic);
+        port( clk, rst : in std_logic;
+              UART_in : in std_logic;
+              UART_out : out std_logic);
     end component;
 
     signal clk : std_logic := '0';

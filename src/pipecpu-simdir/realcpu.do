@@ -49,12 +49,12 @@ add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/addr}
 add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/data_out}
 add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/realcpu_tb/U0/data_mem_comp/we}
-add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/boot_on}
+add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/boot_en}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rst}
 add wave -group boot {sim:/realcpu_tb/U0/UART_IN}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/done}
-add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/ke_done}
+add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/finished}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/we}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/we_en}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/we_en1}
@@ -64,6 +64,7 @@ add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/addr}
 add wave -group boot -hex {sim:/realcpu_tb/U0/prog_loader_comp/data_out}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx1}
 add wave -group boot {sim:/realcpu_tb/U0/prog_loader_comp/rx2}
+add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_868_cnt_en}
 add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_868_cnt_out}
 add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_10_cnt_out}
 add wave -group boot -uns {sim:/realcpu_tb/U0/prog_loader_comp/st_4_cnt_out}
@@ -74,4 +75,4 @@ add wave {sim:/realcpu_tb/U0/leddriver_comp/value}
 
 
 restart -f
-run 3 ms
+run 10 ms
