@@ -9,8 +9,13 @@ entity pipeCPU is
 		UART_in : in std_logic;
 		--UART_out : out std_logic;
 		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0)
+		an : out unsigned(3 downto 0);
 		--JA : in unsigned(15 downto 0)
+		vgaRed		    : out std_logic_vector(2 downto 0);
+        vgaGreen	    : out std_logic_vector(2 downto 0);
+        vgaBlue		    : out std_logic_vector(2 downto 1);
+        Hsync		    : out std_logic;
+        Vsync		    : out std_logic
 		);
 
 end pipeCPU;
@@ -51,10 +56,6 @@ signal dm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_and_sm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
 
--- Sprite memory
-signal sm_addr : unsigned(15 downto 0) := (others => '0');
-signal sm_we : std_logic := '0';
-
 -- ALU
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
 -- Data bus
@@ -76,7 +77,12 @@ signal led_value : unsigned(15 downto 0) := (others => '0');
 signal led_addr :unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
--- VGA_MOTOR                      
+-- VGA_MOTOR  
+--signal vgaRed		    :  std_logic_vector(2 downto 0);
+--signal vgaGreen	        :  std_logic_vector(2 downto 0);
+--signal vgaBlue		    :  std_logic_vector(2 downto 1);
+--signal Hsync		    :  std_logic;
+--signal Vsync		    :  std_logic;                    
 signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
 signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
 signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
@@ -153,7 +159,12 @@ end component;
 component VGA_MOTOR is
     port ( 
 	   clk	            : in std_logic;                         -- system clock
-	   rst              : in std_logic;                         -- reset
+	   rst              : in std_logic;   
+	   vgaRed		    : out std_logic_vector(2 downto 0);
+	   vgaGreen	        : out std_logic_vector(2 downto 0);
+	   vgaBlue		    : out std_logic_vector(2 downto 1);
+	   Hsync		    : out std_logic;
+	   Vsync		    : out std_logic;
 	   spriteWrite      : in  std_logic;            -- 1 -> writing   0 -> reading
 	   spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
 	   spriteListPos    : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
@@ -201,6 +212,11 @@ begin
 ------------------------------------ Components -------------------------------
 
 	sprite_mem_comp : VGA_MOTOR port map(
+		vgaRed => vgaRed,
+		vgaGreen => vgaGreen,
+		vgaBlue	=> vgaBlue,
+		Hsync => Hsync,
+		Vsync => Vsync,
 		clk => clk,
 		rst => rst,  
 		spriteWrite => spriteWrite,  

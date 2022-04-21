@@ -397,7 +397,7 @@ begin
                  else "0000" ;
 
 
-  sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(1)(28 downto 26))) + 
+  sprite1pix <= spriteMem(to_integer( (255* to_integer(spriteList(1)(28 downto 26))) + 
                             ((16*(Ypixel(9 downto 2) - spriteList(1)(18 downto 13))) + 
                                  (Xpixel(9 downto 2) - spriteList(1)(25 downto 19)   +
                                                        spriteList(1)(28 downto 26))))) when   
@@ -407,7 +407,7 @@ begin
                                  Ypixel(9 downto 2) <= spriteList(1)(5 downto  0 ) 
                                  else "0000" ;
 
-  sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(2)(28 downto 26))) + 
+  sprite2pix <= spriteMem(to_integer( (255* to_integer(spriteList(2)(28 downto 26))) + 
                             ((16*(Ypixel(9 downto 2) - spriteList(2)(18 downto 13))) + 
                                  (Xpixel(9 downto 2) - spriteList(2)(25 downto 19)   +
                                                        spriteList(2)(28 downto 26))))) when   
