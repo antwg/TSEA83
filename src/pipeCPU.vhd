@@ -84,6 +84,13 @@ signal led_value : unsigned(15 downto 0) := (others => '0');
 signal led_addr : unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
+--joystick out 
+signal MISO : std_logic;
+signal SS : STD_LOGIC;								-- Slave Select, Pin 1, Port JA
+signal SCLK: STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
+signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
+ 
+
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
 constant RJMP		: unsigned(7 downto 0) := x"01";
@@ -186,11 +193,30 @@ component leddriver is
            value : in  UNSIGNED (15 downto 0));
 end component;
 
+--:wcomponent joystickreal is
+--:w    Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
+--:w            RST : in  STD_LOGIC;           								-- Button DNN
+--:w            MISO : in std_logic;
+--:w            SS : inout  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
+--:w            SCLK: out  STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
+--:w            MOSI : out  STD_LOGIC							-- Master Out Slave In, Pin 2, Port JA
+--:w   			); -- Cathodes for Seven Segment Display
+--:wend component;
+
 begin
 
------------------------------------- Components -------------------------------
+-------------------------------------- Components -------------------------------
+	--joystick_comp : joystickreal port map( 	
+	--	CLK => clk,
+	--	RST => rst,
+	--	MISO => MISO,
+	--	SS => SS,
+	--	SCLK => SCLK,
+	--	MOSI => MOSI
+	--	);
+--
 
-	prog_mem_comp : PROG_MEM port map(
+   prog_mem_comp : PROG_MEM port map(
 		clk => clk,
 		addr => pm_addr,
 		data_out => PMdata_out,

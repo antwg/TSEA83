@@ -101,7 +101,7 @@ architecture Behavioral of VGA_MOTOR is
                                   others => (others => '0'));
 
     type ram_2 is array (0 to 2047) of unsigned(3 downto 0);
-    signal tileMem : ram_2 := ( x"7",x"0",x"0",x"0",x"0",x"0",x"0",x"0",   -- Void (black)   
+    signal tileMem : ram_2 := ( x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",   -- Void (black)   
                                 x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
                                 x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
                                 x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
