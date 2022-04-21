@@ -12,8 +12,11 @@ end PROG_MEM;
 
 architecture func of PROG_MEM is
 
-	type PM_t is array(0 to 256) of unsigned(31 downto 0);
+	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
+		x"08001234" -- ldi a, 1234
+		x"00000000", -- nop
+		x"0100FFFF", -- rjmp -1
 	    others => (others => '0')
 	);
 

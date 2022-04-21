@@ -386,7 +386,7 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= (PC and "0000000011111111"); -- Currently only allow 256 addresses
+	pm_addr <= (PC and "0000011111111111"); -- Currently only allow 1024 addresses
 
 	-- Update stack pointer
 	-- If push: decrement

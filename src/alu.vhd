@@ -15,10 +15,10 @@ end ALU;
 
 architecture func of ALU is
 signal status_reg_out : unsigned(3 downto 0) := (others => '0');
-alias Z :std_logic is status_reg_out(0);
-alias N :std_logic is status_reg_out(1);
-alias C :std_logic is status_reg_out(2);
-alias V :std_logic is status_reg_out(3);
+alias Z : std_logic is status_reg_out(0);
+alias N : std_logic is status_reg_out(1);
+alias C : std_logic is status_reg_out(2);
+alias V : std_logic is status_reg_out(3);
 signal res_add : unsigned(31 downto 0)  := (others => '0');
 signal res_sub : unsigned(31 downto 0) := (others => '0');
 signal send_through : unsigned(31 downto 0) := (others => '0');
@@ -99,8 +99,8 @@ begin
         when alu_mul    	=> result_large <= MUX1 * MUX2;
 		when alu_muls   	=> result_large <= (unsigned(signed(MUX1) * signed(MUX2)));
      -- what happens when we include the carry here?
---		when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + (""&C)));
---		when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - (""&C)));
+		--when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + ("0000000000000000000" & C)));
+		--when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - ("0000000000000000000" & C)));
 		when alu_rd         => result_large <= (x"0000" & MUX1);
 		when alu_cmp		=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
 		when others         => result_large <= (x"0000" & MUX2);
