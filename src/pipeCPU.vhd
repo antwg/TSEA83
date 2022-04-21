@@ -314,7 +314,7 @@ begin
 					alu_out     when others;
       
 	-- Address controller
-	dm_addr <= (alu_out and x"0011"); -- Currently only allow 256 addresses
+	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
@@ -331,6 +331,8 @@ begin
                        (IR2_op = BLT)   or
                        (IR2_op = STI)   or
                        (IR2_op = ST)    or
+					   (IR2_op = CMP)	or
+					   (IR2_op = CMPI)	or
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s
@@ -353,11 +355,27 @@ begin
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
 
-				if (IR1_op = RJMP) then -- if we see a jump, prepare for it
-					PC1 <= PC;
-					IR1 <= x"00000000"; -- jump NOP
-				elsif (IR2_op = RJMP) then
+				-- Flags are not tested since they hane not been set yet.
+				-- This can lead to uneccesary NOPs but this is better than
+				-- having to add NOPs manually
+				if (IR1_op = RJMP) or -- if we see a jump, prepare for it
+				   (IR1_op = BEQ) or 
+				   (IR1_op = BNE) or
+				   (IR1_op = BPL) or
+				   (IR1_op = BMI) or
+				   (IR1_op = BGE) or
+				   (IR1_op = BLT) then
+					 	PC1 <= PC;
+						IR1 <= (others => '0'); -- jump NOP
+				elsif (IR2_op = RJMP) or
+					  	((IR2_op = BEQ) and ZF = '1') or
+					    ((IR2_op = BNE) and ZF = '0') or
+					    ((IR2_op = BPL) and NF = '0') or
+					    ((IR2_op = BMI) and NF = '1')or
+					    ((IR2_op = BGE) and ((NF xor VF) = '0')) or
+					    ((IR2_op = BLT) and ((NF xor VF) = '1')) then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
+				
 				else -- update as per usual if nothing special is happening
 					PC <= PC + 1;
 					PC1 <= PC;
@@ -368,7 +386,7 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= PC;
+	pm_addr <= (PC and "0000000011111111"); -- Currently only allow 256 addresses
 
 	-- Update stack pointer
 	-- If push: decrement

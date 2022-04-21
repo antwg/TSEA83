@@ -102,6 +102,7 @@ begin
 --		when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + (""&C)));
 --		when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - (""&C)));
 		when alu_rd         => result_large <= (x"0000" & MUX1);
+		when alu_cmp		=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
 		when others         => result_large <= (x"0000" & MUX2);
 	end case;
 end process;
