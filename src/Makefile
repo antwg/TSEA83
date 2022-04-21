@@ -41,6 +41,8 @@ vga.%: S=vga_test.vhd VGA_MOTOR.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PROG_M
 vga.%: T=tbs/VGA_tb.vhd
 vga.%: U=Nexys3_Master.ucf
 
+
+
 # Det här är ett exempel på hur man kan skriva en testbänk som är
 # relevant, även om man kör en simulering i batchläge (make batchlab.simc)
 #batchlab.%: S=cpu_embryo.vhd
