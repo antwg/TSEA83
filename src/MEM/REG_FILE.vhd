@@ -39,10 +39,10 @@ begin
             end if;
 
 			-- Joystick IO register
-			RF(15)(0) <= JA(0); -- register bit 0 to ss
-			RF(15)(1) <= JA(1);	-- regsiter bit 1 to MOSI
-			JA(2) <= RF(15)(2);	-- MISO to register bit 2 
-			JA(3) <= RF(15)(3);	-- SCLK to register bit 3
+			JA(0) <= RF(15)(0); -- register bit 0 to ss
+			JA(1) <= RF(15)(1);	-- regsiter bit 1 to MOSI
+			RF(15)(2) <= JA(2);	-- MISO to register bit 2 
+			RF(15)(3) <= JA(3);	-- SCLK to register bit 3
 			JA(4) <= RF(15)(4);
 			JA(5) <= RF(15)(5);
 			JA(6) <= RF(15)(6);
