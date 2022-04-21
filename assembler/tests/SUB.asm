@@ -1,0 +1,5 @@
+LDI a,6
+LDI b,1
+SUB a,b
+NOP
+RJMP -1

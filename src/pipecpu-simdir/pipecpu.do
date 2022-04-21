@@ -3,7 +3,7 @@
 # Build CPU
 vcom "+acc" ../pipeCPU.vhd
 # Build memory files
-vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd
+vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd ../alu.vhd
 # Build relevant testbench
 vcom "+acc" ../tbs/pipeCPU_tb.vhd
 
@@ -15,6 +15,7 @@ config wave -signalnamewidth 1
 
 add wave {sim:/pipecpu_tb/clk}
 add wave {sim:/pipecpu_tb/rst}
+add wave {sim:/pipecpu_tb/U0/status_reg_out}
 add wave -group ir {sim:/pipecpu_tb/U0/IR1}
 add wave -group ir {sim:/pipecpu_tb/U0/IR2}
 add wave -dec -group pc {sim:/pipecpu_tb/U0/PC}
@@ -35,22 +36,25 @@ add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
 add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX1}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX2}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/op_code}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result_large}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/status_reg}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/we}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd_out}
+add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra_out}
-add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd}
-add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/data_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/RF}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/DM}
-#add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/led_out}
-#add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/led_addr}
-add wave -group dm {sim:/pipecpu_tb/U0/led_value}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/addr}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_out}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
-add wave {sim:/pipecpu_tb/U0/leddriver_comp/value}
+add wave -dec {sim:/pipecpu_tb/U0/leddriver_comp/value}
 
 
 restart -f

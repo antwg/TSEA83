@@ -81,25 +81,28 @@ constant alu_and	: unsigned(3 downto 0)      := x"8";
 constant alu_or		: unsigned(3 downto 0)      := x"9";
 constant alu_add_carry	: unsigned(3 downto 0)  := x"A";
 constant alu_sub_carry	: unsigned(3 downto 0)  := x"B";
+constant alu_rd         : unsigned(3 downto 0)  := x"C";
 
 begin
 	
-process(alu_op, MUX1, MUX2, status_reg_out)
+process(alu_op, MUX1, MUX2)
 begin
 	result_large <= (others => '0');
 
 	case alu_op is
 		when alu_add 	    => result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2)));
-     -- what happens when we include the carry here?
---		when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + (""&C)));
 		when alu_sub	    => result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
---		when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - (""&C)));
 		when alu_and    	=> result_large <= (x"0000" & (MUX1 and MUX2));
 		when alu_or	        => result_large <= (x"0000" & (MUX1 or MUX2));
     	when alu_LS	        => result_large <= (x"0000" & (shift_left(MUX1, 1)));
         when alu_RS	        => result_large <= (x"0000" & (shift_right(MUX1, 1)));
         when alu_mul    	=> result_large <= MUX1 * MUX2;
 		when alu_muls   	=> result_large <= (unsigned(signed(MUX1) * signed(MUX2)));
+     -- what happens when we include the carry here?
+--		when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + (""&C)));
+--		when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - (""&C)));
+		when alu_rd         => result_large <= (x"0000" & MUX1);
+		when alu_cmp		=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
 		when others         => result_large <= (x"0000" & MUX2);
 	end case;
 end process;
@@ -129,6 +132,8 @@ with op_code select alu_op <=
 	alu_RS          when LSLR,
 	alu_cmp         when CMPI,
 	alu_cmp         when CMP,
+    alu_rd          when STI,
+    alu_rd          when ST,
     alu_nop         when others;
 
 

@@ -35,38 +35,38 @@ void printBits(size_t const size, void const * const ptr)
 ** and decode the instruction. Prints to stdout or writes
 ** to file depending on given flag in main.
 */
-int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
+int assemble(char filePath[40], char outputPath[40], int manual, int debug) {
     FILE* assembly = fopen(filePath, "r");
-    FILE* binary = fopen(outputPath, "w");
+    FILE* binaryOutput = fopen(outputPath, "w");
 
     if (!assembly)  {
-        printf("Couldn't open: %s", filePath);
+        printf("Couldn't open: %s\n", filePath);
         return 1;
-    } else if (!binary) {
-        printf("Couldn't open: %s", outputPath);
+    } else if (!binaryOutput) {
+        printf("Couldn't open: %s\n", outputPath);
 
         if (!manual)
             return 1;
     }
 
     char* line = NULL; // used to store every line read
-    int lineN = 0; // current line number we're on
+    int lineN = 1; // current line number we're on
     size_t len = 0; // size of line read
     ssize_t read = 0; // amount read
 
     while ((read = getline(&line, &len, assembly))) {
         // If we read nothing, EOF
         if (read == -1) {
-            // write EOF indicator to file (so PROG_LOAD.vhd knows where to stop reading)
-            if (binary) {
-                u_int32_t eof = 0xFFFFFFFF;
-                fwrite(&eof, 4, 1, binary);
+            // write EOF indicator to file (so bootloader knows where to stop reading)
+            if (binaryOutput) {
+                u_int32_t eof = 0xFF;
+                fwrite(&eof, 1, 1, binaryOutput);
             }
 
             break;
         }
 
-        char cmd[3][15] = {"", "", ""}; // empty array to lose old contents
+        char cmd[3][40] = {"", "", ""}; // empty array to lose old contents
         int cmdc = 0;
 
         // Parse the line, save all parts of the instruction in cmd, and
@@ -81,17 +81,17 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
             int val = 0; // the constant passed
 
             if (opcode == UNDEFINED) {
-                printf("Line %i: Couldn't parse opcode: %s", lineN, cmd[0]);
+                printf("Line %i: Couldn't parse opcode: %s\n", lineN, cmd[0]);
                 return 1;
             }
 
             // single argument instruction (e.x. PUSH 10)
             if (cmdc == 2) {
-                if (opcode == PUSH || opcode == POP) {
+                if (opcode == PUSH || opcode == POP || opcode == LSLS || opcode == LSRS) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
-                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        printf("Line %i: Couldn't parse rD: %s\n", lineN, cmd[1]);
                         return 1;
                     }
                 } else {
@@ -109,7 +109,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
-                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        printf("Line %i: Couldn't parse rD: %s\n", lineN, cmd[1]);
                         return 1;
                     }
 
@@ -118,14 +118,14 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                     rD = getRegCode(cmd[1]);
 
                     if (rD == UNDEFINED) {
-                        printf("Line %i: Couldn't parse rD: %s", lineN, cmd[1]);
+                        printf("Line %i: Couldn't parse rD: %s\n", lineN, cmd[1]);
                         return 1;
                     }
 
                     rA = getRegCode(cmd[2]);
 
                     if (rA == UNDEFINED) {
-                        printf("Line %i: Couldn't parse regcode: %s", lineN, cmd[2]);
+                        printf("Line %i: Couldn't parse regcode: %s\n", lineN, cmd[2]);
                         return 1;
                     }
                 }
@@ -136,15 +136,20 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
             registers |= (rD << 4);
 
             if (debug) {
-                printf("\n");
+                printf("\n\n");
+                printf("-------------------------\n");
                 printf("Line: %s", line);
-                printf("Cmd0: %s, Cmd1: %s, Cmd2: %s\n", cmd[0], cmd[1], cmd[2]);
+                printf("Args: %d\n", cmdc);
+                printf("Arg0: %s, Arg1: %s, Arg2: %s\n", cmd[0], cmd[1], cmd[2]);
                 printf("opcode: ");
                 printBits(1, &opcode);
+                printf(" (%.2X)", opcode);
                 printf("\nregisters(Rd/Ra): ");
                 printBits(1, &registers);
+                printf(" (%.2X)", registers);
                 printf("\nval:  ");
                 printBits(2, &val);
+                printf(" (%.4X)", (val & 0xFFFF));
                 printf("\n\n");
             }
 
@@ -166,10 +171,10 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
                 printf("\", -- %s", line);
             }
 
-            if (binary) {
-                fwrite(&opcode, 1, 1, binary);
-                fwrite(&registers, 1, 1, binary);
-                fwrite(&val, 2, 1, binary);
+            if (binaryOutput) {
+                fwrite(&opcode, 1, 1, binaryOutput);
+                fwrite(&registers, 1, 1, binaryOutput);
+                fwrite(&val, 2, 1, binaryOutput);
             }
         }
 
@@ -190,7 +195,7 @@ int assemble(char filePath[20], char outputPath[20], int manual, int debug) {
 ** cmd[2] = B
 ** cmdc = 3
 */
-void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
+void parseLine(char** lineP, int* cmdc, char cmd[3][40]) {
     char* line = lineP[0];
     *(cmdc) = 0; // number of parts in a instruction
     int c = 0; // current character of a part in the instruction
@@ -203,14 +208,11 @@ void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
             i++;
         }
 
-        // Ignore rest if it's a comment
-        if (line[i] == ';')
-            break;
-
-        // add a part (continous sequence of non-whitespace and non ',' characters)
+        // add a part (continous sequence of characters, ignore whitespace, {',', ';'})
         // to parts array
         while(line[i] != ' ' && line[i] != '\t'
-              && line[i] != ',' && line[i] != '\n') {
+              && line[i] != ',' && line[i] != '\n'
+              && line[i] != ';') {
             cmd[*cmdc][c] = toupper(line[i]);
             c++;
             i++;
@@ -221,8 +223,8 @@ void parseLine(char** lineP, int* cmdc, char cmd[3][15]) {
         if (c)
             *(cmdc) += 1;
 
-        // If we've reached EOL we can stop parsing
-        if (line[i] == '\n')
+        // Ignore rest if it's a comment, or we've reached EOL
+        if (line[i] == ';' || line[i] == '\n')
             break;
 
         // restart
@@ -246,8 +248,8 @@ int main(int argc, char** argv) {
 
     int manual = 0;
     int debug = 0;
-    char filePath[20] = "./example.asm";
-    char outputPath[20] = "./out.bin";
+    char filePath[40] = "./example.asm";
+    char outputPath[40] = "./out.bin";
 
     for(int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-i")) {
@@ -349,8 +351,8 @@ int getOpCode(char* text) {
         return MULSI;
     } else if (!strcmp(text, "LSLS")) {
         return LSLS;
-    } else if (!strcmp(text, "LSLR")) {
-        return LSLR;
+    } else if (!strcmp(text, "LSRS")) {
+        return LSRS;
     }
 
     return UNDEFINED;

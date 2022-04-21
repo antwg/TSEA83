@@ -4,14 +4,12 @@ use IEEE.numeric_std.all;
 
 entity pipeCPU is
 	port (
-		clk : in std_logic;
-		rst : in std_logic;
+		clk, rst : in std_logic;
 		UART_in : in std_logic;
-		--UART_out : out std_logic;
+		UART_out : out std_logic;
+		--JA : in unsigned(15 downto 0);
 		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0)
-		--JA : in unsigned(15 downto 0)
-		);
+		an : out unsigned(3 downto 0));
 
 end pipeCPU;
 
@@ -61,18 +59,29 @@ signal data_bus : unsigned(15 downto 0) := (others => '0');
 
 -- Register file
 signal rf_we : std_logic := '0';
-signal rf_out1, rf_out2 : unsigned(15 downto 0) := (others => '0');
+signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
--- Loader signals (testing // Rw)
-signal temp_done : std_logic;
-signal loader_done : std_logic;
-signal loader_we : std_logic;
-signal loader_addr : unsigned(15 downto 0);
-signal loader_data_Out : unsigned(31 downto 0);
+-- Loader signals
+signal boot_en : std_logic := '1';
+signal boot_done : std_logic := '0';
+signal boot_we : std_logic := '0';
+signal boot_addr : unsigned(15 downto 0) := (others => '0');
+signal boot_data_out : unsigned(31 downto 0) := (others => '0');
+signal boot_wait_cnt : unsigned(13 downto 0) := (others => '0');
+
+-- UART com
+signal com_send_byte : unsigned (7 downto 0) := (others => '0');
+signal com_sent : std_logic := '0';
+signal com_send : std_logic := '0';
+signal com_debug_value : unsigned(7 downto 0) := (others => '1');
+signal com_debug : std_logic := '1';
+
+signal com_pm_val : unsigned(31 downto 0) := (others => '0');
+signal com_pm_part : unsigned(4 downto 0) := (others => '0');
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
-signal led_addr :unsigned(3 downto 0) := "0000"; 
+signal led_addr : unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
 --joystick out 
@@ -121,20 +130,27 @@ constant LSLR		: unsigned(7 downto 0) := x"20";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-    port( 
-        clk : in std_logic;
-        we : std_logic;
-        addr : in unsigned(15 downto 0);
-		data_out : out unsigned(31 downto 0);
-	    wr_addr : in unsigned(15 downto 0);
-	    wr_data : in unsigned(31 downto 0));
+    port( clk : in std_logic;
+          we : std_logic;
+          addr : in unsigned(15 downto 0);
+		  data_out : out unsigned(31 downto 0);
+	      wr_addr : in unsigned(15 downto 0);
+	      wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
-	port( clk, rst, rx : in std_logic;
+	port( clk, rst, rx, boot_en : in std_logic;
           done, we : out std_logic;
           addr : out unsigned(15 downto 0);
           data_out : out unsigned(31 downto 0));
+end component;
+
+component UART_COM is
+    port( clk, rst : in std_logic;
+          bit_out : out std_logic;
+          send_byte : in unsigned(7 downto 0);
+          send : in std_logic;
+          sent : out std_logic);
 end component;
 
 component DATA_MEM is
@@ -147,14 +163,10 @@ component DATA_MEM is
           --led_out : out unsigned(15 downto 0));
 end component;
 
--- Sprite minne
--- address
--- we
-
 component REG_FILE is
 	port(
-		rd : in unsigned(3 downto 0);
-		ra : in unsigned(3 downto 0);
+		rd_in : in unsigned(3 downto 0);
+		ra_in : in unsigned(3 downto 0);
 		we : in std_logic; -- write enable
 		clk : in std_logic;
 		data_in : in unsigned(15 downto 0);
@@ -165,15 +177,13 @@ component REG_FILE is
 end component;
 
 component ALU is
-	port (
-		MUX1: in unsigned(15 downto 0);
-		MUX2 : in unsigned(15 downto 0);
-		op_code : in unsigned(7 downto 0);
-		result : out unsigned(15 downto 0);
-		status_reg : out unsigned(3 downto 0);
-		reset: in std_logic;
-		clk : in std_logic	
-		);
+	port ( MUX1: in unsigned(15 downto 0);
+		   MUX2 : in unsigned(15 downto 0);
+	   	   op_code : in unsigned(7 downto 0);
+	   	   result : out unsigned(15 downto 0);
+	   	   status_reg : out unsigned(3 downto 0);
+	   	   reset: in std_logic;
+	   	   clk : in std_logic);
 end component;
 
 component leddriver is
@@ -181,7 +191,7 @@ component leddriver is
            seg : out  UNSIGNED(7 downto 0);
            an : out  UNSIGNED (3 downto 0);
            value : in  UNSIGNED (15 downto 0));
-	end component;
+end component;
 
 	component joystickreal is
     Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
@@ -210,33 +220,39 @@ begin
 		clk => clk,
 		addr => pm_addr,
 		data_out => PMdata_out,
-		we => loader_we,
-		wr_addr => loader_addr,
-		wr_data => loader_data_out
-	);
+		we => boot_we,
+		wr_addr => boot_addr,
+		wr_data => boot_data_out);
 
 	prog_loader_comp : PROG_LOADER port map(
 		clk => clk,
 		rst => rst,
 	 	rx => UART_in,
-		done => loader_done,
-	  	we => loader_we,
-	  	addr => loader_addr,
-	  	data_out => loader_data_out
-	);
+        boot_en => boot_en,
+		done => boot_done,
+	  	we => boot_we,
+	  	addr => boot_addr,
+	  	data_out => boot_data_out);
+
+    uart_com_comp : UART_COM port map(
+        clk => clk,
+        rst => rst,
+        send => com_send,
+        bit_out => UART_out,
+        send_byte => com_send_byte,
+        sent => com_sent);
 
 	reg_file_comp : REG_FILE port map(
-		rd => IR2_rd,
-		ra => IR2_ra,
-		rd_out => rf_out1,
-		ra_out => rf_out2,
+		rd_in => IR2_rd,
+		ra_in => IR2_ra,
+		rd_out => rf_rd,
+		ra_out => rf_ra,
 		we => rf_we,
 		data_in => data_bus,
 		clk => clk,
         --led_out => led_null, -- turns of led to be set here
         led_out => led_value, -- set led value to led_addr in register file
-        led_addr => led_addr
-	);
+        led_addr => led_addr);
 
 	data_mem_comp : DATA_MEM port map(
 		we => dm_we,
@@ -255,27 +271,58 @@ begin
 		result => alu_out,
 		status_reg => status_reg_out,
 		reset => rst,
-		clk => clk
-	);
+		clk => clk);
 
 	leddriver_comp : leddriver port map(
 		clk => clk,
         rst => rst,
         seg => seg,
         an => an,
-        value => led_value
-	);
+        value => led_value);
 
 -------------------------------------------------------------------------------
 
+    -- DEBUG
     -- 7 seg debug
-    --led_value <= PC;
+    --led_value <= x"9A3C";
+
+    -- UART debug
+   -- process(clk) begin
+   --     if (rising_edge(clk) and com_debug='1') then
+   --         if (com_sent='1') then
+   --             com_send_byte <= com_debug_value;
+   --             com_send <= '1';
+   --         elsif (com_send='1') then
+   --             com_send <= '0';
+   --             com_debug_value <= com_debug_value - 1;
+   --         elsif (com_send <= '0' and com_debug_value = 0) then
+   --             com_debug <= '0';
+   --         end if;
+   --     end if;
+   -- end process;
+
+    -- PM Debug
+    ---
+    -- Prints the contents of the program memory after the bootloader
+    -- has loaded something to it.
+--    process(clk) begin
+--        if (rising_edge(clk) and boot_en='1') then
+--            if (boot_we='1') then
+--                com_pm_val <= boot_data_out;
+--                com_send <= '1';
+--            elsif (com_send='1') then
+--                com_send <= '0';
+--                com_debug_value <= com_debug_value - 1;
+--            elsif (com_send <= '0' and com_debug_value = 0) then
+--                com_debug <= '0';
+--            end if;
+--        end if;
+--    end process;
 
 	-- ALU multiplexers
-	alu_mux1 <= rf_out1;
+	alu_mux1 <= rf_rd;
 
-	alu_mux2 <= IR2_const when ((IR2_op = LD)     or
-                                (IR2_op = LDI)    or
+	alu_mux2 <= IR2_const when ((IR2_op = LDI)    or
                                 (IR2_op = STI)    or
 								(IR2_op = ADDI)   or 
                                 (IR2_op = SUBI)   or
@@ -283,16 +330,17 @@ begin
                                 (IR2_op = ANDI)   or
 								(IR2_op = ORI)    or 
                                 (IR2_op = MULI)   or
-								(IR2_op = MULSI)) else rf_out2;
+								(IR2_op = MULSI)) else rf_ra;
 
 	-- Data bus multiplexer
     with IR2_op select
-        data_bus <= dm_data_out when LD,
+        data_bus <= rf_ra       when ST,
+                    IR2_const   when STI,
+                    dm_data_out when LD,
 					alu_out     when others;
       
 	-- Address controller
-	dm_addr <= (alu_out and "0000000001111111"); -- TODO mask real length of ipput addr seseee datata mama
-	--dm_we <= '1' when (IR2_op = STI) else '0';
+	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
@@ -309,9 +357,15 @@ begin
                        (IR2_op = BLT)   or
                        (IR2_op = STI)   or
                        (IR2_op = ST)    or
+					   (IR2_op = CMP)	or
+					   (IR2_op = CMPI)	or
                        (IR2_op = PUSH)) else '1';
 
-	-- Handle PC:s and IR:s, speciel case when jumps happens
+	-- Handle PC:s and IR:s
+    ---
+    -- We only execute as per usual when the bootloader is done loading a program.
+    -- There's one special case while executing, when we want to jump. Then we
+    -- need to insert a jump nop, stop counting PC and set PC to the correct jump addr.
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
@@ -321,15 +375,33 @@ begin
 				JUMP_PC <= (others => '0');
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
-			else
-				IR2 <= IR1;
-				JUMP_PC <= PC1 + IR1_const;
 
-				if (IR1_op = RJMP) then -- if we see a jump, prepare for it
-					PC1 <= PC;
-					IR1 <= x"00000000"; -- jump NOP
-				elsif (IR2_op = RJMP) then
+            -- run as per usual when bootloader has loaded a program
+			elsif (boot_done='1') then
+				IR2 <= IR1;
+				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
+
+				-- Flags are not tested since they hane not been set yet.
+				-- This can lead to uneccesary NOPs but this is better than
+				-- having to add NOPs manually
+				if (IR1_op = RJMP) or -- if we see a jump, prepare for it
+				   (IR1_op = BEQ) or 
+				   (IR1_op = BNE) or
+				   (IR1_op = BPL) or
+				   (IR1_op = BMI) or
+				   (IR1_op = BGE) or
+				   (IR1_op = BLT) then
+					 	PC1 <= PC;
+						IR1 <= (others => '0'); -- jump NOP
+				elsif (IR2_op = RJMP) or
+					  	((IR2_op = BEQ) and ZF = '1') or
+					    ((IR2_op = BNE) and ZF = '0') or
+					    ((IR2_op = BPL) and NF = '0') or
+					    ((IR2_op = BMI) and NF = '1')or
+					    ((IR2_op = BGE) and ((NF xor VF) = '0')) or
+					    ((IR2_op = BLT) and ((NF xor VF) = '1')) then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
+				
 				else -- update as per usual if nothing special is happening
 					PC <= PC + 1;
 					PC1 <= PC;
@@ -340,7 +412,7 @@ begin
 		end if;
 	end process;
 
-	pm_addr <= PC;
+	pm_addr <= (PC and "0000000011111111"); -- Currently only allow 256 addresses
 
 	-- Update stack pointer
 	-- If push: decrement
