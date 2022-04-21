@@ -3,7 +3,7 @@
 # Build CPU
 vcom "+acc" ../pipeCPU.vhd
 # Build memory files
-vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd
+vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd ../alu.vhd
 # Build relevant testbench
 vcom "+acc" ../tbs/prog_load_tb.vhd
 
@@ -18,7 +18,7 @@ add wave -group ir {sim:/prog_load_tb/U0/IR1}
 add wave -group ir {sim:/prog_load_tb/U0/IR2}
 add wave -dec -group pc {sim:/prog_load_tb/U0/PC}
 add wave -hex -group pc {sim:/prog_load_tb/U0/PC1}
-add wave -hex -group pc {sim:/prog_load_tb/U0/PC2}
+add wave -hex -group pc {sim:/prog_load_tb/U0/JUMP_PC}
 add wave -group reg {sim:/prog_load_tb/U0/IR2_ra}
 add wave -group reg {sim:/prog_load_tb/U0/IR2_rd}
 add wave -group reg -color gold {sim:/prog_load_tb/U0/alu_mux1}
