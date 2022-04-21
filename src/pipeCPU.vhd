@@ -193,28 +193,28 @@ component leddriver is
            value : in  UNSIGNED (15 downto 0));
 end component;
 
-	component joystickreal is
-    Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
-            RST : in  STD_LOGIC;           								-- Button DNN
-            MISO : in std_logic;
-            SS : inout  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
-            SCLK: out  STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
-            MOSI : out  STD_LOGIC							-- Master Out Slave In, Pin 2, Port JA
-   			); -- Cathodes for Seven Segment Display
-end component;
+--:wcomponent joystickreal is
+--:w    Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
+--:w            RST : in  STD_LOGIC;           								-- Button DNN
+--:w            MISO : in std_logic;
+--:w            SS : inout  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
+--:w            SCLK: out  STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
+--:w            MOSI : out  STD_LOGIC							-- Master Out Slave In, Pin 2, Port JA
+--:w   			); -- Cathodes for Seven Segment Display
+--:wend component;
 
 begin
 
------------------------------------- Components -------------------------------
-	joystick_comp : joystickreal port map( 	
-		CLK => clk,
-		RST => rst,
-		MISO => MISO,
-		SS => SS,
-		SCLK => SCLK,
-		MOSI => MOSI
-		);
-
+-------------------------------------- Components -------------------------------
+	--joystick_comp : joystickreal port map( 	
+	--	CLK => clk,
+	--	RST => rst,
+	--	MISO => MISO,
+	--	SS => SS,
+	--	SCLK => SCLK,
+	--	MOSI => MOSI
+	--	);
+--
 
    prog_mem_comp : PROG_MEM port map(
 		clk => clk,
