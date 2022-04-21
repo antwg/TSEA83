@@ -30,14 +30,14 @@ architecture Behavioural of joystickreal is
 
 SCLK <= sclk_inner;
 -- 50kbps clock for joystick, if more than 5 bytes are sent without 
--- switching ss to 0 the joystick will stop reciving data
+-- switching ss to 1 the joystick will stop reciving data
 process(clk) begin 
     if rising_edge(clk) then
-        if (bits_sent = 40 or ss = '1' or RST = '1') then -- ss = 1 means joystick is disabled
+        if (ss = '1' or RST = '1') then -- ss = 1 means joystick is disabled
             sclk_counter <= x"0000";
-            bits_sent <= x"0000";
+            bits_sent <= "0000000";
             sclk_inner <= '0';
-        elsif (ss = '0') then -- if joystick is enabled
+        elsif (ss = '0' and bits_sent /= 40) then -- if joystick is enabled
             if (sclk_counter = sclk_speed) then
                 sclk_counter <= x"0000";
                 if (sclk_inner = '1') then
