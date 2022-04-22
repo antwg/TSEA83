@@ -1,0 +1,696 @@
+Release 14.7 - xst P.20131013 (lin64)
+Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+--> 
+Parameter TMPDIR set to tmpdir
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.04 secs
+ 
+--> 
+
+TABLE OF CONTENTS
+  1) Synthesis Options Summary
+  2) HDL Parsing
+  3) HDL Elaboration
+  4) HDL Synthesis
+       4.1) HDL Synthesis Report
+  5) Advanced HDL Synthesis
+       5.1) Advanced HDL Synthesis Report
+  6) Low Level Synthesis
+  7) Partition Report
+  8) Design Summary
+       8.1) Primitive and Black Box Usage
+       8.2) Device utilization summary
+       8.3) Partition Resource Summary
+       8.4) Timing Report
+            8.4.1) Clock Information
+            8.4.2) Asynchronous Control Signals Information
+            8.4.3) Timing Summary
+            8.4.4) Timing Details
+            8.4.5) Cross Clock Domains Report
+
+
+=========================================================================
+*                      Synthesis Options Summary                        *
+=========================================================================
+---- Source Parameters
+Input File Name                    : "design.prj"
+
+---- Target Parameters
+Output File Name                   : "design.ngc"
+Target Device                      : xc6slx16-3-csg324
+
+---- Source Options
+Top Module Name                    : vga_test
+
+=========================================================================
+
+WARNING:Xst:29 - Optimization Effort not specified
+The following parameters have been added:
+Optimization Goal                  : SPEED
+
+=========================================================================
+
+=========================================================================
+*                          HDL Parsing                                  *
+=========================================================================
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/vga_test.vhd" into library work
+Parsing entity <vga_test>.
+Parsing architecture <Behavioral> of entity <vga_test>.
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/VGA_MOTOR.vhd" into library work
+Parsing entity <VGA_MOTOR>.
+Parsing architecture <Behavioral> of entity <vga_motor>.
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/MEM/DATA_MEM.vhd" into library work
+Parsing entity <DATA_MEM>.
+Parsing architecture <func> of entity <data_mem>.
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/MEM/REG_FILE.vhd" into library work
+Parsing entity <REG_FILE>.
+Parsing architecture <func> of entity <reg_file>.
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/MEM/PROG_MEM.vhd" into library work
+Parsing entity <PROG_MEM>.
+Parsing architecture <func> of entity <prog_mem>.
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/MEM/PROG_LOADER.vhd" into library work
+Parsing entity <PROG_LOADER>.
+Parsing architecture <func> of entity <prog_loader>.
+Parsing VHDL file "/home/jakos322/Documents/tsea83_project/projekt/src/alu.vhd" into library work
+Parsing entity <ALU>.
+Parsing architecture <func> of entity <alu>.
+
+=========================================================================
+*                            HDL Elaboration                            *
+=========================================================================
+
+Elaborating entity <vga_test> (architecture <Behavioral>) from library <work>.
+
+Elaborating entity <VGA_MOTOR> (architecture <Behavioral>) from library <work>.
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Synthesizing Unit <vga_test>.
+    Related source file is "/home/jakos322/Documents/tsea83_project/projekt/src/vga_test.vhd".
+INFO:Xst:3210 - "/home/jakos322/Documents/tsea83_project/projekt/src/vga_test.vhd" line 40: Output port <spriteOut> of the instance <U0> is unconnected or connected to loadless signal.
+    Summary:
+	no macro.
+Unit <vga_test> synthesized.
+
+Synthesizing Unit <VGA_MOTOR>.
+    Related source file is "/home/jakos322/Documents/tsea83_project/projekt/src/VGA_MOTOR.vhd".
+WARNING:Xst:2999 - Signal 'tileList', unconnected in block 'VGA_MOTOR', is tied to its initial value.
+WARNING:Xst:2999 - Signal 'tileMem', unconnected in block 'VGA_MOTOR', is tied to its initial value.
+WARNING:Xst:2999 - Signal 'spriteMem', unconnected in block 'VGA_MOTOR', is tied to its initial value.
+WARNING:Xst:3035 - Index value(s) does not match array range for signal <tileList>, simulation mismatch.
+    Found 401x8-bit single-port Read Only RAM <Mram_tileList> for signal <tileList>.
+    Found 2048x4-bit single-port Read Only RAM <Mram_tileMem> for signal <tileMem>.
+    Found 10-bit register for signal <Xpixel>.
+    Found 10-bit register for signal <Ypixel>.
+    Found 4-bit register for signal <tilePixel>.
+    Found 29-bit register for signal <spriteList<0>>.
+    Found 29-bit register for signal <spriteList<1>>.
+    Found 29-bit register for signal <spriteList<2>>.
+    Found 16-bit register for signal <spriteOut>.
+    Found 2-bit register for signal <ClkDiv>.
+    Found 2-bit adder for signal <ClkDiv[1]_GND_5_o_add_0_OUT> created at line 1241.
+    Found 10-bit adder for signal <Xpixel[9]_GND_5_o_add_5_OUT> created at line 1241.
+    Found 10-bit adder for signal <Ypixel[9]_GND_5_o_add_14_OUT> created at line 1241.
+    Found 11-bit adder for signal <n0288> created at line 354.
+    Found 8-bit adder for signal <GND_5_o_GND_5_o_add_139_OUT> created at line 391.
+    Found 16-bit adder for signal <n0482> created at line 391.
+    Found 16-bit adder for signal <n0363> created at line 1247.
+    Found 8-bit adder for signal <GND_5_o_GND_5_o_add_151_OUT> created at line 402.
+    Found 16-bit adder for signal <n0491> created at line 401.
+    Found 16-bit adder for signal <n0370> created at line 1247.
+    Found 8-bit adder for signal <GND_5_o_GND_5_o_add_163_OUT> created at line 412.
+    Found 16-bit adder for signal <n0500> created at line 411.
+    Found 16-bit adder for signal <n0377> created at line 1247.
+    Found 8-bit subtractor for signal <GND_5_o_GND_5_o_sub_138_OUT<7:0>> created at line 391.
+    Found 8-bit subtractor for signal <n0475> created at line 0.
+    Found 8-bit subtractor for signal <GND_5_o_GND_5_o_sub_150_OUT<7:0>> created at line 401.
+    Found 8-bit subtractor for signal <n0484> created at line 0.
+    Found 8-bit subtractor for signal <GND_5_o_GND_5_o_sub_162_OUT<7:0>> created at line 411.
+    Found 8-bit subtractor for signal <n0493> created at line 0.
+    Found 5x4-bit multiplier for signal <PWR_5_o_Ypixel[8]_MuLt_27_OUT> created at line 354.
+    Found 8x3-bit multiplier for signal <PWR_5_o_spriteList[0][28]_MuLt_136_OUT> created at line 391.
+    Found 8x3-bit multiplier for signal <PWR_5_o_spriteList[1][28]_MuLt_148_OUT> created at line 400.
+    Found 8x3-bit multiplier for signal <PWR_5_o_spriteList[2][28]_MuLt_160_OUT> created at line 410.
+    Found 2048x4-bit dual-port Read Only RAM <Mram_spriteMem> for signal <spriteMem>.
+    Found 10-bit comparator greater for signal <PWR_5_o_Xpixel[9]_LessThan_11_o> created at line 304
+    Found 10-bit comparator greater for signal <Xpixel[9]_PWR_5_o_LessThan_12_o> created at line 304
+    Found 10-bit comparator greater for signal <GND_5_o_Ypixel[9]_LessThan_20_o> created at line 322
+    Found 10-bit comparator greater for signal <Ypixel[9]_GND_5_o_LessThan_21_o> created at line 322
+    Found 10-bit comparator greater for signal <Xpixel[9]_PWR_5_o_LessThan_22_o> created at line 325
+    Found 10-bit comparator greater for signal <Ypixel[9]_GND_5_o_LessThan_23_o> created at line 325
+    Found 8-bit comparator lessequal for signal <n0136> created at line 393
+    Found 8-bit comparator lessequal for signal <n0138> created at line 394
+    Found 8-bit comparator lessequal for signal <n0140> created at line 395
+    Found 8-bit comparator lessequal for signal <n0142> created at line 396
+    Found 8-bit comparator lessequal for signal <n0155> created at line 404
+    Found 8-bit comparator lessequal for signal <n0157> created at line 405
+    Found 8-bit comparator lessequal for signal <n0159> created at line 406
+    Found 8-bit comparator lessequal for signal <n0161> created at line 407
+    Found 8-bit comparator lessequal for signal <n0174> created at line 414
+    Found 8-bit comparator lessequal for signal <n0176> created at line 415
+    Found 8-bit comparator lessequal for signal <n0178> created at line 416
+    Found 8-bit comparator lessequal for signal <n0180> created at line 417
+    Summary:
+	inferred   4 RAM(s).
+	inferred   4 Multiplier(s).
+	inferred  19 Adder/Subtractor(s).
+	inferred 129 D-type flip-flop(s).
+	inferred  18 Comparator(s).
+	inferred   7 Multiplexer(s).
+Unit <VGA_MOTOR> synthesized.
+
+=========================================================================
+HDL Synthesis Report
+
+Macro Statistics
+# RAMs                                                 : 4
+ 2048x4-bit dual-port Read Only RAM                    : 1
+ 2048x4-bit single-port Read Only RAM                  : 2
+ 401x8-bit single-port Read Only RAM                   : 1
+# Multipliers                                          : 4
+ 5x4-bit multiplier                                    : 1
+ 8x3-bit multiplier                                    : 3
+# Adders/Subtractors                                   : 19
+ 10-bit adder                                          : 2
+ 11-bit adder                                          : 1
+ 16-bit adder                                          : 6
+ 2-bit adder                                           : 1
+ 8-bit adder                                           : 3
+ 8-bit subtractor                                      : 6
+# Registers                                            : 8
+ 10-bit register                                       : 2
+ 16-bit register                                       : 1
+ 2-bit register                                        : 1
+ 29-bit register                                       : 3
+ 4-bit register                                        : 1
+# Comparators                                          : 18
+ 10-bit comparator greater                             : 6
+ 8-bit comparator lessequal                            : 12
+# Multiplexers                                         : 7
+ 4-bit 2-to-1 multiplexer                              : 6
+ 8-bit 2-to-1 multiplexer                              : 1
+
+=========================================================================
+
+=========================================================================
+*                       Advanced HDL Synthesis                          *
+=========================================================================
+
+
+Synthesizing (advanced) Unit <VGA_MOTOR>.
+The following registers are absorbed into counter <ClkDiv>: 1 register on signal <ClkDiv>.
+The following registers are absorbed into counter <Xpixel>: 1 register on signal <Xpixel>.
+The following registers are absorbed into counter <Ypixel>: 1 register on signal <Ypixel>.
+	Multiplier <Mmult_PWR_5_o_spriteList[0][28]_MuLt_136_OUT> in block <VGA_MOTOR> and adder/subtractor <Madd_n0363_Madd> in block <VGA_MOTOR> are combined into a MAC<Maddsub_PWR_5_o_spriteList[0][28]_MuLt_136_OUT>.
+	Multiplier <Mmult_PWR_5_o_spriteList[1][28]_MuLt_148_OUT> in block <VGA_MOTOR> and adder/subtractor <Madd_n0370_Madd> in block <VGA_MOTOR> are combined into a MAC<Maddsub_PWR_5_o_spriteList[1][28]_MuLt_148_OUT>.
+	Multiplier <Mmult_PWR_5_o_spriteList[2][28]_MuLt_160_OUT> in block <VGA_MOTOR> and adder/subtractor <Madd_n0377_Madd> in block <VGA_MOTOR> are combined into a MAC<Maddsub_PWR_5_o_spriteList[2][28]_MuLt_160_OUT>.
+	Multiplier <Mmult_PWR_5_o_Ypixel[8]_MuLt_27_OUT> in block <VGA_MOTOR> and adder/subtractor <Madd_n0288_Madd> in block <VGA_MOTOR> are combined into a MAC<Maddsub_PWR_5_o_Ypixel[8]_MuLt_27_OUT>.
+INFO:Xst:3226 - The RAM <Mram_tileMem> will be implemented as a BLOCK RAM, absorbing the following register(s): <tilePixel>
+    -----------------------------------------------------------------------
+    | ram_type           | Block                               |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 2048-word x 4-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkA           | connected to signal <clk>           | rise     |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <(_n0517,Ypixel<4:2>,Xpixel<4:2>)> |          |
+    |     diA            | connected to signal <GND>           |          |
+    |     doA            | connected to signal <tilePixel>     |          |
+    |     dorstA         | connected to internal node          | low      |
+    | reset value        | 0000                                           |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+INFO:Xst:3218 - HDL ADVISOR - The RAM <Mram_tileList> will be implemented on LUTs either because you have described an asynchronous read or because of currently unsupported block RAM features. If you have described an asynchronous read, making it synchronous would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 401-word x 8-bit                    |          |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <n0288>         |          |
+    |     diA            | connected to signal <GND>           |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+INFO:Xst:3218 - HDL ADVISOR - The RAM <Mram_spriteMem> will be implemented on LUTs either because you have described an asynchronous read or because of currently unsupported block RAM features. If you have described an asynchronous read, making it synchronous would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 2048-word x 4-bit                   |          |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <n0363>         |          |
+    |     diA            | connected to signal <GND>           |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 2048-word x 4-bit                   |          |
+    |     addrB          | connected to signal <n0370>         |          |
+    |     doB            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+INFO:Xst:3218 - HDL ADVISOR - The RAM <Mram_spriteMem1> will be implemented on LUTs either because you have described an asynchronous read or because of currently unsupported block RAM features. If you have described an asynchronous read, making it synchronous would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 2048-word x 4-bit                   |          |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <n0377>         |          |
+    |     diA            | connected to signal <GND>           |          |
+    |     doA            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+Unit <VGA_MOTOR> synthesized (advanced).
+
+=========================================================================
+Advanced HDL Synthesis Report
+
+Macro Statistics
+# RAMs                                                 : 4
+ 2048x4-bit dual-port distributed Read Only RAM        : 1
+ 2048x4-bit single-port block Read Only RAM            : 1
+ 2048x4-bit single-port distributed Read Only RAM      : 1
+ 401x8-bit single-port distributed Read Only RAM       : 1
+# MACs                                                 : 4
+ 5x4-to-9-bit MAC                                      : 1
+ 8x3-to-11-bit MAC                                     : 3
+# Adders/Subtractors                                   : 12
+ 11-bit adder                                          : 3
+ 7-bit subtractor                                      : 3
+ 8-bit adder                                           : 3
+ 8-bit subtractor                                      : 3
+# Counters                                             : 3
+ 10-bit up counter                                     : 2
+ 2-bit up counter                                      : 1
+# Registers                                            : 103
+ Flip-Flops                                            : 103
+# Comparators                                          : 18
+ 10-bit comparator greater                             : 6
+ 8-bit comparator lessequal                            : 12
+# Multiplexers                                         : 7
+ 4-bit 2-to-1 multiplexer                              : 6
+ 8-bit 2-to-1 multiplexer                              : 1
+
+=========================================================================
+
+=========================================================================
+*                         Low Level Synthesis                           *
+=========================================================================
+WARNING:Xst:1293 - FF/Latch <spriteList_2_5> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_4> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_3> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_2> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_1> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_0> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_28> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_27> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_26> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_25> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_24> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_23> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_22> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_21> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_20> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_19> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_18> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_17> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_16> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_15> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_14> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_13> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_12> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_28> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_27> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_26> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_25> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_24> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_23> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_22> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_21> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_20> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_19> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_18> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_17> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_16> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_15> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_14> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_13> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_12> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_11> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_10> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_9> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_8> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_7> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_2_6> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_14> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_13> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_12> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_11> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_10> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_5> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_4> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_15> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_14> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_13> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_12> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_11> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_10> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_9> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_8> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_7> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_6> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_5> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_4> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_3> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_2> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_1> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <spriteOut_0> (without init value) has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_11> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_10> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_9> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_8> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_7> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_6> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_5> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_4> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_3> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_2> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_1> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_1_0> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_28> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_25> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_24> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_23> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_22> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_21> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_20> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_19> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_18> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_17> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_16> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1896 - Due to other FF/Latch trimming, FF/Latch <spriteList_0_15> has a constant value of 0 in block <VGA_MOTOR>. This FF/Latch will be trimmed during the optimization process.
+
+Optimizing unit <vga_test> ...
+
+Optimizing unit <VGA_MOTOR> ...
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem3> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem9> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem11> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem14> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem13> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem15> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem16> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem19> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem17> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem18> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem25> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem27> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem30> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem31> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem34> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem32> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem33> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem35> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem41> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem45> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem43> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem46> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem47> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem50> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem48> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem49> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem51> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem52> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem55> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem53> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem54> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem56> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem57> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem60> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem58> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem59> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem61> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem62> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem65> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem63> are equivalent, second RAM is removed
+INFO:Xst:2399 - RAMs <Mram_spriteMem2>, <Mram_spriteMem64> are equivalent, second RAM is removed
+INFO:Xst:2261 - The FF/Latch <U0/spriteList_0_27> in Unit <vga_test> is equivalent to the following 9 FFs/Latches, which will be removed : <U0/spriteList_0_26> <U0/spriteList_0_9> <U0/spriteList_0_8> <U0/spriteList_0_7> <U0/spriteList_0_6> <U0/spriteList_0_3> <U0/spriteList_0_2> <U0/spriteList_0_1> <U0/spriteList_0_0> 
+
+Mapping all equations...
+Building and optimizing final netlist ...
+WARNING:Xst:1426 - The value init of the FF/Latch U0/spriteList_0_27 hinder the constant cleaning in the block vga_test.
+   You should achieve better results by setting this init to 1.
+Found area constraint ratio of 100 (+ 0) on block vga_test, actual ratio is 4.
+
+Final Macro Processing ...
+
+=========================================================================
+Final Register Report
+
+Macro Statistics
+# Registers                                            : 23
+ Flip-Flops                                            : 23
+
+=========================================================================
+
+=========================================================================
+*                           Partition Report                            *
+=========================================================================
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
+
+=========================================================================
+*                            Design Summary                             *
+=========================================================================
+
+Top Level Output File Name         : design.ngc
+
+Primitive and Black Box Usage:
+------------------------------
+# BELS                             : 409
+#      GND                         : 1
+#      INV                         : 4
+#      LUT1                        : 34
+#      LUT2                        : 15
+#      LUT3                        : 12
+#      LUT4                        : 31
+#      LUT5                        : 70
+#      LUT6                        : 152
+#      MUXCY                       : 22
+#      MUXF7                       : 35
+#      MUXF8                       : 8
+#      VCC                         : 1
+#      XORCY                       : 24
+# FlipFlops/Latches                : 23
+#      FD                          : 1
+#      FDR                         : 2
+#      FDRE                        : 20
+# RAMS                             : 24
+#      RAM128X1D                   : 23
+#      RAMB8BWER                   : 1
+# Clock Buffers                    : 1
+#      BUFGP                       : 1
+# IO Buffers                       : 11
+#      IBUF                        : 1
+#      OBUF                        : 10
+# DSPs                             : 6
+#      DSP48A1                     : 6
+
+Device utilization summary:
+---------------------------
+
+Selected Device : 6slx16csg324-3 
+
+
+Slice Logic Utilization: 
+ Number of Slice Registers:              23  out of  18224     0%  
+ Number of Slice LUTs:                  410  out of   9112     4%  
+    Number used as Logic:               318  out of   9112     3%  
+    Number used as Memory:               92  out of   2176     4%  
+       Number used as RAM:               92
+
+Slice Logic Distribution: 
+ Number of LUT Flip Flop pairs used:    421
+   Number with an unused Flip Flop:     398  out of    421    94%  
+   Number with an unused LUT:            11  out of    421     2%  
+   Number of fully used LUT-FF pairs:    12  out of    421     2%  
+   Number of unique control sets:         4
+
+IO Utilization: 
+ Number of IOs:                          12
+ Number of bonded IOBs:                  12  out of    232     5%  
+
+Specific Feature Utilization:
+ Number of Block RAM/FIFO:                1  out of     32     3%  
+    Number using Block RAM only:          1
+ Number of BUFG/BUFGCTRLs:                1  out of     16     6%  
+ Number of DSP48A1s:                      6  out of     32    18%  
+
+---------------------------
+Partition Resource Summary:
+---------------------------
+
+  No Partitions were found in this design.
+
+---------------------------
+
+
+=========================================================================
+Timing Report
+
+NOTE: THESE TIMING NUMBERS ARE ONLY A SYNTHESIS ESTIMATE.
+      FOR ACCURATE TIMING INFORMATION PLEASE REFER TO THE TRACE REPORT
+      GENERATED AFTER PLACE-and-ROUTE.
+
+Clock Information:
+------------------
+-----------------------------------+--------------------------+-------+
+Clock Signal                       | Clock buffer(FF name)    | Load  |
+-----------------------------------+--------------------------+-------+
+clk                                | BUFGP                    | 27    |
+U0/spriteList_0_27_glue_set        | NONE(U0_Mram_spriteMem44)| 23    |
+-----------------------------------+--------------------------+-------+
+INFO:Xst:2169 - HDL ADVISOR - Some clock signals were not automatically buffered by XST with BUFG/BUFR resources. Please use the buffer_type constraint in order to insert these buffers to the clock signals to help prevent skew problems.
+
+Asynchronous Control Signals Information:
+----------------------------------------
+No asynchronous control signals found in this design
+
+Timing Summary:
+---------------
+Speed Grade: -3
+
+   Minimum period: 6.689ns (Maximum Frequency: 149.503MHz)
+   Minimum input arrival time before clock: 3.473ns
+   Maximum output required time after clock: 25.386ns
+   Maximum combinational path delay: No path found
+
+Timing Details:
+---------------
+All values displayed in nanoseconds (ns)
+
+=========================================================================
+Timing constraint: Default period analysis for Clock 'clk'
+  Clock period: 6.689ns (frequency: 149.503MHz)
+  Total number of paths / destination ports: 1272 / 122
+-------------------------------------------------------------------------
+Delay:               6.689ns (Levels of Logic = 5)
+  Source:            U0/Ypixel_5 (FF)
+  Destination:       U0_Mram_tileMem (RAM)
+  Source Clock:      clk rising
+  Destination Clock: clk rising
+
+  Data Path: U0/Ypixel_5 to U0_Mram_tileMem
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FDRE:C->Q            13   0.447   1.161  U0/Ypixel_5 (U0/Ypixel_5)
+     LUT4:I1->O            1   0.205   0.924  U0/Maddsub_PWR_5_o_Ypixel[8]_MuLt_27_OUT_Madd_xor<6>1_SW0 (N2)
+     LUT6:I1->O            5   0.203   0.819  U0/Maddsub_PWR_5_o_Ypixel[8]_MuLt_27_OUT_Madd_xor<6>1 (U0/n0288<6>)
+     LUT6:I4->O            1   0.203   0.808  U0_Mram_tileList7111 (U0_Mram_tileList711)
+     LUT6:I3->O            1   0.205   0.580  U0_Mram_tileList7114 (U0_Mram_tileList7113)
+     LUT2:I1->O            1   0.205   0.579  U0_Mram_tileList7115 (U0_N3)
+     RAMB8BWER:ADDRAWRADDR9        0.350          U0_Mram_tileMem
+    ----------------------------------------
+    Total                      6.689ns (1.818ns logic, 4.871ns route)
+                                       (27.2% logic, 72.8% route)
+
+=========================================================================
+Timing constraint: Default OFFSET IN BEFORE for Clock 'clk'
+  Total number of paths / destination ports: 25 / 25
+-------------------------------------------------------------------------
+Offset:              3.473ns (Levels of Logic = 2)
+  Source:            rst (PAD)
+  Destination:       U0/Ypixel_0 (FF)
+  Destination Clock: clk rising
+
+  Data Path: rst to U0/Ypixel_0
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     IBUF:I->O             4   1.222   0.684  rst_IBUF (rst_IBUF)
+     LUT6:I5->O           13   0.205   0.932  U0/Mcount_Ypixel_val (U0/Mcount_Ypixel_val)
+     FDRE:R                    0.430          U0/Ypixel_0
+    ----------------------------------------
+    Total                      3.473ns (1.857ns logic, 1.616ns route)
+                                       (53.5% logic, 46.5% route)
+
+=========================================================================
+Timing constraint: Default OFFSET OUT AFTER for Clock 'clk'
+  Total number of paths / destination ports: 27387375 / 10
+-------------------------------------------------------------------------
+Offset:              25.386ns (Levels of Logic = 16)
+  Source:            U0/Xpixel_7 (FF)
+  Destination:       vgaRed<1> (PAD)
+  Source Clock:      clk rising
+
+  Data Path: U0/Xpixel_7 to vgaRed<1>
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FDRE:C->Q            16   0.447   1.004  U0/Xpixel_7 (U0/Xpixel_7)
+     DSP48A1:B5->PCOUT47    1   3.125   0.000  U0/Madd_n0500_Madd1 (U0/Madd_n0500_Madd1_PCOUT_to_Maddsub_PWR_5_o_spriteList[2][28]_MuLt_160_OUT_PCIN_47)
+     DSP48A1:PCIN47->P4   75   2.264   2.077  U0/Maddsub_PWR_5_o_spriteList[2][28]_MuLt_160_OUT (U0/n0377<4>)
+     LUT6:I0->O           25   0.203   1.421  U0_Mram_spriteMem1111 (U0_Mram_spriteMem11)
+     LUT5:I2->O            1   0.205   0.944  U0_SF1831 (U0_SF183)
+     LUT6:I0->O            1   0.203   0.827  U0_SF2194 (U0_SF2194)
+     LUT6:I2->O            1   0.203   0.808  U0_SF2196 (U0_SF2196)
+     LUT6:I3->O            3   0.205   0.879  U0_SF21920 (U0_SF219)
+     LUT5:I2->O            1   0.205   0.808  U0_Mram_spriteMem1281485_SW0 (U0_N56)
+     LUT6:I3->O            1   0.205   0.684  U0_Mram_spriteMem1281485 (U0_Mram_spriteMem1281484)
+     LUT5:I3->O            1   0.203   0.684  U0_Mram_spriteMem1281486_SW0 (U0_N58)
+     LUT6:I4->O            4   0.203   0.912  U0_Mram_spriteMem1281486 (U0/GND_5_o_read_port_166_OUT<1>)
+     LUT5:I2->O            1   0.205   0.808  U0/Mmux_outputPixel_4bit14_SW0 (N18)
+     LUT6:I3->O            1   0.205   0.944  U0/Mmux_outputPixel_4bit14 (U0/Mmux_outputPixel_4bit13)
+     LUT6:I0->O            4   0.203   0.912  U0/Mmux_outputPixel_4bit15 (U0/outputPixel_4bit<0>)
+     LUT4:I1->O            2   0.205   0.616  U0/outputPixel<6>1 (vgaGreen_1_OBUF)
+     OBUF:I->O                 2.571          vgaRed_1_OBUF (vgaRed<1>)
+    ----------------------------------------
+    Total                     25.386ns (11.060ns logic, 14.326ns route)
+                                       (43.6% logic, 56.4% route)
+
+=========================================================================
+
+Cross Clock Domains Report:
+--------------------------
+
+Clock to Setup on destination clock U0/spriteList_0_27_glue_set
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+clk            |    9.828|         |         |         |
+---------------+---------+---------+---------+---------+
+
+Clock to Setup on destination clock clk
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+clk            |    6.689|         |         |         |
+---------------+---------+---------+---------+---------+
+
+=========================================================================
+
+
+Total REAL time to Xst completion: 6.00 secs
+Total CPU time to Xst completion: 4.91 secs
+ 
+--> 
+
+
+Total memory usage is 492564 kilobytes
+
+Number of errors   :    0 (   0 filtered)
+Number of warnings :   99 (   0 filtered)
+Number of infos    :   48 (   0 filtered)
+

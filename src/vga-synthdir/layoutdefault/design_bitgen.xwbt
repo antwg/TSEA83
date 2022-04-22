@@ -1,0 +1,7 @@
+INFILE=/home/jakos322/Documents/tsea83_project/projekt/src/vga-synthdir/layoutdefault/design.ncd
+OUTFILE=/home/jakos322/Documents/tsea83_project/projekt/src/vga-synthdir/layoutdefault/design.bit
+FAMILY=Spartan6
+PART=xc6slx16-3csg324
+WORKINGDIR=/home/jakos322/Documents/tsea83_project/projekt/src/vga-synthdir/layoutdefault
+LICENSE=ISE
+USER_INFO=211887302_1777494980_210602001_508

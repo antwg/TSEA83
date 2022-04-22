@@ -1,0 +1,33 @@
+//! **************************************************************************
+// Written by: Map P.20131013 on Thu Apr 21 10:33:29 2022
+//! **************************************************************************
+
+SCHEMATIC START;
+COMP "clk" LOCATE = SITE "V10" LEVEL 1;
+COMP "vgaGreen<0>" LOCATE = SITE "P8" LEVEL 1;
+COMP "vgaGreen<1>" LOCATE = SITE "T6" LEVEL 1;
+COMP "vgaGreen<2>" LOCATE = SITE "V6" LEVEL 1;
+COMP "Hsync" LOCATE = SITE "N6" LEVEL 1;
+COMP "Vsync" LOCATE = SITE "P7" LEVEL 1;
+COMP "vgaBlue<1>" LOCATE = SITE "R7" LEVEL 1;
+COMP "vgaBlue<2>" LOCATE = SITE "T7" LEVEL 1;
+COMP "vgaRed<0>" LOCATE = SITE "U7" LEVEL 1;
+COMP "vgaRed<1>" LOCATE = SITE "V7" LEVEL 1;
+COMP "vgaRed<2>" LOCATE = SITE "N7" LEVEL 1;
+PIN U0/Madd_n0500_Madd1_pins<92> = BEL "U0/Madd_n0500_Madd1" PINNAME CLK;
+PIN U0/Madd_n0491_Madd1_pins<92> = BEL "U0/Madd_n0491_Madd1" PINNAME CLK;
+PIN U0/Madd_n0482_Madd1_pins<92> = BEL "U0/Madd_n0482_Madd1" PINNAME CLK;
+PIN U0_Mram_tileMem_pins<11> = BEL "U0_Mram_tileMem" PINNAME CLKAWRCLK;
+TIMEGRP sys_clk_pin = PIN "U0/Madd_n0500_Madd1_pins<92>" PIN
+        "U0/Madd_n0491_Madd1_pins<92>" PIN "U0/Madd_n0482_Madd1_pins<92>" BEL
+        "U0/Ypixel_0" BEL "U0/Xpixel_0" BEL "U0/Ypixel_9" BEL "U0/Ypixel_8"
+        BEL "U0/Ypixel_7" BEL "U0/Ypixel_6" BEL "U0/Ypixel_5" BEL
+        "U0/Ypixel_3" BEL "U0/Ypixel_2" BEL "U0/Ypixel_4" BEL "U0/Ypixel_1"
+        BEL "U0/Xpixel_9" BEL "U0/Xpixel_7" BEL "U0/Xpixel_6" BEL
+        "U0/Xpixel_8" BEL "U0/Xpixel_5" BEL "U0/Xpixel_4" BEL "U0/Xpixel_3"
+        BEL "U0/Xpixel_2" BEL "U0/Xpixel_1" BEL "U0/ClkDiv_1" BEL
+        "U0/ClkDiv_0" BEL "U0/spriteList_0_27" BEL "clk_BUFGP/BUFG" PIN
+        "U0_Mram_tileMem_pins<11>";
+TS_sys_clk_pin = PERIOD TIMEGRP "sys_clk_pin" 100 MHz HIGH 50%;
+SCHEMATIC END;
+
