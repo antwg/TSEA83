@@ -10,11 +10,11 @@ architecture behavior of vga_tb is
   component vga_test
     port ( clk	          : in std_logic;                         -- system clock
            rst            : in std_logic;                         -- reset
-           Hsync	  : out std_logic;                        -- horizontal sync
-           Vsync	  : out std_logic;                        -- vertical sync
-           vgaRed	  : out	std_logic_vector(2 downto 0);     -- VGA red
+           Hsync	        : out std_logic;                        -- horizontal sync
+           Vsync	        : out std_logic;                        -- vertical sync
+           vgaRed	        : out	std_logic_vector(2 downto 0);     -- VGA red
            vgaGreen       : out std_logic_vector(2 downto 0);     -- VGA green
-           vgaBlue	  : out std_logic_vector(2 downto 1)
+           vgaBlue	      : out std_logic_vector(2 downto 1)
            
            );    -- VGA blue
            

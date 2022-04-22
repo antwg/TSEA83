@@ -11,19 +11,39 @@ component pipeCPU is
 	port(
 		clk : in std_logic;
 		rst : in std_logic;
-        UART_in : in std_logic);
+		UART_in : in std_logic;
+
+		vgaRed		    : out std_logic_vector(2 downto 0);
+        vgaGreen	    : out std_logic_vector(2 downto 0);
+        vgaBlue		    : out std_logic_vector(2 downto 1);
+        Hsync		    : out std_logic;
+        Vsync		    : out std_logic);
 end component;
 
 	signal clk : std_logic;
 	signal rst : std_logic;
 	signal rx : std_logic;
 
+	signal vgaRed  : std_logic_vector(2 downto 0);
+	signal vgaGreen  : std_logic_vector(2 downto 0);
+	signal vgaBlue  : std_logic_vector(1 downto 0);
+  
+	signal Hsync	  : std_logic;                        -- horizontal sync
+	signal Vsync	  : std_logic;  
+  
+
 begin
 
 	U0 : pipeCPU port map(
 		clk => clk,
 		rst => rst,
-		UART_in => rx);
+		UART_in => rx,
+		
+		vgaRed	=> vgaRed,    
+        vgaGreen => vgaGreen,	    
+        vgaBlue => vgaBlue,  
+		Hsync => Hsync,
+		Vsync => Vsync	     );
 
 	process
 	begin
