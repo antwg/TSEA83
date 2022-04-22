@@ -15,6 +15,7 @@ config wave -signalnamewidth 1
 
 add wave {sim:/pipecpu_tb/clk}
 add wave {sim:/pipecpu_tb/rst}
+add wave {sim:/pipecpu_tb/U0/status_reg_out}
 add wave -group ir {sim:/pipecpu_tb/U0/IR1}
 add wave -group ir {sim:/pipecpu_tb/U0/IR2}
 add wave -dec -group pc {sim:/pipecpu_tb/U0/PC}
@@ -39,6 +40,7 @@ add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX1}
 add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX2}
 add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/op_code}
 add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result_large}
 add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/status_reg}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/we}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd_in}

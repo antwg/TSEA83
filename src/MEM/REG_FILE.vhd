@@ -13,10 +13,15 @@ entity REG_FILE is
 		ra_out : out unsigned(15 downto 0);
 		we : in std_logic;
 		data_in : in unsigned(15 downto 0);
-		JA : out unsigned(15 downto 0));
+		JA : inout unsigned(15 downto 0));
 end REG_FILE;
 
 architecture func of REG_FILE is
+
+	alias SS is JA(0) ; -- pin 1
+	alias MOSI is JA(1); -- pin 2
+	alias MISO is JA(2); -- pin 3
+	alias SCLK is JA(3); -- pin 4
 
 	type RF_t is array(0 to 15) of unsigned(15 downto 0);
 	constant RF_c : RF_t := (
@@ -34,22 +39,15 @@ begin
             end if;
 
 			-- Joystick IO register
-			JA(0) <= RF(15)(0);
-			JA(1) <= RF(15)(1);
-			JA(2) <= RF(15)(2);
-			JA(3) <= RF(15)(3);
+			RF(15)(0) <= JA(0); -- register bit 0 to ss
+			RF(15)(1) <= JA(1);	-- regsiter bit 1 to MOSI
+			JA(2) <= RF(15)(2);	-- MISO to register bit 2 
+			JA(3) <= RF(15)(3);	-- SCLK to register bit 3
 			JA(4) <= RF(15)(4);
 			JA(5) <= RF(15)(5);
 			JA(6) <= RF(15)(6);
 			JA(7) <= RF(15)(7);
-			JA(8) <= RF(15)(8);
-			JA(9) <= RF(15)(9);
-			JA(10) <= RF(15)(10);
-			JA(11) <= RF(15)(11);
-			JA(12) <= RF(15)(12);
-			JA(13) <= RF(15)(13);
-			JA(14) <= RF(15)(14);
-			JA(15) <= RF(15)(15);
+		
          end if;
         end process;
 
