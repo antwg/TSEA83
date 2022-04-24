@@ -75,6 +75,8 @@ struct Instruction {
 
 class Assembler {
 public:
+    Assembler();
+
     void assemble();
     int setInput(std::string path);
     int setOutput(std::string path);
@@ -94,7 +96,7 @@ private:
     int getOpCode(std::string txt);
     int parseLines();
     std::vector<std::string> extractInstructionArgs(std::string line);
-    int fixLabels();
+    int updateLabels();
     int write();
 
     std::vector<Instruction> instructions;

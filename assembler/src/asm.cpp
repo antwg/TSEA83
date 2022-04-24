@@ -3,6 +3,10 @@
 #include <iostream>
 #include <iomanip>
 
+Assembler::Assembler() {
+    setOutput(outputFilePath);
+}
+
 int Assembler::setInput(std::string path) {
     inputFile.open(path);
 
@@ -27,7 +31,7 @@ int Assembler::setOutput(std::string path) {
 
 int Assembler::run() {
     parseLines();
-    fixLabels();
+    updateLabels();
     write();
 
     return 0;
@@ -178,7 +182,7 @@ std::vector<std::string> Assembler::extractInstructionArgs(std::string line) {
             i++;
 
             // EOL
-            if (i >= line.size()) {
+            if (i >= (int)line.size()) {
                 EOL = true;
                 break;
             }
@@ -193,7 +197,7 @@ std::vector<std::string> Assembler::extractInstructionArgs(std::string line) {
             i++;
 
             // EOL
-            if (i >= line.size()) {
+            if (i >= (int)line.size()) {
                 EOL = true;
                 break;
             }
@@ -215,14 +219,14 @@ std::vector<std::string> Assembler::extractInstructionArgs(std::string line) {
         i++;
 
         // EOL
-        if (i >= line.size())
+        if (i >= (int)line.size())
             break;
     }
 
     return instr;
 }
 
-int Assembler::fixLabels() {
+int Assembler::updateLabels() {
     if (debug && labelsInstructions.size()) {
         std::cout << "--------LABELS------" << std::endl;
     }
@@ -230,7 +234,7 @@ int Assembler::fixLabels() {
     for (int line : labelsInstructions) {
         Instruction instr = instructions[line];
 
-        if (instr.pmLine <= labels[instr.labelName]) {
+        if ((int)instr.pmLine <= (int)labels[instr.labelName]) {
             instr.value = labels[instr.labelName] - instr.pmLine;
         } else {
             instr.value = labels[instr.labelName] - instr.pmLine;
@@ -263,7 +267,20 @@ int Assembler::write() {
                 std::cout << instr.line << std::endl;
             }
         }
+
+        char val1 = instr.value & 0x00FF;
+        char val2 = (instr.value & 0xFF00) >> 8;
+
+
+        outputFile.write((char*)&instr.opcode, sizeof(char));
+        outputFile.write((char*)&instr.registers, sizeof(char));
+        outputFile.write(&val1, sizeof(char));
+        outputFile.write(&val2, sizeof(char));
     }
+
+    char eof = 0xFF;
+    outputFile.write(&eof, sizeof(char));
+    outputFile.close();
 
     return 0;
 }
