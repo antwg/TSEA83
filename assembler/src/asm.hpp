@@ -1,6 +1,11 @@
 #ifndef ASM_H_
 #define ASM_H_
 
+#include <fstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 enum OP {
     NOP       = 0x00,
     RJMP      = 0x01,
@@ -35,7 +40,8 @@ enum OP {
     MULSI     = 0x1E,
     LSLS      = 0x1F,
     LSRS      = 0x20,
-    UNDEFINED = 0xFF
+    LBL       = 0xFE, // indicates a label
+    UNDEFINED = 0xFF // EOF or undefined OP code
 };
 
 enum REG {
@@ -57,10 +63,47 @@ enum REG {
     P = 0xF,
 };
 
+struct Instruction {
+    int opcode;
+    int registers;
+    int value;
+    std::string labelName;
+    int fileLine;
+    unsigned long pmLine;
+    std::string line;
+};
+
+class Assembler {
+public:
+    void assemble();
+    int setInput(std::string path);
+    int setOutput(std::string path);
+
+    bool manual = false;
+    bool debug = false;
+
+    int run();
+private:
+    std::ifstream inputFile;
+    std::ofstream outputFile;
+
+    std::string inputFilePath = "./example.asm";
+    std::string outputFilePath = "./out.bin";
+
+    int getRegCode(std::string txt);
+    int getOpCode(std::string txt);
+    int parseLines();
+    std::vector<std::string> extractInstructionArgs(std::string line);
+    int fixLabels();
+    int write();
+
+    std::vector<Instruction> instructions;
+    std::unordered_map<std::string, int> labels; // keep tracks of what line a label points at
+    std::vector<int> labelsInstructions; // keep tracks of in what instructions labels are in
+};
+
 int assemble(char filePath[40], char outputPath[40], int manual, int debug);
 void parseLine(char** line, int* cmdc, char cmd[3][40]);
-int getOpCode(char* text);
-int getRegCode(char* text);
 void printHelp();
 
 #endif // ASM_H_
