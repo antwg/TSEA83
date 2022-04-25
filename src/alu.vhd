@@ -9,8 +9,8 @@ entity ALU is
         op_code : in unsigned(7 downto 0);
         result : out unsigned(15 downto 0);
         status_reg : out unsigned(3 downto 0);
-        reset : in std_logic;
-        clk : in std_logic);	
+		reset : in std_logic;
+		clk : in std_logic);	
 end ALU;
 
 architecture func of ALU is
@@ -68,6 +68,8 @@ constant MULS       : unsigned(7 downto 0) := x"1D";
 constant MULSI      : unsigned(7 downto 0) := x"1E";
 constant LSLS       : unsigned(7 downto 0) := x"1F";
 constant LSLR       : unsigned(7 downto 0) := x"20";
+constant PUSR		: unsigned(7 downto 0) := x"21";
+constant POSR		: unsigned(7 downto 0) := x"22";
 
 constant alu_nop	: unsigned(3 downto 0)      := x"0";
 constant alu_add	: unsigned(3 downto 0)      := x"1";
@@ -82,6 +84,10 @@ constant alu_or		: unsigned(3 downto 0)      := x"9";
 constant alu_add_carry	: unsigned(3 downto 0)  := x"A";
 constant alu_sub_carry	: unsigned(3 downto 0)  := x"B";
 constant alu_rd         : unsigned(3 downto 0)  := x"C";
+constant alu_push		: unsigned(3 downto 0)  := x"D";
+constant alu_pop		: unsigned(3 downto 0)  := x"E";
+constant alu_posr		: unsigned(3 downto 0)  := x"F";
+ 
 
 begin
 	
@@ -103,6 +109,8 @@ begin
 		--when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - ("0000000000000000000" & C)));
 		when alu_rd         => result_large <= (x"0000" & MUX1);
 		when alu_cmp		=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
+		when alu_pop		=> result_large <= (x"0000" & (MUX2 + 1));
+		when alu_posr		=> result_large <= (x"0000" & (MUX2 + 1));
 		when others         => result_large <= (x"0000" & MUX2);
 	end case;
 end process;
@@ -133,7 +141,10 @@ with op_code select alu_op <=
 	alu_cmp         when CMPI,
 	alu_cmp         when CMP,
     alu_rd          when STI,
-    alu_rd          when ST,
+	alu_rd          when ST,
+	alu_pop			when POP,
+	alu_push		when PUSH,
+	alu_POSR		when POSR,
     alu_nop         when others;
 
 
@@ -151,6 +162,7 @@ begin
 				when alu_RS => C<= MUX1(0);
 				when alu_mul => C <= result_large(31);
 				when alu_muls => C <= result_large(31);
+				when alu_posr => C <= MUX1(2);
 				when others =>  C <= '0';
 			end case;
 		end if;
@@ -165,6 +177,7 @@ begin
 			V <= '0';
 		else
 			case alu_op is
+				when alu_posr => V <= MUX1(3);
 				when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
 				or (not MUX1(15) and not MUX2(15) and result_large(15)));
 				
@@ -183,13 +196,14 @@ begin
 	if rising_edge(clk)	then
 		if reset = '1' then
 			N <= '0';
-		elsif (alu_op /= alu_nop) then	--if it is an actual alu operation
+		elsif ((alu_op /= alu_nop)) then	--if it is an actual alu operation
 			case alu_op is
 				when alu_add => N <= result_large(15);
 				when alu_sub => N <= result_large(15);
 				when alu_cmp => N <= result_large(15);
 				when alu_mul => N <= result_large(31);
 				when alu_muls => N <= result_large(31);
+				when alu_posr => N <= MUX1(1);
 				when others => N <= '0';
 			end case;
 		end if;
@@ -215,6 +229,8 @@ begin
 			else 
 				Z <= '0';
 			end if;
+		elsif (alu_op = alu_posr) then
+			Z <= MUX1(0);
 		end if;
 	end if;	
 

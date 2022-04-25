@@ -29,9 +29,10 @@ alias IR2_ra : unsigned(3 downto 0) is IR2(19 downto 16);
 alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 
 -- Stack pointer
-signal SP : unsigned(15 downto 0) := (others => '0');
+signal SP : unsigned(15 downto 0) := x"00FF";
 
 -- Status register
+signal sr_we : std_logic := '0';
 signal status_reg_out : unsigned(3 downto 0) := (others => '0');
 alias ZF : std_logic is status_reg_out(0);
 alias NF : std_logic is status_reg_out(1);
@@ -62,7 +63,7 @@ signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals
-signal boot_en : std_logic := '1';
+signal boot_en : std_logic := '0';
 signal boot_done : std_logic := '0';
 signal boot_we : std_logic := '0';
 signal boot_addr : unsigned(15 downto 0) := (others => '0');
@@ -125,6 +126,8 @@ constant MULS		: unsigned(7 downto 0) := x"1D";
 constant MULSI		: unsigned(7 downto 0) := x"1E";
 constant LSLS		: unsigned(7 downto 0) := x"1F";
 constant LSLR		: unsigned(7 downto 0) := x"20";
+constant PUSR		: unsigned(7 downto 0) := x"21";
+constant POSR		: unsigned(7 downto 0) := x"22";
 
 
 ------------------------------------ Def components ---------------------------
@@ -182,7 +185,7 @@ component ALU is
 	   	   op_code : in unsigned(7 downto 0);
 	   	   result : out unsigned(15 downto 0);
 	   	   status_reg : out unsigned(3 downto 0);
-	   	   reset: in std_logic;
+		   reset: in std_logic;
 	   	   clk : in std_logic);
 end component;
 
@@ -320,28 +323,41 @@ begin
 --    end process;
 
 	-- ALU multiplexers
-	alu_mux1 <= rf_rd;
+	alu_mux1 <= data_bus 	when (IR2_op = POSR) else rf_rd;
 
-	alu_mux2 <= IR2_const when ((IR2_op = LDI)    or
-                                (IR2_op = STI)    or
-								(IR2_op = ADDI)   or 
-                                (IR2_op = SUBI)   or
-								(IR2_op = CMPI)   or 
-                                (IR2_op = ANDI)   or
-								(IR2_op = ORI)    or 
-                                (IR2_op = MULI)   or
-								(IR2_op = MULSI)) else rf_ra;
+	alu_mux2 <= IR2_const 	when ((IR2_op = LDI)    	or
+                                  (IR2_op = STI)    	or
+								  (IR2_op = ADDI)   	or 
+                                  (IR2_op = SUBI)   	or
+								  (IR2_op = CMPI)   	or 
+                                  (IR2_op = ANDI)   	or
+								  (IR2_op = ORI)    	or 
+								  (IR2_op = MULI)   	or
+								  (IR2_op = MULSI)) 	else
+
+				SP 		  	when  (IR2_op = POP)		or 
+								  (IR2_op = PUSR)		or
+								  (IR2_op = POSR)		or
+								  (IR2_op = PUSH)		else 
+				rf_ra;
 
 	-- Data bus multiplexer
     with IR2_op select
-        data_bus <= rf_ra       when ST,
-                    IR2_const   when STI,
-                    dm_data_out when LD,
-					alu_out     when others;
+		data_bus <= rf_ra       				when ST,
+					rf_rd						when PUSH,
+                    IR2_const   				when STI,
+					dm_data_out 				when LD,
+					dm_data_out 				when POP,
+					dm_data_out					when POSR,
+					x"000" & status_reg_out 	when PUSR,
+					alu_out     				when others;
+
+	-- Status reg
+	sr_we <= '1' when (IR2_op = POSR) else '0';
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
-	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH) or (IR2_op = PUSR))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
 	--sm_we <= '0' when (alu_out < x"FC00") else '1';
@@ -359,6 +375,8 @@ begin
                        (IR2_op = ST)    or
 					   (IR2_op = CMP)	or
 					   (IR2_op = CMPI)	or
+					   (IR2_op = PUSR)	or 
+					   (IR2_op = POSR)	or
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s
@@ -377,7 +395,7 @@ begin
 				IR2 <= (others => '0');
 
             -- run as per usual when bootloader has loaded a program
-			elsif (boot_done='1') then
+			elsif (boot_done='1' or boot_en = '0') then
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
 
@@ -417,17 +435,17 @@ begin
 	-- Update stack pointer
 	-- If push: decrement
 	-- If pop: increment
-	--process(clk)
-	--begin
-	--	if rising_edge(clk) then
-	--		if (rst='1') then
-	--			SP <= (others => '0');
-	--		elsif (IR1_op = iPOP) then
-	--			SP <= SP + 1;
-	--		elsif (IR1_op = iPUSH) then
-	--			SP <= SP - 1;
-	--		end if;
-	--	end if;
-	--end process;
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if (rst='1') then
+				SP <= x"00FF";
+			elsif ((IR2_op = POP) or (IR2_op = POSR)) then
+				SP <= SP + 1;
+			elsif ((IR2_op = PUSH or (IR2_op = PUSR))) then
+				SP <= SP - 1;
+			end if;
+		end if;
+	end process;
 
 end architecture;

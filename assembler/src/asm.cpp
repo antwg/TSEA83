@@ -30,7 +30,8 @@ int Assembler::setOutput(std::string path) {
 }
 
 int Assembler::run() {
-    parseLines();
+    if (parseLines())
+	return 1;
     updateLabels();
     write();
 
@@ -395,6 +396,10 @@ int Assembler::getOpCode(std::string txt) {
         return LSLS;
     } else if (!txt.compare("LSRS")) {
         return LSRS;
+    } else if (!txt.compare("PUSR")) {
+	return PUSR;
+    } else if (!txt.compare("POSR")) {
+	return POSR;
     }
 
     return UNDEFINED;

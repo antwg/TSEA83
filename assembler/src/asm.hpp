@@ -40,6 +40,8 @@ enum OP {
     MULSI     = 0x1E,
     LSLS      = 0x1F,
     LSRS      = 0x20,
+    PUSR      = 0x21,
+    POSR      = 0x22,
     LBL       = 0xFE, // indicates a label
     UNDEFINED = 0xFF // EOF or undefined OP code
 };
