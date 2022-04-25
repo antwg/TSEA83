@@ -79,11 +79,14 @@ int Assembler::parseLines() {
 
             // it is a instruction
             } else {
-                std::vector<std::string> arg = extractInstructionArgs(line.substr(n, line.size()));
-
                 if (debug) {
                     std::cout << "------INSTR-----" << std::endl;
                     std::cout << "Line: " << line << std::endl;
+                }
+
+                std::vector<std::string> arg = extractInstructionArgs(line.substr(n, line.size()));
+
+                if (debug) {
                     std::cout << "Arg0: " << arg[0] << std::endl;
                     std::cout << "Arg1: " << arg[1] << std::endl;
                     std::cout << "Arg2: " << arg[2] << std::endl;
@@ -205,8 +208,10 @@ std::vector<std::string> Assembler::extractInstructionArgs(std::string line) {
 
         // if we've been adding characters, then
         // a part of the instruction was added to the cmd array
-        if (instr[part].size())
+        if (instr[part].size()) {
+            instr.push_back("");
             part++;
+        }
 
         // Quit if EOL reached
         if (EOL)
