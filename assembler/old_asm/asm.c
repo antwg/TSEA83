@@ -5,12 +5,26 @@
 #include <ctype.h>
 #include <sys/types.h>
 
+
+/*
+** Test:
+** Underscore in asm files.
+** A asm file with one line.
+** An empty line after a label.
+*/
+
 /*
 ** TODO:
 ** - Check so that we don't allow compiling programs that has more lines than memory has space
 ** - Labels
+** - Binary input for numbers
 ** - Hex input for numbers
+** - Not writing registers with a-p (allow it for backward compatability)
 */
+
+#define MAX_LABELS 5000
+
+int LABELS[MAX_LABELS];
 
 /*
 ** Prints out the given amount of bytes ('size') from 'ptr'
