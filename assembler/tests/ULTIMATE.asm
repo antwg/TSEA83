@@ -1,7 +1,6 @@
 ldi a, 10
 ldi b, 4
 
-; --- test add and sub ---
 sub a, b        ; a = 6
 addi a, 2       ; a = 8
 subi b, 2       ; b = 2
