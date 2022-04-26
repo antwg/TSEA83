@@ -128,6 +128,8 @@ constant LSLS		: unsigned(7 downto 0) := x"1F";
 constant LSLR		: unsigned(7 downto 0) := x"20";
 constant PUSR		: unsigned(7 downto 0) := x"21";
 constant POSR		: unsigned(7 downto 0) := x"22";
+constant SUBR		: unsigned(7 downto 0) := x"23";
+constant RET		: unsigned(7 downto 0) := x"24";
 
 
 ------------------------------------ Def components ---------------------------
@@ -338,6 +340,7 @@ begin
 				SP 		  	when  (IR2_op = POP)		or 
 								  (IR2_op = PUSR)		or
 								  (IR2_op = POSR)		or
+								  (IR2_op = SUBR)		or
 								  (IR2_op = PUSH)		else 
 				rf_ra;
 
@@ -349,6 +352,7 @@ begin
 					dm_data_out 				when LD,
 					dm_data_out 				when POP,
 					dm_data_out					when POSR,
+					PC							when SUBR,
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
 
@@ -357,7 +361,7 @@ begin
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
-	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH) or (IR2_op = PUSR))) else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH) or (IR2_op = PUSR) or (IR2_op =  SUBR))) else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
 	--sm_we <= '0' when (alu_out < x"FC00") else '1';
@@ -377,6 +381,7 @@ begin
 					   (IR2_op = CMPI)	or
 					   (IR2_op = PUSR)	or 
 					   (IR2_op = POSR)	or
+					   (IR2_op = SUBR)	or
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s
@@ -408,16 +413,21 @@ begin
 				   (IR1_op = BPL) or
 				   (IR1_op = BMI) or
 				   (IR1_op = BGE) or
+				   (IR1_op = SUBR) or
 				   (IR1_op = BLT) then
-					 	PC1 <= PC;
-						IR1 <= (others => '0'); -- jump NOP
-				elsif (IR2_op = RJMP) or
-					  	((IR2_op = BEQ) and ZF = '1') or
-					    ((IR2_op = BNE) and ZF = '0') or
-					    ((IR2_op = BPL) and NF = '0') or
-					    ((IR2_op = BMI) and NF = '1')or
-					    ((IR2_op = BGE) and ((NF xor VF) = '0')) or
-					    ((IR2_op = BLT) and ((NF xor VF) = '1')) then
+						 PC1 <= PC;
+						 if (IR1_op = SUBR) then
+							IR1_op <= PUSR;
+						 else IR1 <= (others => '0'); -- jump NOP
+						 end if;
+				elsif (IR2_op = RJMP) 								or
+						(IR2_op = RET)								or
+					  	((IR2_op = BEQ) and ZF = '1') 				or
+					    ((IR2_op = BNE) and ZF = '0') 				or
+					    ((IR2_op = BPL) and NF = '0') 				or
+					    ((IR2_op = BMI) and NF = '1') 				or
+					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
+					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
 				
 				else -- update as per usual if nothing special is happening
@@ -442,7 +452,7 @@ begin
 				SP <= x"00FF";
 			elsif ((IR2_op = POP) or (IR2_op = POSR)) then
 				SP <= SP + 1;
-			elsif ((IR2_op = PUSH or (IR2_op = PUSR))) then
+			elsif (IR2_op = PUSH or (IR2_op = PUSR) or (IR2_op = SUBR)) then
 				SP <= SP - 1;
 			end if;
 		end if;

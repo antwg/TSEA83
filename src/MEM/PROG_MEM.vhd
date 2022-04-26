@@ -89,6 +89,7 @@ architecture func of PROG_MEM is
 		x"18000000", --     pop a
 		x"11000000", --     cmp a,a
 		x"22000000", --     posr
+		x"23000000",
 		x"00000000", --     nop
 		x"0100FFFF", --     rjmp LOOP
 		
