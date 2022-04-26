@@ -11,43 +11,30 @@ architecture behavioural of joystick_tb is
 component joystickreal is 
     Port (clk: in  STD_LOGIC;								-- 100Mhz onboard clock
             RST : in  STD_LOGIC;           								-- Button DNN
-            MISO: in std_logic;
-            SS: inout  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
-            SCLK: out  STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
-            MOSI: out  STD_LOGIC							-- Master Out Slave In, Pin 2, Port JA
+            enable: in std_logic;
+            done : out std_logic;
+            data_out: out unsigned(22 downto 0);
+            JA : inout unsigned(7 downto 0)
             );
     end component;
 
-    signal SS_two : std_logic;
+    signal JA : unsigned(7 downto 0):= (others => '0');
     signal clk: STD_LOGIC;								-- 100Mhz onboard clock
     signal RST : STD_LOGIC;           								-- Button DNN
     signal MISO :std_logic;
     constant FPGA_clk_period : time := 10 ns;
-
+    signal enable : std_logic;
 begin
 J_CMP : joystickreal port map (
     clk => clk,
+    enable => enable,
     RST => RST,
-    MISO => MISO,
-    SS => SS_two
+    JA => JA
 );
 
     rst <= '1', '0' after 7 ns;
-
-
-
-    process
-    begin
-        if(rising_edge(clk)) then  
-            if (rst = '1') then
-                SS_two <= '0';
-            else
-                SS_two <= '1';
-            end if;
-        end if;
-    end process;
-        
-
+    enable <= '0', '1' after 100 us; 
+    
     clk_process : process
     begin 
         clk <= '0';

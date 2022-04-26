@@ -12,9 +12,10 @@ entity joystickreal is
     Port (  CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
             RST : in  STD_LOGIC;           								-- Button DNN
             enable : in std_logic;
-            done : out std_logic;
+            done : out std_logic:= '0';
             data_out: out unsigned(22 downto 0);
-            JA : inout unsigned(7 downto 0)
+            JA : inout unsigned(7 downto 0) 
+    
            );
     end joystickreal;
 
