@@ -14,12 +14,13 @@ architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 100) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
-    x"08000005", -- LDI a,64513
-    --x"0A006410", -- STI a,25616
-    --x"00000000", -- nop
-    --x"00000000", -- nop
     x"00000000", -- nop
-    x"0100FFFF", -- rjmp -1
+    x"0820FDE8", -- LDI c,65000 ; Inner counter
+    x"00000000", -- nop
+    x"10200001", -- SUBI c,1
+    x"0300FFFF", -- BNE -1
+    x"00000000", -- NOP
+    x"0100FFFF", -- RJMP -1
     
     
 	    others => (others => '0')

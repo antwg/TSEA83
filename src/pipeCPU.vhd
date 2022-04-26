@@ -325,6 +325,12 @@ begin
 	spriteX 		<= data_bus(12  downto 6);
 	spriteY			<= data_bus(5  downto 0);
 
+	--spriteListPos <= "00000";
+	--spriteWrite <= '1';
+	--spriteType 		<= "001";
+	--spriteX 		<= "0000000";
+	--spriteY			<= "000000";
+
 	-- Write enable RF
 	rf_we <= '0' when ((IR2_op = NOP)   or
                        (IR2_op = RJMP)  or
