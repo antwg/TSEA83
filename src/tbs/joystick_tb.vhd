@@ -18,7 +18,7 @@ component joystickreal is
             );
     end component;
 
-
+    signal SS_two : std_logic;
     signal clk: STD_LOGIC;								-- 100Mhz onboard clock
     signal RST : STD_LOGIC;           								-- Button DNN
     signal MISO :std_logic;
@@ -28,13 +28,25 @@ begin
 J_CMP : joystickreal port map (
     clk => clk,
     RST => RST,
-    MISO => MISO
+    MISO => MISO,
+    SS => SS_two
 );
 
     rst <= '1', '0' after 7 ns;
-    --SS <= '0', '1' after 20 us;
 
 
+
+    process
+    begin
+        if(rising_edge(clk)) then  
+            if (rst = '1') then
+                SS_two <= '0';
+            else
+                SS_two <= '1';
+            end if;
+        end if;
+    end process;
+        
 
     clk_process : process
     begin 
