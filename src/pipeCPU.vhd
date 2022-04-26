@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -392,3 +393,5 @@ begin
 	--end process;
 
 end architecture;
+=======
+>>>>>>> caa04a9897b2d9e2b2b24b3a26f1c0e620a07b08

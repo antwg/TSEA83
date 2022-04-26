@@ -9,9 +9,9 @@ architecture behavior of prog_load_tb is
 
   -- Component Declaration
     component pipeCPU is
-        port(
-            clk, rst : in std_logic;
-            UART_in : in std_logic);
+        port( clk, rst : in std_logic;
+              UART_in : in std_logic;
+              UART_out : out std_logic);
     end component;
 
     signal clk : std_logic := '0';
@@ -37,6 +37,13 @@ begin
     UART_stimuli : process
         type pattern_array is array(natural range <>) of unsigned (7 downto 0);
         constant patterns : pattern_array :=
+            -- 0x08000004
+            -- 0x08100054
+            -- 0x10000002
+            -- 0x0B100000
+            -- 0x00000000
+            -- 0x0100FFFF
+            -- 0xFF EOF
             (x"08", -- ir1 opcode
              x"00", -- ir1 registers
              x"04", -- ir1 constant byte1

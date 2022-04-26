@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## This file is a general .ucf for Nexys3 rev B board
 ## To use it in a project:
 ## - remove or comment the lines corresponding to unused pins
@@ -275,3 +276,5 @@ NET "Vsync" LOC = P7 | IOSTANDARD = LVCMOS33; # Bank = 2, pin name = IO_L47N, Sc
 #Net "EXP-IO_N<18>" LOC = C14 | IOSTANDARD = LVCMOS33; #Bank = 0, pin name = IO_L65N_SCP2, Sch name = EXP_IO19_N
 #Net "EXP-IO_P<19>" LOC = B16 | IOSTANDARD = LVCMOS33; #Bank = 0, pin name = IO_L66P_SCP1, Sch name = EXP_IO20_P
 #Net "EXP-IO_N<19>" LOC = A16 | IOSTANDARD = LVCMOS33; #Bank = 0, pin name = IO_L66N_SCP0, Sch name = EXP_IO20_N
+=======
+>>>>>>> caa04a9897b2d9e2b2b24b3a26f1c0e620a07b08

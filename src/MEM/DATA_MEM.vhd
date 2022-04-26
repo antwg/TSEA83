@@ -15,7 +15,11 @@ end DATA_MEM;
 
 architecture func of DATA_MEM is
 
+<<<<<<< HEAD
 	type DM_t is array(0 to 127) of unsigned(15 downto 0);
+=======
+	type DM_t is array(0 to 256) of unsigned(15 downto 0);
+>>>>>>> caa04a9897b2d9e2b2b24b3a26f1c0e620a07b08
 	constant DM_c : DM_t := (
 		others => (others => '0')
 	);

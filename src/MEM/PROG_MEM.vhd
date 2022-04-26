@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -40,3 +41,5 @@ begin
 
 	data_out <= PM(to_integer(addr)); -- much hardware with asyn read, same in DM
 end func;
+=======
+>>>>>>> caa04a9897b2d9e2b2b24b3a26f1c0e620a07b08
