@@ -107,7 +107,7 @@ int Assembler::parseLines() {
 
                 if (instr.opcode == RJMP || instr.opcode == BEQ || instr.opcode == BNE ||
                     instr.opcode == BPL || instr.opcode == BMI || instr.opcode == BGE ||
-                    instr.opcode == BLT) {
+                    instr.opcode == BLT || instr.opcode == SUBR) {
 
                     // if arg1 is a label
                     if(arg1IsLetters) {
@@ -277,7 +277,6 @@ int Assembler::write() {
         char val1 = instr.value & 0x00FF;
         char val2 = (instr.value & 0xFF00) >> 8;
 
-
         outputFile.write((char*)&instr.opcode, sizeof(char));
         outputFile.write((char*)&instr.registers, sizeof(char));
         outputFile.write(&val1, sizeof(char));
@@ -397,9 +396,15 @@ int Assembler::getOpCode(std::string txt) {
     } else if (!txt.compare("LSRS")) {
         return LSRS;
     } else if (!txt.compare("PUSR")) {
-	return PUSR;
+	    return PUSR;
     } else if (!txt.compare("POSR")) {
-	return POSR;
+	    return POSR;
+    } else if (!txt.compare("SUBR")) {
+	    return SUBR;
+    } else if (!txt.compare("RET")) {
+	    return RET;
+    } else if (!txt.compare("RTI")) {
+	    return RTI;
     }
 
     return UNDEFINED;

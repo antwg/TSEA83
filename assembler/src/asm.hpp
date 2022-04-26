@@ -42,6 +42,10 @@ enum OP {
     LSRS      = 0x20,
     PUSR      = 0x21,
     POSR      = 0x22,
+    SUBR      = 0x23,
+    RET       = 0x24,
+    PCR       = 0x25,
+    RTI       = 0x26,
     LBL       = 0xFE, // indicates a label
     UNDEFINED = 0xFF // EOF or undefined OP code
 };
