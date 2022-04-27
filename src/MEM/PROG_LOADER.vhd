@@ -73,14 +73,13 @@ begin
 	-- all counters
 	process(clk) begin
 	    if (rising_edge(clk)) then
-            if (rst='1') then
+            if (rst='1' or boot_en='0') then
                 st_868_cnt_out <= (others => '0');
                 st_10_cnt_out <= (others => '0');
                 st_4_cnt_out <= (others => '0');
                 addr_cnt_out <= (others => '0');
-		    end if;
 
-            if (finished='0') then
+            elsif (finished='0') then
                 -- start counting if we see a startbit
                 if (st_868_cnt_en='0' and rx1='0' and rx2='1') then 
                     st_868_cnt_en <= '1';
