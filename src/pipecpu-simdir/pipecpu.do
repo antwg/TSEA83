@@ -18,12 +18,14 @@ add wave {sim:/pipecpu_tb/rst}
 add wave {sim:/pipecpu_tb/U0/status_reg_out}
 add wave -group ir {sim:/pipecpu_tb/U0/IR1}
 add wave -group ir {sim:/pipecpu_tb/U0/IR2}
+add wave -dec -group pc {sim:/pipecpu_tb/U0/JUMP_PC}
+add wave -dec -group pc {sim:/pipecpu_tb/U0/jumping}
 add wave -dec -group pc {sim:/pipecpu_tb/U0/PC}
-add wave -hex -group pc {sim:/pipecpu_tb/U0/PC1}
-add wave -hex -group pc {sim:/pipecpu_tb/U0/JUMP_PC}
+add wave -dec -group pc {sim:/pipecpu_tb/U0/PC1}
 add wave {sim:/pipecpu_tb/U0/pm_addr}
 add wave {sim:/pipecpu_tb/U0/SP}
 add wave {sim:/pipecpu_tb/U0/sr_we}
+add wave {sim:/pipecpu_tb/U0/data_bus}
 add wave -color gold {sim:/pipecpu_tb/U0/PMdata_out}
 add wave -group reg {sim:/pipecpu_tb/U0/IR2_ra}
 add wave -group reg {sim:/pipecpu_tb/U0/IR2_rd}
@@ -61,4 +63,4 @@ add wave -dec {sim:/pipecpu_tb/U0/leddriver_comp/value}
 
 
 restart -f
-run 1000 ns
+run 300 ns

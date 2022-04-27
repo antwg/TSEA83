@@ -14,6 +14,15 @@ architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
+		--x"0800000A", --     ldi a, 10
+		--x"23000004", --		subr
+		--x"08000004", --     ldi a, 2
+		--x"00000000", --     nop
+		--x"0100FFFF", --     rjmp LOOP
+--
+		--x"0E000002", --     addi a, 2
+		--x"24000000", -- 	ret
+
 		x"21000000", --     pusr
 		x"0800000A", --     ldi a, 10
 		x"08100004", --     ldi b, 4
@@ -89,11 +98,8 @@ architecture func of PROG_MEM is
 		x"18000000", --     pop a
 		x"11000000", --     cmp a,a
 		x"22000000", --     posr
-		x"23000000",
 		x"00000000", --     nop
 		x"0100FFFF", --     rjmp LOOP
-		
-
 
 	    others => (others => '0')
 	);

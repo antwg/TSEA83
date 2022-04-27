@@ -70,6 +70,9 @@ signal boot_addr : unsigned(15 downto 0) := (others => '0');
 signal boot_data_out : unsigned(31 downto 0) := (others => '0');
 signal boot_wait_cnt : unsigned(13 downto 0) := (others => '0');
 
+-- jumping
+signal jumping : std_logic := '0';
+
 -- UART com
 signal com_send_byte : unsigned (7 downto 0) := (others => '0');
 signal com_sent : std_logic := '0';
@@ -130,6 +133,7 @@ constant PUSR		: unsigned(7 downto 0) := x"21";
 constant POSR		: unsigned(7 downto 0) := x"22";
 constant SUBR		: unsigned(7 downto 0) := x"23";
 constant RET		: unsigned(7 downto 0) := x"24";
+constant PCR		: unsigned(7 downto 0) := x"25";
 
 
 ------------------------------------ Def components ---------------------------
@@ -341,6 +345,7 @@ begin
 								  (IR2_op = PUSR)		or
 								  (IR2_op = POSR)		or
 								  (IR2_op = SUBR)		or
+								  (IR2_op = PCR)		or
 								  (IR2_op = PUSH)		else 
 				rf_ra;
 
@@ -352,6 +357,7 @@ begin
 					dm_data_out 				when LD,
 					dm_data_out 				when POP,
 					dm_data_out					when POSR,
+					dm_data_out					when PCR,
 					PC							when SUBR,
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
@@ -361,7 +367,11 @@ begin
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
-	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH) or (IR2_op = PUSR) or (IR2_op =  SUBR))) else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) 		or 
+												(IR2_op = ST) 		or 
+												(IR2_op = PUSH) 	or 
+												(IR2_op = PUSR) 	or 
+												(IR2_op = SUBR))) 	else '0';
 
 	--sm_addr <= (alu_out and "0000001111111111");
 	--sm_we <= '0' when (alu_out < x"FC00") else '1';
@@ -382,6 +392,8 @@ begin
 					   (IR2_op = PUSR)	or 
 					   (IR2_op = POSR)	or
 					   (IR2_op = SUBR)	or
+					   (IR2_op = PCR)	or
+					   (IR2_op = RET)	or
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s
@@ -418,10 +430,13 @@ begin
 						 PC1 <= PC;
 						 if (IR1_op = SUBR) then
 							IR1_op <= PUSR;
-						 else IR1 <= (others => '0'); -- jump NOP
+							IR1_const <= x"0000";
+							jumping <= '1';
+						 else
+						 	IR1 <= (others => '0'); -- jump NOP
 						 end if;
 				elsif (IR2_op = RJMP) 								or
-						(IR2_op = RET)								or
+						(IR2_op = SUBR)								or
 					  	((IR2_op = BEQ) and ZF = '1') 				or
 					    ((IR2_op = BNE) and ZF = '0') 				or
 					    ((IR2_op = BPL) and NF = '0') 				or
@@ -429,12 +444,20 @@ begin
 					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
 					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
-				
+				elsif (IR2_op = RET) then	
+					IR2_op <= POSR;
+					IR1_op <= PCR;
+				elsif (IR2_op = PCR) then
+					PC <= data_bus;
 				else -- update as per usual if nothing special is happening
 					PC <= PC + 1;
 					PC1 <= PC;
 
 					IR1 <= PMdata_out;
+
+					if jumping='1' then
+						jumping <= '0';
+					end if;
 				end if;
 			end if;
 		end if;
@@ -450,10 +473,14 @@ begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				SP <= x"00FF";
-			elsif ((IR2_op = POP) or (IR2_op = POSR)) then
+			elsif ((IR2_op = POP) or (IR2_op = POSR) or (IR2_op = PCR)) then
 				SP <= SP + 1;
 			elsif (IR2_op = PUSH or (IR2_op = PUSR) or (IR2_op = SUBR)) then
-				SP <= SP - 1;
+				if (jumping = '1') and (IR2_op = PUSR) then
+					SP <= SP;
+				else
+					SP <= SP - 1;
+				end if;
 			end if;
 		end if;
 	end process;

@@ -70,6 +70,10 @@ constant LSLS       : unsigned(7 downto 0) := x"1F";
 constant LSLR       : unsigned(7 downto 0) := x"20";
 constant PUSR		: unsigned(7 downto 0) := x"21";
 constant POSR		: unsigned(7 downto 0) := x"22";
+constant SUBR		: unsigned(7 downto 0) := x"23";
+constant RET		: unsigned(7 downto 0) := x"24";
+constant PCR		: unsigned(7 downto 0) := x"25";
+
 
 constant alu_nop	: unsigned(3 downto 0)      := x"0";
 constant alu_add	: unsigned(3 downto 0)      := x"1";
@@ -144,7 +148,9 @@ with op_code select alu_op <=
 	alu_rd          when ST,
 	alu_pop			when POP,
 	alu_push		when PUSH,
-	alu_POSR		when POSR,
+	alu_posr		when POSR,
+	alu_posr		when PCR,
+	alu_posr		when RET, -- I couldn't be bothered to add a new alu_op because that would require makeing the signal larger
     alu_nop         when others;
 
 
@@ -162,7 +168,8 @@ begin
 				when alu_RS => C<= MUX1(0);
 				when alu_mul => C <= result_large(31);
 				when alu_muls => C <= result_large(31);
-				when alu_posr => C <= MUX1(2);
+				when alu_posr
+		 => C <= MUX1(2);
 				when others =>  C <= '0';
 			end case;
 		end if;
@@ -177,7 +184,8 @@ begin
 			V <= '0';
 		else
 			case alu_op is
-				when alu_posr => V <= MUX1(3);
+				when alu_posr
+		 => V <= MUX1(3);
 				when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
 				or (not MUX1(15) and not MUX2(15) and result_large(15)));
 				
@@ -203,7 +211,8 @@ begin
 				when alu_cmp => N <= result_large(15);
 				when alu_mul => N <= result_large(31);
 				when alu_muls => N <= result_large(31);
-				when alu_posr => N <= MUX1(1);
+				when alu_posr
+		 => N <= MUX1(1);
 				when others => N <= '0';
 			end case;
 		end if;
@@ -229,7 +238,8 @@ begin
 			else 
 				Z <= '0';
 			end if;
-		elsif (alu_op = alu_posr) then
+		elsif (alu_op = alu_posr
+) then
 			Z <= MUX1(0);
 		end if;
 	end if;	
