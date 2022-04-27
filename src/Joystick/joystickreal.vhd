@@ -14,7 +14,7 @@ entity joystickreal is
             enable : in std_logic;
             done : out std_logic:= '0';
             data_out: out unsigned(22 downto 0);
-            JA : inout unsigned(7 downto 0) 
+            JA : inout unsigned(7 downto 0) := "10000000"
     
            );
     end joystickreal;
@@ -44,36 +44,38 @@ data_out <= x&y&btns;
 
 process(clk) begin
     --send data to joystick
-    if (bits_sent = 7) then
-        MOSI <= '1'; -- set led 1 high
-    else 
-        MOSI <= '0';
-        end if;
+    if rising_edge(clk) then
+        -- set start bit and led on jstk 
+        if (bits_sent = 7 or bits_sent = 1) then
+            MOSI <= '1'; 
+        else 
+            MOSI <= '0';
+            end if;
 
-    --x data from joystick
-    if (bits_sent < 9) then
-        x<= x(8 downto 0)&MISO; -- shift in miso
-    elsif (bits_sent = 15) then
-        x(9) <= MISO;
-    elsif (bits_sent = 16) then
-        x(8) <= MISO;
-  
-      --y data from joystick
-    elsif (bits_sent < 25) then
-        y<= y(8 downto 0)&MISO; -- shift in miso
-    elsif (bits_sent = 32) then
-        y(9) <= MISO;
-    elsif (bits_sent = 33) then
-        y(8) <= MISO;
+        --x data from joystick
+        if (bits_sent < 9) then
+            x<= x(8 downto 0)&MISO; -- shift in miso
+        elsif (bits_sent = 15) then
+            x(9) <= MISO;
+        elsif (bits_sent = 16) then
+            x(8) <= MISO;
     
-        -- get buttons data
-    elsif (bits_sent = 39) then
-        btns(1) <= MISO;
-    elsif (bits_sent = 40) then
-        btns(0) <= MISO;
-        done <= '1';
-    if (bits_sent /= 40) then
-        done <= '0';
+        --y data from joystick
+        elsif (bits_sent < 25) then
+            y<= y(8 downto 0)&MISO; -- shift in miso
+        elsif (bits_sent = 32) then
+            y(9) <= MISO;
+        elsif (bits_sent = 33) then
+            y(8) <= MISO;
+            -- get buttons data
+        elsif (bits_sent = 39) then
+            btns(1) <= MISO;
+        elsif (bits_sent = 40) then
+            btns(0) <= MISO;
+            done <= '1';
+        if (bits_sent /= 40) then
+            done <= '0';
+            end if;
         end if;
     end if;
 end process;
@@ -85,7 +87,7 @@ end process;
 process(clk) begin 
     if rising_edge(clk) then
         if (SS = '1' or RST = '1') then -- ss = 1 means joystick is disabled
-             sclk_counter <= x"0000";
+            sclk_counter <= x"0000";
             bits_sent <= "0000000";
             SCLK <= '0';
         elsif (SS = '0' and bits_sent /= 40) then -- if joystick is enabled

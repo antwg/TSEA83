@@ -56,6 +56,15 @@ add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
 add wave -dec {sim:/pipecpu_tb/U0/leddriver_comp/value}
 
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/SS}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/MOSI}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/MISO}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/SCLK}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/enable}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/btns}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/x}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/y}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/bits_sent}
 
 restart -f
 run 1000 ns
