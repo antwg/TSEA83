@@ -1,2 +1,5 @@
 transcript
 src/pipecpu-synthdir
+src/vga-simdir
+src/vga-synthdir
+src/lab-synthdir

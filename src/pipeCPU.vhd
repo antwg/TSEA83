@@ -4,12 +4,19 @@ use IEEE.numeric_std.all;
 
 entity pipeCPU is
 	port (
-		clk, rst : in std_logic;
+		clk : in std_logic;
+		rst : in std_logic;
 		UART_in : in std_logic;
-		UART_out : out std_logic;
-		--JA : in unsigned(15 downto 0);
+		--UART_out : out std_logic;
 		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0));
+		an : out unsigned(3 downto 0);
+		--JA : in unsigned(15 downto 0)
+		vgaRed		    : out std_logic_vector(2 downto 0);
+        vgaGreen	    : out std_logic_vector(2 downto 0);
+        vgaBlue		    : out std_logic_vector(2 downto 1);
+        Hsync		    : out std_logic;
+        Vsync		    : out std_logic
+		);
 
 end pipeCPU;
 
@@ -47,11 +54,8 @@ signal pm_addr : unsigned(15 downto 0) := (others => '0');
 -- Data memory
 signal dm_addr : unsigned(15 downto 0) := (others => '0');
 signal dm_data_out : unsigned(15 downto 0) := (others => '0');
+signal dm_and_sm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
-
--- Sprite memory
-signal sm_addr : unsigned(15 downto 0) := (others => '0');
-signal sm_we : std_logic := '0';
 
 -- ALU
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
@@ -61,6 +65,7 @@ signal data_bus : unsigned(15 downto 0) := (others => '0');
 -- Register file
 signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
+
 
 -- Loader signals
 signal boot_en : std_logic := '0';
@@ -80,17 +85,31 @@ signal com_debug : std_logic := '1';
 signal com_pm_val : unsigned(31 downto 0) := (others => '0');
 signal com_pm_part : unsigned(4 downto 0) := (others => '0');
 
+-- Loader signals (testing // Rw)
+signal temp_done : std_logic;
+signal loader_done : std_logic;
+signal loader_we : std_logic;
+signal loader_addr : unsigned(15 downto 0);
+signal loader_data_Out : unsigned(31 downto 0);
+
+
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
-signal led_addr : unsigned(3 downto 0) := "0000"; 
+signal led_addr :unsigned(3 downto 0) := "0000"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
---joystick out 
-signal MISO : std_logic;
-signal SS : STD_LOGIC;								-- Slave Select, Pin 1, Port JA
-signal SCLK: STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
-signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
- 
+-- VGA_MOTOR  
+--signal vgaRed		    :  std_logic_vector(2 downto 0);
+--signal vgaGreen	        :  std_logic_vector(2 downto 0);
+--signal vgaBlue		    :  std_logic_vector(2 downto 1);
+--signal Hsync		    :  std_logic;
+--signal Vsync		    :  std_logic;                    
+signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
+signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+signal spriteY          :  unsigned(5 downto 0);
+signal spriteOut        :  unsigned(15 downto 0);
 
 -- Instructions
 constant NOP 		: unsigned(7 downto 0) := x"00";
@@ -135,12 +154,13 @@ constant RET		: unsigned(7 downto 0) := x"24";
 ------------------------------------ Def components ---------------------------
 
 component PROG_MEM is
-    port( clk : in std_logic;
-          we : std_logic;
-          addr : in unsigned(15 downto 0);
-		  data_out : out unsigned(31 downto 0);
-	      wr_addr : in unsigned(15 downto 0);
-	      wr_data : in unsigned(31 downto 0));
+    port( 
+        clk : in std_logic;
+        we : std_logic;
+        addr : in unsigned(15 downto 0);
+		data_out : out unsigned(31 downto 0);
+	    wr_addr : in unsigned(15 downto 0);
+	    wr_data : in unsigned(31 downto 0));
 end component;
 
 component PROG_LOADER is
@@ -148,14 +168,6 @@ component PROG_LOADER is
           done, we : out std_logic;
           addr : out unsigned(15 downto 0);
           data_out : out unsigned(31 downto 0));
-end component;
-
-component UART_COM is
-    port( clk, rst : in std_logic;
-          bit_out : out std_logic;
-          send_byte : in unsigned(7 downto 0);
-          send : in std_logic;
-          sent : out std_logic);
 end component;
 
 component DATA_MEM is
@@ -166,6 +178,26 @@ component DATA_MEM is
 	      data_out : out unsigned(15 downto 0));
           --led_addr : in unsigned(15 downto 0); 
           --led_out : out unsigned(15 downto 0));
+end component;
+
+-- Sprite minne
+component VGA_MOTOR is
+    port ( 
+	   clk	            : in std_logic;                         -- system clock
+	   rst              : in std_logic;   
+	   vgaRed		    : out std_logic_vector(2 downto 0);
+	   vgaGreen	        : out std_logic_vector(2 downto 0);
+	   vgaBlue		    : out std_logic_vector(2 downto 1);
+	   Hsync		    : out std_logic;
+	   Vsync		    : out std_logic;
+	   spriteWrite      : in  std_logic;            -- 1 -> writing   0 -> reading
+	   spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+	   spriteListPos    : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+	   spriteX          : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+	   spriteY          : in  unsigned(5 downto 0);
+	   spriteOut        : out unsigned(15 downto 0)
+	   
+	   );    -- VGA blue
 end component;
 
 component REG_FILE is
@@ -189,6 +221,7 @@ component ALU is
 	   	   status_reg : out unsigned(3 downto 0);
 		   reset: in std_logic;
 	   	   clk : in std_logic);
+
 end component;
 
 component leddriver is
@@ -196,56 +229,47 @@ component leddriver is
            seg : out  UNSIGNED(7 downto 0);
            an : out  UNSIGNED (3 downto 0);
            value : in  UNSIGNED (15 downto 0));
-end component;
-
---:wcomponent joystickreal is
---:w    Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
---:w            RST : in  STD_LOGIC;           								-- Button DNN
---:w            MISO : in std_logic;
---:w            SS : inout  STD_LOGIC;								-- Slave Select, Pin 1, Port JA
---:w            SCLK: out  STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
---:w            MOSI : out  STD_LOGIC							-- Master Out Slave In, Pin 2, Port JA
---:w   			); -- Cathodes for Seven Segment Display
---:wend component;
+	end component;
 
 begin
 
--------------------------------------- Components -------------------------------
-	--joystick_comp : joystickreal port map( 	
-	--	CLK => clk,
-	--	RST => rst,
-	--	MISO => MISO,
-	--	SS => SS,
-	--	SCLK => SCLK,
-	--	MOSI => MOSI
-	--	);
---
+------------------------------------ Components -------------------------------
 
-   prog_mem_comp : PROG_MEM port map(
+	sprite_mem_comp : VGA_MOTOR port map(
+		vgaRed => vgaRed,
+		vgaGreen => vgaGreen,
+		vgaBlue	=> vgaBlue,
+		Hsync => Hsync,
+		Vsync => Vsync,
+		clk => clk,
+		rst => rst,  
+		spriteWrite => spriteWrite,  
+		spriteType => spriteType,  
+		spriteListPos => spriteListPos, 
+		spriteX => spriteX, 
+		spriteY => spriteY,
+		spriteOut => spriteOut 
+	);
+
+	prog_mem_comp : PROG_MEM port map(
 		clk => clk,
 		addr => pm_addr,
 		data_out => PMdata_out,
-		we => boot_we,
-		wr_addr => boot_addr,
-		wr_data => boot_data_out);
+		we => loader_we,
+		wr_addr => loader_addr,
+		wr_data => loader_data_out
+	);
 
 	prog_loader_comp : PROG_LOADER port map(
 		clk => clk,
 		rst => rst,
 	 	rx => UART_in,
-        boot_en => boot_en,
-		done => boot_done,
-	  	we => boot_we,
-	  	addr => boot_addr,
-	  	data_out => boot_data_out);
-
-    uart_com_comp : UART_COM port map(
-        clk => clk,
-        rst => rst,
-        send => com_send,
-        bit_out => UART_out,
-        send_byte => com_send_byte,
-        sent => com_sent);
+		done => loader_done,
+	  	we => loader_we,
+	  	addr => loader_addr,
+		data_out => loader_data_out,
+		boot_en => boot_en  
+	);
 
 	reg_file_comp : REG_FILE port map(
 		rd_in => IR2_rd,
@@ -257,7 +281,8 @@ begin
 		clk => clk,
         --led_out => led_null, -- turns of led to be set here
         led_out => led_value, -- set led value to led_addr in register file
-        led_addr => led_addr);
+        led_addr => led_addr
+	);
 
 	data_mem_comp : DATA_MEM port map(
 		we => dm_we,
@@ -276,53 +301,21 @@ begin
 		result => alu_out,
 		status_reg => status_reg_out,
 		reset => rst,
-		clk => clk);
+		clk => clk
+	);
 
 	leddriver_comp : leddriver port map(
 		clk => clk,
         rst => rst,
         seg => seg,
         an => an,
-        value => led_value);
+        value => led_value
+	);
 
 -------------------------------------------------------------------------------
 
-    -- DEBUG
     -- 7 seg debug
     --led_value <= x"9A3C";
-
-    -- UART debug
-   -- process(clk) begin
-   --     if (rising_edge(clk) and com_debug='1') then
-   --         if (com_sent='1') then
-   --             com_send_byte <= com_debug_value;
-   --             com_send <= '1';
-   --         elsif (com_send='1') then
-   --             com_send <= '0';
-   --             com_debug_value <= com_debug_value - 1;
-   --         elsif (com_send <= '0' and com_debug_value = 0) then
-   --             com_debug <= '0';
-   --         end if;
-   --     end if;
-   -- end process;
-
-    -- PM Debug
-    ---
-    -- Prints the contents of the program memory after the bootloader
-    -- has loaded something to it.
---    process(clk) begin
---        if (rising_edge(clk) and boot_en='1') then
---            if (boot_we='1') then
---                com_pm_val <= boot_data_out;
---                com_send <= '1';
---            elsif (com_send='1') then
---                com_send <= '0';
---                com_debug_value <= com_debug_value - 1;
---            elsif (com_send <= '0' and com_debug_value = 0) then
---                com_debug <= '0';
---            end if;
---        end if;
---    end process;
 
 	-- ALU multiplexers
 	alu_mux1 <= data_bus 	when (IR2_op = POSR) else rf_rd;
@@ -349,9 +342,9 @@ begin
 		data_bus <= rf_ra       				when ST,
 					rf_rd						when PUSH,
                     IR2_const   				when STI,
-					dm_data_out 				when LD,
-					dm_data_out 				when POP,
-					dm_data_out					when POSR,
+					dm_and_sm_data_out				when LD,
+					dm_and_sm_data_out 				when POP,
+					dm_and_sm_data_out					when POSR,
 					PC							when SUBR,
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
@@ -362,9 +355,21 @@ begin
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH) or (IR2_op = PUSR) or (IR2_op =  SUBR))) else '0';
+	
+	dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
+      
+	-- sprite mem
+	spriteListPos <= alu_out(4 downto 0);
+	spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
+	spriteType 		<= data_bus(15 downto 13);
+	spriteX 		<= data_bus(12  downto 6);
+	spriteY			<= data_bus(5  downto 0);
 
-	--sm_addr <= (alu_out and "0000001111111111");
-	--sm_we <= '0' when (alu_out < x"FC00") else '1';
+	--spriteListPos <= "00000";
+	--spriteWrite <= '1';
+	--spriteType 		<= "001";
+	--spriteX 		<= "0000000";
+	--spriteY			<= "000000";
 
 	-- Write enable RF
 	rf_we <= '0' when ((IR2_op = NOP)   or
@@ -384,11 +389,7 @@ begin
 					   (IR2_op = SUBR)	or
                        (IR2_op = PUSH)) else '1';
 
-	-- Handle PC:s and IR:s
-    ---
-    -- We only execute as per usual when the bootloader is done loading a program.
-    -- There's one special case while executing, when we want to jump. Then we
-    -- need to insert a jump nop, stop counting PC and set PC to the correct jump addr.
+	-- Handle PC:s and IR:s, speciel case when jumps happens
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
@@ -428,8 +429,8 @@ begin
 					    ((IR2_op = BMI) and NF = '1') 				or
 					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
 					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
+
 					PC <= JUMP_PC; -- don't increase PC if jump is happening
-				
 				else -- update as per usual if nothing special is happening
 					PC <= PC + 1;
 					PC1 <= PC;
@@ -441,6 +442,7 @@ begin
 	end process;
 
 	pm_addr <= (PC and "0000011111111111"); -- Currently only allow 1024 addresses
+
 
 	-- Update stack pointer
 	-- If push: decrement
@@ -459,3 +461,4 @@ begin
 	end process;
 
 end architecture;
+

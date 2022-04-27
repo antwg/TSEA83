@@ -1,4 +1,6 @@
 pipecpu-simdir/transcript
 pipecpu-simdir/vsim.wlf
 pipecpu-simdir/work
+vga-simdir/work
+vga-synthdir/
 *.swp
