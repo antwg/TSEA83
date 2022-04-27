@@ -72,6 +72,8 @@ constant PUSR		: unsigned(7 downto 0) := x"21";
 constant POSR		: unsigned(7 downto 0) := x"22";
 constant SUBR		: unsigned(7 downto 0) := x"23";
 constant RET		: unsigned(7 downto 0) := x"24";
+constant PCR		: unsigned(7 downto 0) := x"25";
+
 
 constant alu_nop	: unsigned(3 downto 0)      := x"0";
 constant alu_add	: unsigned(3 downto 0)      := x"1";
@@ -147,6 +149,7 @@ with op_code select alu_op <=
 	alu_pop			when POP,
 	alu_push		when PUSH,
 	alu_posr		when POSR,
+	alu_posr		when PCR,
 	alu_posr		when RET, -- I couldn't be bothered to add a new alu_op because that would require makeing the signal larger
     alu_nop         when others;
 

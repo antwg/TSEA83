@@ -473,10 +473,10 @@ begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				SP <= x"00FF";
-			elsif ((IR2_op = POP) or (IR2_op = POSR) or (IR2_op = PCR) or (IR2_op = RET)) then
+			elsif ((IR2_op = POP) or (IR2_op = POSR) or (IR2_op = PCR)) then
 				SP <= SP + 1;
 			elsif (IR2_op = PUSH or (IR2_op = PUSR) or (IR2_op = SUBR)) then
-				if jumping='0' and IR2_op=PUSR then
+				if (jumping = '1') and (IR2_op = PUSR) then
 					SP <= SP;
 				else
 					SP <= SP - 1;
