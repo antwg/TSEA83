@@ -340,7 +340,6 @@ begin
 								  (IR2_op = ORI)    	or 
 								  (IR2_op = MULI)   	or
 								  (IR2_op = MULSI)) 	else
-
 				SP 		  	when  (IR2_op = POP)		or 
 								  (IR2_op = PUSR)		or
 								  (IR2_op = POSR)		or
@@ -397,10 +396,6 @@ begin
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s
-    ---
-    -- We only execute as per usual when the bootloader is done loading a program.
-    -- There's one special case while executing, when we want to jump. Then we
-    -- need to insert a jump nop, stop counting PC and set PC to the correct jump addr.
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
@@ -412,22 +407,38 @@ begin
 				IR2 <= (others => '0');
 
             -- run as per usual when bootloader has loaded a program
-			elsif (boot_done='1' or boot_en = '0') then
+			elsif (boot_done='1' or boot_en='0') then
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
 
-				-- Flags are not tested since they hane not been set yet.
+                -- If we see a subroutine return, prepare for it
+		        if (IR2_op = RET) then	
+					IR2_op <= POSR;
+					IR1_op <= PCR;
+        
+                -- PCR pops the stack unto the program counter
+				elsif (IR2_op = PCR) then
+					PC <= data_bus;
+
+                    -- we clean the pipe in case there's some
+                    -- jump instruction laying waiting to ruin things for us
+                    IR1 <= (others => '0'); -- jump NOP
+                    IR2 <= (others => '0'); -- jump NOP
+
+                -- If we see a jump, prepare for it...
+				-- Flags are not tested since they have not been set yet.
 				-- This can lead to uneccesary NOPs but this is better than
 				-- having to add NOPs manually
-				if (IR1_op = RJMP) or -- if we see a jump, prepare for it
-				   (IR1_op = BEQ) or 
-				   (IR1_op = BNE) or
-				   (IR1_op = BPL) or
-				   (IR1_op = BMI) or
-				   (IR1_op = BGE) or
+				elsif (IR1_op = RJMP) or
+				   (IR1_op = BEQ)  or 
+				   (IR1_op = BNE)  or
+				   (IR1_op = BPL)  or
+				   (IR1_op = BMI)  or
+				   (IR1_op = BGE)  or
 				   (IR1_op = SUBR) or
 				   (IR1_op = BLT) then
 						 PC1 <= PC;
+
 						 if (IR1_op = SUBR) then
 							IR1_op <= PUSR;
 							IR1_const <= x"0000";
@@ -435,7 +446,9 @@ begin
 						 else
 						 	IR1 <= (others => '0'); -- jump NOP
 						 end if;
-				elsif (IR2_op = RJMP) 								or
+
+                -- Don't increase PC if we're jumping
+				elsif   (IR2_op = RJMP) 		    				or
 						(IR2_op = SUBR)								or
 					  	((IR2_op = BEQ) and ZF = '1') 				or
 					    ((IR2_op = BNE) and ZF = '0') 				or
@@ -443,13 +456,10 @@ begin
 					    ((IR2_op = BMI) and NF = '1') 				or
 					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
 					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
-					PC <= JUMP_PC; -- don't increase PC if jump is happening
-				elsif (IR2_op = RET) then	
-					IR2_op <= POSR;
-					IR1_op <= PCR;
-				elsif (IR2_op = PCR) then
-					PC <= data_bus;
-				else -- update as per usual if nothing special is happening
+					PC <= JUMP_PC;
+
+                -- Update as per usual if nothing special is happening
+				else
 					PC <= PC + 1;
 					PC1 <= PC;
 

@@ -15,38 +15,20 @@ config wave -signalnamewidth 1
 
 add wave {sim:/pipecpu_tb/clk}
 add wave {sim:/pipecpu_tb/rst}
-add wave {sim:/pipecpu_tb/U0/status_reg_out}
-add wave -group ir {sim:/pipecpu_tb/U0/IR1}
-add wave -group ir {sim:/pipecpu_tb/U0/IR2}
-add wave -dec -group pc {sim:/pipecpu_tb/U0/JUMP_PC}
-add wave -dec -group pc {sim:/pipecpu_tb/U0/jumping}
-add wave -dec -group pc {sim:/pipecpu_tb/U0/PC}
-add wave -dec -group pc {sim:/pipecpu_tb/U0/PC1}
-add wave {sim:/pipecpu_tb/U0/pm_addr}
-add wave {sim:/pipecpu_tb/U0/SP}
-add wave {sim:/pipecpu_tb/U0/sr_we}
-add wave {sim:/pipecpu_tb/U0/data_bus}
-add wave -color gold {sim:/pipecpu_tb/U0/PMdata_out}
-add wave -group reg {sim:/pipecpu_tb/U0/IR2_ra}
-add wave -group reg {sim:/pipecpu_tb/U0/IR2_rd}
-add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux1}
-add wave -group reg -color gold {sim:/pipecpu_tb/U0/alu_mux2}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rst}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/done}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/boot_en}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/we}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/addr}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
-add wave -group pmLoader {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
-add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX1}
-add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX2}
-add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/op_code}
-add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result}
-add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result_large}
-add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/status_reg}
+add wave -dec -group pcir {sim:/pipecpu_tb/U0/PC}
+add wave -group pcir {sim:/pipecpu_tb/U0/IR1}
+add wave -dec -group pcir {sim:/pipecpu_tb/U0/PC1}
+add wave -group pcir {sim:/pipecpu_tb/U0/IR2}
+add wave -dec -group pcir {sim:/pipecpu_tb/U0/jumping}
+add wave -dec -group pcir {sim:/pipecpu_tb/U0/JUMP_PC}
+add wave -group cpu {sim:/pipecpu_tb/U0/SP}
+add wave -group cpu {sim:/pipecpu_tb/U0/status_reg_out}
+add wave -group cpu {sim:/pipecpu_tb/U0/sr_we}
+add wave -group cpu {sim:/pipecpu_tb/U0/data_bus}
+add wave -group cpu {sim:/pipecpu_tb/U0/IR2_ra}
+add wave -group cpu {sim:/pipecpu_tb/U0/IR2_rd}
+add wave -group cpu {sim:/pipecpu_tb/U0/alu_mux1}
+add wave -group cpu {sim:/pipecpu_tb/U0/alu_mux2}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/we}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/rd_out}
@@ -54,13 +36,31 @@ add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/ra_out}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/data_in}
 add wave -group rf {sim:/pipecpu_tb/U0/reg_file_comp/RF}
+add wave -group PM {sim:/pipecpu_tb/U0/pm_addr}
+add wave -group PM {sim:/pipecpu_tb/U0/PMdata_out}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX1}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/MUX2}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/op_code}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/result_large}
+add wave -group ALU {sim:/pipecpu_tb/U0/alu_comp/status_reg}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/DM}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/addr}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_out}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
-add wave -dec {sim:/pipecpu_tb/U0/leddriver_comp/value}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/rst}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/rx}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/done}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/boot_en}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/we}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/addr}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
+add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
+add wave -unsigned {sim:/pipecpu_tb/U0/leddriver_comp/value}
 
 
 restart -f
-run 300 ns
+run 1 ms

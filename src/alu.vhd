@@ -153,8 +153,7 @@ with op_code select alu_op <=
 	alu_posr		when RET, -- I couldn't be bothered to add a new alu_op because that would require makeing the signal larger
     alu_nop         when others;
 
-
-	-- C flag
+-- C flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -162,21 +161,20 @@ begin
 			C <= '0';
 		else
 			case alu_op is
+				when alu_posr => C <= MUX1(2);
 				when alu_add=> C <= result_large(16);
 				when alu_sub => C <= result_large(16);
 				when alu_LS => C <= MUX1(15);
 				when alu_RS => C<= MUX1(0);
 				when alu_mul => C <= result_large(31);
 				when alu_muls => C <= result_large(31);
-				when alu_posr
-		 => C <= MUX1(2);
 				when others =>  C <= '0';
 			end case;
 		end if;
 	end if;
 end process;
 
-	-- V flag
+-- V flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -184,13 +182,11 @@ begin
 			V <= '0';
 		else
 			case alu_op is
-				when alu_posr
-		 => V <= MUX1(3);
+				when alu_posr => V <= MUX1(3);
 				when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
-				or (not MUX1(15) and not MUX2(15) and result_large(15)));
-				
+				                        or (not MUX1(15) and not MUX2(15) and result_large(15)));
 				when alu_sub => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
-				or ( MUX1(15) and not MUX2(15) and not result_large(15)));
+				                        or ( MUX1(15) and not MUX2(15) and not result_large(15)));
 				when others => V <= '0';
 			end case;	
 		end if;
@@ -198,7 +194,7 @@ begin
 
 end process;
 
-	-- N flag
+-- N flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -206,13 +202,12 @@ begin
 			N <= '0';
 		elsif ((alu_op /= alu_nop)) then	--if it is an actual alu operation
 			case alu_op is
+				when alu_posr => N <= MUX1(1);
 				when alu_add => N <= result_large(15);
 				when alu_sub => N <= result_large(15);
 				when alu_cmp => N <= result_large(15);
 				when alu_mul => N <= result_large(31);
 				when alu_muls => N <= result_large(31);
-				when alu_posr
-		 => N <= MUX1(1);
 				when others => N <= '0';
 			end case;
 		end if;
@@ -220,12 +215,14 @@ begin
 
 end process;
 
-	-- Z flag
+-- Z flag
 process(clk)
 begin
 	if rising_edge(clk)	then
 		if reset = '1' then
 			Z <= '0';
+		elsif (alu_op = alu_posr) then
+			Z <= MUX1(0);
 		elsif (alu_op = alu_cmp) then
 			if ((MUX1 - MUX2) = 0) then
 				Z <= '1';
@@ -238,9 +235,6 @@ begin
 			else 
 				Z <= '0';
 			end if;
-		elsif (alu_op = alu_posr
-) then
-			Z <= MUX1(0);
 		end if;
 	end if;	
 

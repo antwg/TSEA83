@@ -18,6 +18,7 @@ void printHelp() {
 ** -o ./outputFile.bin
 ** -m [Prints instruction as binary for manual entering into program memory]
 ** -d [prints additional debug info]
+** -u [uploads to UART, doesn't configure UART]
 */
 int main(int argc, char** argv) {
     if (argc <= 1) {

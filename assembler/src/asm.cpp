@@ -2,9 +2,24 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+
+void error(int lineNum, std::string line, std::string msg) {
+    std::cout << "ERROR, line " << lineNum << ": " << msg << std::endl;
+    std::cout << "> " << line << std::endl;
+}
 
 Assembler::Assembler() {
     setOutput(outputFilePath);
+}
+
+int toHex(std::string hex) {
+    unsigned int x;
+    std::stringstream ss;
+    ss << std::hex << hex;
+    ss >> x;
+
+    return x;
 }
 
 int Assembler::setInput(std::string path) {
@@ -31,9 +46,13 @@ int Assembler::setOutput(std::string path) {
 
 int Assembler::run() {
     if (parseLines())
-	return 1;
-    updateLabels();
-    write();
+	    return 1;
+
+    if (updateLabels())
+        return 1;
+
+    if (write())
+        return 1;
 
     return 0;
 }
@@ -95,16 +114,36 @@ int Assembler::parseLines() {
 
                 int op = getOpCode(arg[0]);
                 if (op == UNDEFINED) {
-                    std::cout << "Line " << currentLine << ": Couldn't parse opcode " << arg[0] << std::endl;
+                    error(currentLine, line, "Couldn't parse opcode: " + arg[0]);
                     return 1;
                 }
 
                 instr.opcode = op;
 
                 // parse registers
-                bool arg1IsLetters = arg[1].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ") == std::string::npos;
-                bool arg2IsLetters = arg[2].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ") == std::string::npos;
+                bool arg1IsLetters = arg[1].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == std::string::npos;
+                bool arg2IsLetters = arg[2].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == std::string::npos;
 
+                bool isHexArg1 = arg[1].find_first_of("$") != std::string::npos;
+                bool isHexArg2 = arg[2].find_first_of("$") != std::string::npos;
+
+                // We do some failchecking to spare headaches for programmer
+                // check so thet we get registers when doing specific instructions
+                if (instr.opcode == COPY || instr.opcode == ADD  || instr.opcode == SUB  ||
+                    instr.opcode == CMP  || instr.opcode == AND  || instr.opcode == OR   ||
+                    instr.opcode == ADC  || instr.opcode == SBC  || instr.opcode == MUL  ||
+                    instr.opcode == MULS || instr.opcode == LSLS || instr.opcode == LSRS ||
+                    instr.opcode == LSRS ) {
+                    if (!arg1IsLetters || !arg2IsLetters) {
+                        error(currentLine, line, "Expects both arguments to be registers (letters)");
+                        return 1;
+                            
+                    }
+
+                }
+
+                // Parse the arguments differently depending on what type of instruction it is
+                // If it's a jump, the argument can be a number or a label
                 if (instr.opcode == RJMP || instr.opcode == BEQ || instr.opcode == BNE ||
                     instr.opcode == BPL || instr.opcode == BMI || instr.opcode == BGE ||
                     instr.opcode == BLT || instr.opcode == SUBR) {
@@ -118,7 +157,11 @@ int Assembler::parseLines() {
 
                     // else we've the actual offset as a number
                     } else {
-                        instr.value = stoi(arg[1]);
+                        if (isHexArg1) {
+                            instr.value = toHex(arg[1].substr(1, std::string::npos));
+                        } else {
+                            instr.value = stoi(arg[1]);
+                        }
                     }
 
                 // if not a jump instruction, arguments are either numbers or registers
@@ -127,6 +170,8 @@ int Assembler::parseLines() {
                     int arg1Reg = 0;
                     int arg2Reg = 0;
                     int value = 0;
+
+                    // arg1 is register
                     if (arg[1].size() && arg1IsLetters) {
                         arg1Reg = getRegCode(arg[1]);
 
@@ -134,10 +179,17 @@ int Assembler::parseLines() {
                             std::cout << "Couldn't parse register: \'" << arg[1] << "\'" << std::endl;
                             return 1;
                         }
+
+                    // arg1 is number
                     } else if (arg[1].size()) {
-                        value = stoi(arg[1]);
+                        if (isHexArg1) {
+                            value = toHex(arg[1].substr(1, std::string::npos));
+                        } else {
+                            value = stoi(arg[1]);
+                        }
                     }
 
+                    // arg2 is register
                     if (arg[2].size() && arg2IsLetters) {
                         arg2Reg = getRegCode(arg[2]);
 
@@ -145,14 +197,20 @@ int Assembler::parseLines() {
                             std::cout << "Couldn't parse register: \'" << arg[2] << "\'" << std::endl;
                             return 1;
                         }
+
+                    // arg2 is number
                     } else if (arg[2].size()) {
-                        value = stoi(arg[2]);
+                        if (isHexArg2) {
+                            value = toHex(arg[2].substr(1, std::string::npos));
+                        } else {
+                            value = stoi(arg[2]);
+                        }
                     }
 
                     registers += arg1Reg << 4;
                     registers += arg2Reg;
 
-                    instr.value = value & 0xFFFF;
+                    instr.value = value;
                     instr.registers = registers;
                 }
 
