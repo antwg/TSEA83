@@ -10,6 +10,8 @@ ldi a,$0000
 COUNTER:
     addi a,1
     subr WAIT
+    ;cmpi a, 0
+    ;beq FINISHED
     rjmp COUNTER
 
 ; SUBR WAIT

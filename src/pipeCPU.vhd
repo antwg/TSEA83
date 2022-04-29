@@ -362,7 +362,7 @@ begin
 					alu_out     				when others;
 
 	-- Status reg
-	sr_we <= '1' when (IR2_op = POSR) else '0';
+	sr_we <= '0' ;--when (IR2_op = POSR) else '0';
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
