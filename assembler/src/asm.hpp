@@ -74,9 +74,9 @@ struct Instruction {
     int registers;
     int value;
     std::string labelName;
-    int fileLine;
-    unsigned long pmLine;
-    std::string line;
+    int fileLineNum;
+    unsigned long pmLineNum;
+    std::string fileLine;
 };
 
 class Assembler {
@@ -98,12 +98,17 @@ private:
     std::string inputFilePath = "./example.asm";
     std::string outputFilePath = "./out.bin";
 
+    int fileLineNum = 0;
+    std::string fileLine;
+
     int getRegCode(std::string txt);
     int getOpCode(std::string txt);
     int parseLines();
-    std::vector<std::string> extractInstructionArgs(std::string line);
+    std::vector<std::string> getInstrArgs(std::string line);
     int updateLabels();
     int write();
+    int checkInstruction(int opcode, std::vector<std::string> args);
+    int parseArgValue(std::string value);
 
     std::vector<Instruction> instructions;
     std::unordered_map<std::string, int> labels; // keep tracks of what line a label points at

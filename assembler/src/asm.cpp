@@ -4,7 +4,10 @@
 #include <iomanip>
 #include <sstream>
 
-void error(int lineNum, std::string line, std::string msg) {
+using std::string;
+using std::vector;
+
+void error(int lineNum, string line, string msg) {
     std::cout << "ERROR, line " << lineNum << ": " << msg << std::endl;
     std::cout << "> " << line << std::endl;
 }
@@ -13,20 +16,91 @@ Assembler::Assembler() {
     setOutput(outputFilePath);
 }
 
-int fromHex(std::string hex) {
-    unsigned int x;
-    std::stringstream ss;
-    ss << std::hex << hex;
-    ss >> x;
+int Assembler::parseArgValue(string valueStr) {
+    int value = 0;
+    bool isHex = valueStr.find_first_of("$") != string::npos;
+    bool isBin = valueStr.find_first_of("#") != string::npos;
 
-    return x;
+    if (isHex) {
+        value = stoi(valueStr.substr(1, string::npos), 0, 16);
+    } else if (isBin) {
+        value = stoi(valueStr.substr(1, string::npos), 0, 2);
+    } else {
+        value = stoi(valueStr);
+    }
+
+    return value;
 }
 
-int fromBin(std::string bin) {
-    return stoi(bin, 0, 2);
+int Assembler::checkInstruction(int opcode, vector<string> args) {
+    // parse registers
+    bool arg1IsLetters = args[1].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == string::npos;
+    bool arg2IsLetters = args[2].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == string::npos;
+
+    switch (opcode) {
+        // We expect two registers
+        case LD:
+        case ST:
+        case COPY:
+        case ADD:
+        case SUB:
+        case CMP:
+        case AND:
+        case OR:
+        case ADC:
+        case SBC:
+        case MUL:
+        case MULS:
+        case LSLS:
+        case LSRS:
+            if (!arg1IsLetters || !arg2IsLetters) {
+                error(fileLineNum, fileLine, "Expects both arguments to be registers (letters)");
+                return 1;
+            }
+            break;
+
+        // We expect a register and a number
+        case LDI:
+        case STI:
+        case ADDI:
+        case SUBI:
+        case CMPI:
+        case ANDI:
+        case ORI:
+            if (!arg1IsLetters || arg2IsLetters) {
+                error(fileLineNum, fileLine, "Expects a letter and a number as arguments");
+                return 1;
+            }
+            break;
+
+        // We expect one argument, as label or number
+        case RJMP:
+        case BEQ:
+        case BNE:
+        case BPL:
+        case BMI:
+        case BGE:
+        case BLT:
+            if (args[1] == "") {
+                error(fileLineNum, fileLine, "Expecting an argument for instruction");
+                return 1;
+            }
+            break;
+
+        // We expect a register
+        case PUSH:
+        case POP:
+            if (!arg1IsLetters) {
+                error(fileLineNum, fileLine, "Expecting a register.");
+                return 1;
+            }
+            break;
+    }
+
+    return 0;
 }
 
-int Assembler::setInput(std::string path) {
+int Assembler::setInput(string path) {
     inputFile.open(path);
 
     if(!inputFile.is_open()) {
@@ -37,7 +111,7 @@ int Assembler::setInput(std::string path) {
     return 0;
 }
 
-int Assembler::setOutput(std::string path) {
+int Assembler::setOutput(string path) {
     outputFile.open(path);
 
     if(!outputFile.is_open()) {
@@ -62,16 +136,14 @@ int Assembler::run() {
 }
 
 int Assembler::parseLines() {
-    int fileLine = 0;
+    for(string line; std::getline(inputFile, line);) {
+        this->fileLineNum++;
+        this->fileLine = line;
 
-    // First extract all relevant data and check that
-    // it is reasonable input (e.g. opcodes are OK et.c.)
-    for(std::string line; std::getline(inputFile, line);) {
         long unsigned n = line.find_first_not_of(" \t\n\v\f\r");
-        fileLine++;
 
         // line isn't empty nor a comment
-        if (n != std::string::npos && line.at(n) != ';') {
+        if (n != string::npos && line.at(n) != ';') {
 
             // Initialize the instruction to store
             Instruction instr;
@@ -79,36 +151,41 @@ int Assembler::parseLines() {
             instr.registers = 0;
             instr.value = 0;
             instr.labelName = "";
-            instr.fileLine = fileLine;
-            instr.pmLine = instructions.size();
-            instr.line = line;
+            instr.fileLineNum = fileLineNum;
+            instr.pmLineNum = instructions.size();
+            instr.fileLine = line;
 
-            // Current line is a label
-            if (line.find_first_of(":") != std::string::npos) {
+            bool lineIsLabel = line.find_first_of(":") != string::npos;
+
+            if (lineIsLabel) {
                 // extract the label name
-                std::string label = line.substr(n, line.find(":"));
-                labels[label] = instructions.size(); // add where label is in program memory
+                string label = line.substr(n, line.find(":"));
+
+                // store where the label is in program memory
+                labels[label] = instructions.size();
 
                 instr.opcode = LBL;
                 instr.labelName = label;
 
                 if (debug) {
                     std::cout << "------LBL------" << std::endl;
-                    std::cout << "Line: " << instr.line << std::endl;
+                    std::cout << "Line: " << instr.fileLine << std::endl;
                     std::cout << "Label: " << instr.labelName << std::endl;
-                    std::cout << "At line: " << instr.pmLine << std::endl;
+                    std::cout << "At line: " << instr.pmLineNum << std::endl;
                 }
 
+                // skip to next line
                 continue;
 
-            // it is a instruction
+            // it is an instruction
             } else {
                 if (debug) {
                     std::cout << "------INSTR-----" << std::endl;
                     std::cout << "Line: " << line << std::endl;
                 }
 
-                std::vector<std::string> arg = extractInstructionArgs(line.substr(n, line.size()));
+                // remove starting whitespace and fetch instruction arguments
+                vector<string> arg = getInstrArgs(line.substr(n, line.size()));
 
                 if (debug) {
                     std::cout << "Arg0: " << arg[0] << std::endl;
@@ -116,86 +193,61 @@ int Assembler::parseLines() {
                     std::cout << "Arg2: " << arg[2] << std::endl;
                 }
 
-                int op = getOpCode(arg[0]);
-                if (op == UNDEFINED) {
-                    error(fileLine, line, "Couldn't parse opcode: " + arg[0]);
+                instr.opcode = getOpCode(arg[0]);
+                if (instr.opcode == UNDEFINED) {
+                    error(fileLineNum, line, "Couldn't parse opcode: " + arg[0]);
                     return 1;
                 }
 
-                instr.opcode = op;
-
-                // parse registers
-                bool arg1IsLetters = arg[1].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == std::string::npos;
-                bool arg2IsLetters = arg[2].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == std::string::npos;
-
-                bool isHexArg1 = arg[1].find_first_of("$") != std::string::npos;
-                bool isHexArg2 = arg[2].find_first_of("$") != std::string::npos;
-
-                bool isBinArg1 = arg[1].find_first_of("#") != std::string::npos;
-                bool isBinArg2 = arg[2].find_first_of("#") != std::string::npos;
-
                 // We do some failchecking to spare headaches for the programmer.
-                // Check so thet we get registers when doing specific instructions.
-                if (instr.opcode == COPY || instr.opcode == ADD  || instr.opcode == SUB  ||
-                    instr.opcode == CMP  || instr.opcode == AND  || instr.opcode == OR   ||
-                    instr.opcode == ADC  || instr.opcode == SBC  || instr.opcode == MUL  ||
-                    instr.opcode == MULS || instr.opcode == LSLS || instr.opcode == LSRS ||
-                    instr.opcode == LSRS ) {
-                    if (!arg1IsLetters || !arg2IsLetters) {
-                        error(fileLine, line, "Expects both arguments to be registers (letters)");
-                        return 1;
-                    }
-                }
+                if(checkInstruction(instr.opcode, arg))
+                    return 1;
 
-                // Parse the arguments differently depending on what type of instruction it is
+                // so that we know what type the argument is
+                bool arg1IsLetters = arg[1].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == string::npos;
+                bool arg2IsLetters = arg[2].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") == string::npos;
+
+                // temporary storage
+                int registers = 0;
+                int arg1Reg = 0;
+                int arg2Reg = 0;
+                int value = 0;
+                string labelName = "";
+
+                bool jumpInstr = instr.opcode == RJMP || instr.opcode == BEQ ||
+                                 instr.opcode == BNE  || instr.opcode == BPL ||
+                                 instr.opcode == BMI  || instr.opcode == BGE ||
+                                 instr.opcode == BLT  || instr.opcode == SUBR;
+
+                // Parse the arguments differently depending on what instruction is given
                 // If it's a jump, the argument can be a number or a label
-                if (instr.opcode == RJMP || instr.opcode == BEQ || instr.opcode == BNE ||
-                    instr.opcode == BPL || instr.opcode == BMI || instr.opcode == BGE ||
-                    instr.opcode == BLT || instr.opcode == SUBR) {
-
+                if (jumpInstr) {
                     // if arg1 is a label
                     if(arg1IsLetters) {
-                        instr.labelName = arg[1];
+                        labelName = arg[1];
 
                         // add this line to be handled later, once we've read all labels
-                        labelsInstructions.push_back(instr.pmLine);
+                        labelsInstructions.push_back(instr.pmLineNum);
 
                     // else we've the actual offset as a number
                     } else {
-                        if (isHexArg1) {
-                            instr.value = stoi(arg[1].substr(1, std::string::npos), 0, 16);
-                        } else if (isBinArg1) {
-                            instr.value = stoi(arg[1].substr(1, std::string::npos), 0, 2);
-                        } else {
-                            instr.value = stoi(arg[1]);
-                        }
+                        value = parseArgValue(arg[1]);
                     }
 
                 // if not a jump instruction, arguments are either numbers or registers
                 } else {
-                    int registers = 0;
-                    int arg1Reg = 0;
-                    int arg2Reg = 0;
-                    int value = 0;
-
                     // arg1 is register
                     if (arg[1].size() && arg1IsLetters) {
                         arg1Reg = getRegCode(arg[1]);
 
                         if (arg1Reg == UNDEFINED) {
-                            error(fileLine, line, "Couldn't parse register value: " + arg[1]);
+                            error(fileLineNum, line, "Couldn't parse register value: " + arg[1]);
                             return 1;
                         }
 
                     // arg1 is number
                     } else if (arg[1].size()) {
-                        if (isHexArg1) {
-                            value = stoi(arg[1].substr(1, std::string::npos), 0, 16);
-                        } else if (isBinArg1) {
-                            value = stoi(arg[1].substr(1, std::string::npos), 0, 2);
-                        } else {
-                            value = stoi(arg[1]);
-                        }
+                        value = parseArgValue(arg[1]);
                     }
 
                     // arg2 is register
@@ -203,27 +255,23 @@ int Assembler::parseLines() {
                         arg2Reg = getRegCode(arg[2]);
 
                         if (arg2Reg == UNDEFINED) {
-                            error(fileLine, line, "Couldn't parse register value: " + arg[2]);
+                            error(fileLineNum, line, "Couldn't parse register value: " + arg[2]);
                             return 1;
                         }
 
                     // arg2 is number
                     } else if (arg[2].size()) {
-                        if (isHexArg2) {
-                            value = stoi(arg[2].substr(1, std::string::npos), 0, 16);
-                        } else if (isBinArg2) {
-                            value = stoi(arg[2].substr(1, std::string::npos), 0, 2);
-                        } else {
-                            value = stoi(arg[2]);
-                        }
+                        value = parseArgValue(arg[2]);
                     }
-
-                    registers += arg1Reg << 4;
-                    registers += arg2Reg;
-
-                    instr.value = value;
-                    instr.registers = registers;
                 }
+
+                registers += arg1Reg << 4;
+                registers += arg2Reg;
+
+                // set the values fetched to the instruction
+                instr.value = value;
+                instr.registers = registers;
+                instr.labelName = labelName;
 
                 if (debug) {
                     std::cout << "--" << std::endl;
@@ -240,8 +288,8 @@ int Assembler::parseLines() {
     return 0;
 }
 
-std::vector<std::string> Assembler::extractInstructionArgs(std::string line) {
-    std::vector<std::string> instr = {"", "", ""}; // TODO: make to string[3]
+vector<string> Assembler::getInstrArgs(string line) {
+    vector<string> instr = {"", "", ""}; // TODO: make to string[3]
     bool EOL = false;
     int part = 0;
     int i = 0;
@@ -307,19 +355,19 @@ int Assembler::updateLabels() {
     for (int line : labelsInstructions) {
         Instruction instr = instructions[line];
 
-        if ((int)instr.pmLine <= (int)labels[instr.labelName]) {
-            instr.value = labels[instr.labelName] - instr.pmLine;
+        if ((int)instr.pmLineNum <= (int)labels[instr.labelName]) {
+            instr.value = labels[instr.labelName] - instr.pmLineNum;
         } else {
-            instr.value = labels[instr.labelName] - instr.pmLine;
+            instr.value = labels[instr.labelName] - instr.pmLineNum;
         }
 
         instructions[line] = instr;
 
         if (debug) {
             std::cout << "----" << std::endl;
-            std::cout << "Line: " << instr.line << std::endl;
+            std::cout << "Line: " << instr.fileLine << std::endl;
             std::cout << "Label: " << instr.labelName << std::endl;
-            std::cout << "Instr. at: " << instr.pmLine << std::endl;
+            std::cout << "Instr. at: " << instr.pmLineNum << std::endl;
             std::cout << "Label at: " << labels[instr.labelName] << std::endl;
             std::cout << "Jump: " << instr.value << std::endl;
         }
@@ -337,7 +385,7 @@ int Assembler::write() {
                 printf("%.2X", instr.registers);
                 printf("%.4X", (instr.value & 0xFFFF));
                 printf("\", -- ");
-                std::cout << instr.line << std::endl;
+                std::cout << instr.fileLine << std::endl;
             }
         }
 
@@ -357,7 +405,7 @@ int Assembler::write() {
     return 0;
 }
 
-int Assembler::getRegCode(std::string txt) {
+int Assembler::getRegCode(string txt) {
     if (!txt.compare("A")) {
         return A;
     } else if (!txt.compare("B")) {
@@ -395,7 +443,7 @@ int Assembler::getRegCode(std::string txt) {
     return UNDEFINED;
 }
 
-int Assembler::getOpCode(std::string txt) {
+int Assembler::getOpCode(string txt) {
     if (!txt.compare("NOP")) {
         return NOP;
     } else if (!txt.compare("RJMP")) {
