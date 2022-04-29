@@ -32,6 +32,7 @@ signal log_shift_left: unsigned (31 downto 0) := (others => '0');
 signal log_shift_right: unsigned (31 downto 0) := (others => '0');
 signal result_large : unsigned(31 downto 0) := (others => '0');
 signal alu_op : unsigned(7 downto 0) := (others => '0');
+signal Z_helper : std_logic := '0';
 
 
 -- branch has not been fully implemented
@@ -219,29 +220,51 @@ begin
 end process;
 
 -- Z flag
+Z_helper <= '1' when (result_large(15 downto 0) = 0) else '0';
+
 process(clk)
 begin
 	if rising_edge(clk)	then
 		if reset = '1' then
 			Z <= '0';
-		elsif (alu_op = alu_posr) then
-			Z <= MUX1(0);
-		elsif (alu_op = alu_cmp) then
-			if ((MUX1 - MUX2) = 0) then
-				Z <= '1';
-			else 
-				Z <= '0';
-			end if;
-		elsif ((alu_op /= alu_nop) or (alu_op /= alu_pcr) or (alu_op /= alu_ret)) then -- TODO håller bara flaggan 1 tick
-			if (result_large(15 downto 0) = 0) then
-				Z <= '1';
-			else 
-				Z <= '0';
-			end if;
+		else
+			case alu_op is
+				when alu_posr 	=> Z <= MUX1(0);
+				when alu_add 	=> Z <= Z_helper;
+				when alu_sub 	=> Z <= Z_helper;
+				when alu_cmp 	=> Z <= Z_helper;
+				when alu_mul 	=> Z <= Z_helper;
+				when alu_muls 	=> Z <= Z_helper;
+				when others 	=> Z <= Z;				
+			end case;
 		end if;
-	end if;	
-
+	end if;
 end process;
+
+
+-- Z flag
+--process(clk)
+--begin
+--	if rising_edge(clk)	then
+--		if reset = '1' then
+--			Z <= '0';
+--		elsif (alu_op = alu_posr) then
+--			Z <= MUX1(0);
+--		elsif (alu_op = alu_cmp) then
+--			if ((MUX1 - MUX2) = 0) then
+--				Z <= '1';
+--			else 
+--				Z <= '0';
+--			end if;
+--		elsif ((alu_op /= alu_nop) or (alu_op /= alu_pcr) or (alu_op /= alu_ret)) then -- TODO håller bara flaggan 1 tick
+--			if (result_large(15 downto 0) = 0) then
+--				Z <= '1';
+--			else 
+--				Z <= '0';
+--			end if;
+--		end if;
+--	end if;	
+--end process;
 
 
 
