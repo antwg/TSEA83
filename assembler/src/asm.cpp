@@ -13,13 +13,17 @@ Assembler::Assembler() {
     setOutput(outputFilePath);
 }
 
-int toHex(std::string hex) {
+int fromHex(std::string hex) {
     unsigned int x;
     std::stringstream ss;
     ss << std::hex << hex;
     ss >> x;
 
     return x;
+}
+
+int fromBin(std::string bin) {
+    return stoi(bin, 0, 2);
 }
 
 int Assembler::setInput(std::string path) {
@@ -58,12 +62,13 @@ int Assembler::run() {
 }
 
 int Assembler::parseLines() {
-    int currentLine = 1;
+    int fileLine = 0;
 
     // First extract all relevant data and check that
     // it is reasonable input (e.g. opcodes are OK et.c.)
     for(std::string line; std::getline(inputFile, line);) {
         long unsigned n = line.find_first_not_of(" \t\n\v\f\r");
+        fileLine++;
 
         // line isn't empty nor a comment
         if (n != std::string::npos && line.at(n) != ';') {
@@ -74,7 +79,7 @@ int Assembler::parseLines() {
             instr.registers = 0;
             instr.value = 0;
             instr.labelName = "";
-            instr.fileLine = currentLine;
+            instr.fileLine = fileLine;
             instr.pmLine = instructions.size();
             instr.line = line;
 
@@ -94,7 +99,6 @@ int Assembler::parseLines() {
                     std::cout << "At line: " << instr.pmLine << std::endl;
                 }
 
-                currentLine++;
                 continue;
 
             // it is a instruction
@@ -114,7 +118,7 @@ int Assembler::parseLines() {
 
                 int op = getOpCode(arg[0]);
                 if (op == UNDEFINED) {
-                    error(currentLine, line, "Couldn't parse opcode: " + arg[0]);
+                    error(fileLine, line, "Couldn't parse opcode: " + arg[0]);
                     return 1;
                 }
 
@@ -127,19 +131,20 @@ int Assembler::parseLines() {
                 bool isHexArg1 = arg[1].find_first_of("$") != std::string::npos;
                 bool isHexArg2 = arg[2].find_first_of("$") != std::string::npos;
 
-                // We do some failchecking to spare headaches for programmer
-                // check so thet we get registers when doing specific instructions
+                bool isBinArg1 = arg[1].find_first_of("#") != std::string::npos;
+                bool isBinArg2 = arg[2].find_first_of("#") != std::string::npos;
+
+                // We do some failchecking to spare headaches for the programmer.
+                // Check so thet we get registers when doing specific instructions.
                 if (instr.opcode == COPY || instr.opcode == ADD  || instr.opcode == SUB  ||
                     instr.opcode == CMP  || instr.opcode == AND  || instr.opcode == OR   ||
                     instr.opcode == ADC  || instr.opcode == SBC  || instr.opcode == MUL  ||
                     instr.opcode == MULS || instr.opcode == LSLS || instr.opcode == LSRS ||
                     instr.opcode == LSRS ) {
                     if (!arg1IsLetters || !arg2IsLetters) {
-                        error(currentLine, line, "Expects both arguments to be registers (letters)");
+                        error(fileLine, line, "Expects both arguments to be registers (letters)");
                         return 1;
-                            
                     }
-
                 }
 
                 // Parse the arguments differently depending on what type of instruction it is
@@ -158,7 +163,9 @@ int Assembler::parseLines() {
                     // else we've the actual offset as a number
                     } else {
                         if (isHexArg1) {
-                            instr.value = toHex(arg[1].substr(1, std::string::npos));
+                            instr.value = stoi(arg[1].substr(1, std::string::npos), 0, 16);
+                        } else if (isBinArg1) {
+                            instr.value = stoi(arg[1].substr(1, std::string::npos), 0, 2);
                         } else {
                             instr.value = stoi(arg[1]);
                         }
@@ -175,15 +182,17 @@ int Assembler::parseLines() {
                     if (arg[1].size() && arg1IsLetters) {
                         arg1Reg = getRegCode(arg[1]);
 
-                        if (arg2Reg == UNDEFINED) {
-                            std::cout << "Couldn't parse register: \'" << arg[1] << "\'" << std::endl;
+                        if (arg1Reg == UNDEFINED) {
+                            error(fileLine, line, "Couldn't parse register value: " + arg[1]);
                             return 1;
                         }
 
                     // arg1 is number
                     } else if (arg[1].size()) {
                         if (isHexArg1) {
-                            value = toHex(arg[1].substr(1, std::string::npos));
+                            value = stoi(arg[1].substr(1, std::string::npos), 0, 16);
+                        } else if (isBinArg1) {
+                            value = stoi(arg[1].substr(1, std::string::npos), 0, 2);
                         } else {
                             value = stoi(arg[1]);
                         }
@@ -194,14 +203,16 @@ int Assembler::parseLines() {
                         arg2Reg = getRegCode(arg[2]);
 
                         if (arg2Reg == UNDEFINED) {
-                            std::cout << "Couldn't parse register: \'" << arg[2] << "\'" << std::endl;
+                            error(fileLine, line, "Couldn't parse register value: " + arg[2]);
                             return 1;
                         }
 
                     // arg2 is number
                     } else if (arg[2].size()) {
                         if (isHexArg2) {
-                            value = toHex(arg[2].substr(1, std::string::npos));
+                            value = stoi(arg[2].substr(1, std::string::npos), 0, 16);
+                        } else if (isBinArg2) {
+                            value = stoi(arg[2].substr(1, std::string::npos), 0, 2);
                         } else {
                             value = stoi(arg[2]);
                         }
@@ -222,8 +233,6 @@ int Assembler::parseLines() {
                 }
 
                 instructions.push_back(instr);
-
-                currentLine++;
             }
         }
     }
