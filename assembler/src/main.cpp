@@ -8,16 +8,12 @@ void printHelp() {
     printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
     printf("-i inputFile (default=./example.asm)\n");
     printf("-o outputFile (default=./out.bin)\n");
+    printf("-t if not used, adds a NOP to the interrupt vector\n");
     printf("-m print instructions formatted to terminal\n");
     printf("-d print debug information\n");
 }
 
 /*
-** Flags:
-** -i ./inputFile.asm [REQUIRED]
-** -o ./outputFile.bin
-** -m [Prints instruction as binary for manual entering into program memory]
-** -d [prints additional debug info]
 ** -u [uploads to UART, doesn't configure UART]
 */
 int main(int argc, char** argv) {
@@ -32,20 +28,20 @@ int main(int argc, char** argv) {
         if (!strcmp(argv[i], "-i")) {
             if (engine.setInput(argv[i+1]))
                 return 0;
-
             i++; // skip filepath arg
         } else if (!strcmp(argv[i], "-o")) {
             if (engine.setOutput(argv[i+1]))
                 return 0;
-
             i++; // skip filepath arg
         } else if (!strcmp(argv[i], "-m")) {
-            engine.manual = true;
+            engine.config[manual] = true;
         } else if (!strcmp(argv[i], "-d")) {
-            engine.debug = true;
+            engine.config[debug] = true;
         } else if (!strcmp(argv[i], "-h")) {
             printHelp();
             return 0;
+        } else if (!strcmp(argv[i], "-t")) {
+            engine.config[interrupts] = true;
         }
     }
 

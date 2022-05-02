@@ -79,6 +79,12 @@ struct Instruction {
     std::string fileLine;
 };
 
+enum CONF {
+    interrupts,
+    manual,
+    debug
+};
+
 class Assembler {
 public:
     Assembler();
@@ -87,8 +93,7 @@ public:
     int setInput(std::string path);
     int setOutput(std::string path);
 
-    bool manual = false;
-    bool debug = false;
+    std::unordered_map<CONF, bool> config; // keeps asm conf. options
 
     int run();
 private:
@@ -101,14 +106,18 @@ private:
     int fileLineNum = 0;
     std::string fileLine;
 
+    // helper functions
     int getRegCode(std::string txt);
     int getOpCode(std::string txt);
-    int parseLines();
     std::vector<std::string> getInstrArgs(std::string line);
-    int updateLabels();
-    int write();
     int checkInstruction(int opcode, std::vector<std::string> args);
     int parseArgValue(std::string value);
+
+    // main assembler stuff
+    int parseLines();
+    int parseConf();
+    int updateLabels();
+    int write();
 
     std::vector<Instruction> instructions;
     std::unordered_map<std::string, int> labels; // keep tracks of what line a label points at

@@ -14,6 +14,9 @@ void error(int lineNum, string line, string msg) {
 
 Assembler::Assembler() {
     setOutput(outputFilePath);
+    config[interrupts] = false;
+    config[manual] = false;
+    config[debug] = false;
 }
 
 int Assembler::parseArgValue(string valueStr) {
@@ -124,7 +127,7 @@ int Assembler::setOutput(string path) {
 
 int Assembler::run() {
     if (parseLines())
-	    return 1;
+        return 1;
 
     if (updateLabels())
         return 1;
@@ -136,6 +139,12 @@ int Assembler::run() {
 }
 
 int Assembler::parseLines() {
+    // add a NOP to the intr vec if user hasn't said he'll do et
+    if (!config[interrupts]) {
+        Instruction nop = {NOP, 0, 0, "", 0, 0, "interrupt vector"};
+        instructions.push_back(nop);
+    }
+
     for(string line; std::getline(inputFile, line);) {
         this->fileLineNum++;
         this->fileLine = line;
@@ -167,7 +176,7 @@ int Assembler::parseLines() {
                 instr.opcode = LBL;
                 instr.labelName = label;
 
-                if (debug) {
+                if (config[debug]) {
                     std::cout << "------LBL------" << std::endl;
                     std::cout << "Line: " << instr.fileLine << std::endl;
                     std::cout << "Label: " << instr.labelName << std::endl;
@@ -179,7 +188,7 @@ int Assembler::parseLines() {
 
             // it is an instruction
             } else {
-                if (debug) {
+                if (config[debug]) {
                     std::cout << "------INSTR-----" << std::endl;
                     std::cout << "Line: " << line << std::endl;
                 }
@@ -187,7 +196,7 @@ int Assembler::parseLines() {
                 // remove starting whitespace and fetch instruction arguments
                 vector<string> arg = getInstrArgs(line.substr(n, line.size()));
 
-                if (debug) {
+                if (config[debug]) {
                     std::cout << "Arg0: " << arg[0] << std::endl;
                     std::cout << "Arg1: " << arg[1] << std::endl;
                     std::cout << "Arg2: " << arg[2] << std::endl;
@@ -273,7 +282,7 @@ int Assembler::parseLines() {
                 instr.registers = registers;
                 instr.labelName = labelName;
 
-                if (debug) {
+                if (config[debug]) {
                     std::cout << "--" << std::endl;
                     printf("OP: %.2X\n", instr.opcode);
                     printf("Regs: %.2X\n", instr.registers);
@@ -348,7 +357,7 @@ vector<string> Assembler::getInstrArgs(string line) {
 }
 
 int Assembler::updateLabels() {
-    if (debug && labelsInstructions.size()) {
+    if (config[debug] && labelsInstructions.size()) {
         std::cout << "--------LABELS------" << std::endl;
     }
 
@@ -363,7 +372,7 @@ int Assembler::updateLabels() {
 
         instructions[line] = instr;
 
-        if (debug) {
+        if (config[debug]) {
             std::cout << "----" << std::endl;
             std::cout << "Line: " << instr.fileLine << std::endl;
             std::cout << "Label: " << instr.labelName << std::endl;
@@ -378,7 +387,7 @@ int Assembler::updateLabels() {
 
 int Assembler::write() {
     for(Instruction instr : instructions) {
-        if (manual) {
+        if (config[manual]) {
             if (instr.opcode != LBL) {
                 printf("x\"");
                 printf("%.2X", instr.opcode);
