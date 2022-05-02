@@ -13,7 +13,7 @@ entity joystickreal is
             RST : in  STD_LOGIC;           								-- Button DNN
             enable : in std_logic;
             done : out std_logic:= '0';
-            data_out: out unsigned(22 downto 0);
+            data_out: out unsigned(22 downto 0) := (others => '0');
             JA : inout unsigned(3 downto 0) 
     
            );
@@ -51,7 +51,6 @@ data_out <= x&y&btns;
     --send data to joystick
     if rising_edge(clk) then
         -- set start bit and led on jstk 
-        
         if (bits_sent = 1 or bits_sent = 7 or bits_sent = 8) then
             if (swth_leds = "00") then
                 MOSI <= '1';
@@ -93,11 +92,16 @@ data_out <= x&y&btns;
                 done <= '1';
                 swth_leds <= swth_leds + 1;
             end if;
+        elsif(SS = '1' or rst = '1') then
+            x <= "0000000000";
+            y <= "0000000000";
+            btns <= "000";
         end if;
-        
+    
         if (bits_sent /= 40) then
             done <= '0';
         end if;
+
     end if;
 end process;
 
@@ -111,17 +115,22 @@ process(clk) begin
             sclk_counter <= x"0000";
             bits_sent <= "0000000";
             SCLK <= '0';
-        elsif (SS = '0' and bits_sent /= 40) then -- if joystick is enabled
+
+        elsif (SS = '0') then -- if joystick is enabled
             if (sclk_counter = sclk_speed) then
                 sclk_counter <= x"0000";
                 if (SCLK = '1') then
                     SCLK <= '0';
                 else 
-                    bits_sent <= bits_sent + 1;
-                    SCLK <= '1';
+                    if(bits_sent = 40) then -- set the last falling edge
+                        SCLK <= '0';
+                    else 
+                        bits_sent <= bits_sent + 1;
+                        SCLK <= '1';
+                    end if;
                 end if;
             else
-                sclk_counter <= sclk_counter + 1;
+                sclk_counter <= sclk_counter + 1;          
             end if;
         end if;
     end if;
