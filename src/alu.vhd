@@ -31,7 +31,8 @@ signal sub_carry: unsigned(31 downto 0) := (others => '0');
 signal log_shift_left: unsigned (31 downto 0) := (others => '0');
 signal log_shift_right: unsigned (31 downto 0) := (others => '0');
 signal result_large : unsigned(31 downto 0) := (others => '0');
-signal alu_op : unsigned(3 downto 0) := (others => '0');
+signal alu_op : unsigned(7 downto 0) := (others => '0');
+signal Z_helper : std_logic := '0';
 
 
 -- branch has not been fully implemented
@@ -70,24 +71,29 @@ constant LSLS       : unsigned(7 downto 0) := x"1F";
 constant LSLR       : unsigned(7 downto 0) := x"20";
 constant PUSR		: unsigned(7 downto 0) := x"21";
 constant POSR		: unsigned(7 downto 0) := x"22";
+constant SUBR		: unsigned(7 downto 0) := x"23";
+constant RET		: unsigned(7 downto 0) := x"24";
+constant PCR		: unsigned(7 downto 0) := x"25";
 
-constant alu_nop	: unsigned(3 downto 0)      := x"0";
-constant alu_add	: unsigned(3 downto 0)      := x"1";
-constant alu_sub	: unsigned(3 downto 0)      := x"2";
-constant alu_cmp	: unsigned(3 downto 0)      := x"3";
-constant alu_mul	: unsigned(3 downto 0)      := x"4";
-constant alu_muls	: unsigned(3 downto 0)      := x"5";
-constant alu_RS		: unsigned(3 downto 0)      := x"6";
-constant alu_LS		: unsigned(3 downto 0)      := x"7";
-constant alu_and	: unsigned(3 downto 0)      := x"8";
-constant alu_or		: unsigned(3 downto 0)      := x"9";
-constant alu_add_carry	: unsigned(3 downto 0)  := x"A";
-constant alu_sub_carry	: unsigned(3 downto 0)  := x"B";
-constant alu_rd         : unsigned(3 downto 0)  := x"C";
-constant alu_push		: unsigned(3 downto 0)  := x"D";
-constant alu_pop		: unsigned(3 downto 0)  := x"E";
-constant alu_posr		: unsigned(3 downto 0)  := x"F";
- 
+
+constant alu_nop	: unsigned(7 downto 0)      := x"00";
+constant alu_add	: unsigned(7 downto 0)      := x"01";
+constant alu_sub	: unsigned(7 downto 0)      := x"02";
+constant alu_cmp	: unsigned(7 downto 0)      := x"03";
+constant alu_mul	: unsigned(7 downto 0)      := x"04";
+constant alu_muls	: unsigned(7 downto 0)      := x"05";
+constant alu_RS		: unsigned(7 downto 0)      := x"06";
+constant alu_LS		: unsigned(7 downto 0)      := x"07";
+constant alu_and	: unsigned(7 downto 0)      := x"08";
+constant alu_or		: unsigned(7 downto 0)      := x"09";
+constant alu_add_carry	: unsigned(7 downto 0)  := x"0A";
+constant alu_sub_carry	: unsigned(7 downto 0)  := x"0B";
+constant alu_rd         : unsigned(7 downto 0)  := x"0C";
+constant alu_push		: unsigned(7 downto 0)  := x"0D";
+constant alu_pop		: unsigned(7 downto 0)  := x"0E";
+constant alu_posr		: unsigned(7 downto 0)  := x"0F";
+constant alu_pcr		: unsigned(7 downto 0)  := x"10";
+constant alu_ret		: unsigned(7 downto 0)  := x"11";
 
 begin
 	
@@ -110,7 +116,9 @@ begin
 		when alu_rd         => result_large <= (x"0000" & MUX1);
 		when alu_cmp		=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
 		when alu_pop		=> result_large <= (x"0000" & (MUX2 + 1));
-		when alu_posr		=> result_large <= (x"0000" & (MUX2 + 1));
+		when alu_posr 		=> result_large <= (x"0000" & (MUX2 + 1));
+		when alu_pcr		=> result_large <= (x"0000" & (MUX2 + 1)); 
+		when alu_ret		=> result_large <= (x"0000" & (MUX2 + 1));
 		when others         => result_large <= (x"0000" & MUX2);
 	end case;
 end process;
@@ -144,11 +152,12 @@ with op_code select alu_op <=
 	alu_rd          when ST,
 	alu_pop			when POP,
 	alu_push		when PUSH,
-	alu_POSR		when POSR,
+	alu_posr		when POSR,
+	alu_pcr			when PCR,
+	alu_ret			when RET, 
     alu_nop         when others;
 
-
-	-- C flag
+-- C flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -156,20 +165,20 @@ begin
 			C <= '0';
 		else
 			case alu_op is
+				when alu_posr => C <= MUX1(2);
 				when alu_add=> C <= result_large(16);
 				when alu_sub => C <= result_large(16);
 				when alu_LS => C <= MUX1(15);
 				when alu_RS => C<= MUX1(0);
 				when alu_mul => C <= result_large(31);
 				when alu_muls => C <= result_large(31);
-				when alu_posr => C <= MUX1(2);
-				when others =>  C <= '0';
+				when others =>  C <= C;
 			end case;
 		end if;
 	end if;
 end process;
 
-	-- V flag
+-- V flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -179,18 +188,17 @@ begin
 			case alu_op is
 				when alu_posr => V <= MUX1(3);
 				when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
-				or (not MUX1(15) and not MUX2(15) and result_large(15)));
-				
+				                        or (not MUX1(15) and not MUX2(15) and result_large(15)));
 				when alu_sub => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
-				or ( MUX1(15) and not MUX2(15) and not result_large(15)));
-				when others => V <= '0';
+				                        or ( MUX1(15) and not MUX2(15) and not result_large(15)));
+				when others => V <= V;
 			end case;	
 		end if;
 	end if;
 
 end process;
 
-	-- N flag
+-- N flag
 process(clk)
 begin
 	if rising_edge(clk)	then
@@ -198,43 +206,65 @@ begin
 			N <= '0';
 		elsif ((alu_op /= alu_nop)) then	--if it is an actual alu operation
 			case alu_op is
+				when alu_posr => N <= MUX1(1);
 				when alu_add => N <= result_large(15);
 				when alu_sub => N <= result_large(15);
 				when alu_cmp => N <= result_large(15);
 				when alu_mul => N <= result_large(31);
 				when alu_muls => N <= result_large(31);
-				when alu_posr => N <= MUX1(1);
-				when others => N <= '0';
+				when others => N <= N;
 			end case;
 		end if;
 	end if;
 
 end process;
 
-	-- Z flag
+-- Z flag
+Z_helper <= '1' when (result_large(15 downto 0) = 0) else '0';
+
 process(clk)
 begin
 	if rising_edge(clk)	then
 		if reset = '1' then
 			Z <= '0';
-		elsif (alu_op = alu_cmp) then
-			if ((MUX1 - MUX2) = 0) then
-				Z <= '1';
-			else 
-				Z <= '0';
-			end if;
-		elsif (alu_op /= alu_nop) then
-			if (result_large(15 downto 0) = 0) then
-				Z <= '1';
-			else 
-				Z <= '0';
-			end if;
-		elsif (alu_op = alu_posr) then
-			Z <= MUX1(0);
+		else
+			case alu_op is
+				when alu_posr 	=> Z <= MUX1(0);
+				when alu_add 	=> Z <= Z_helper;
+				when alu_sub 	=> Z <= Z_helper;
+				when alu_cmp 	=> Z <= Z_helper;
+				when alu_mul 	=> Z <= Z_helper;
+				when alu_muls 	=> Z <= Z_helper;
+				when others 	=> Z <= Z;				
+			end case;
 		end if;
-	end if;	
-
+	end if;
 end process;
+
+
+-- Z flag
+--process(clk)
+--begin
+--	if rising_edge(clk)	then
+--		if reset = '1' then
+--			Z <= '0';
+--		elsif (alu_op = alu_posr) then
+--			Z <= MUX1(0);
+--		elsif (alu_op = alu_cmp) then
+--			if ((MUX1 - MUX2) = 0) then
+--				Z <= '1';
+--			else 
+--				Z <= '0';
+--			end if;
+--		elsif ((alu_op /= alu_nop) or (alu_op /= alu_pcr) or (alu_op /= alu_ret)) then -- TODO håller bara flaggan 1 tick
+--			if (result_large(15 downto 0) = 0) then
+--				Z <= '1';
+--			else 
+--				Z <= '0';
+--			end if;
+--		end if;
+--	end if;	
+--end process;
 
 
 
