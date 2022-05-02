@@ -36,7 +36,7 @@
     addi a, 6       ; a = 70
     cmpi a, 63 
     beq 2           ; should not branch
-    addi 2          ; a = 72
+    addi a, 2       ; a = 72
 
     ; --- test bne ---
     cmpi a, 2 

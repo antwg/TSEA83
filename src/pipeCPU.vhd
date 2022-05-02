@@ -39,7 +39,7 @@ alias NF : std_logic is status_reg_out(1);
 alias CF : std_logic is status_reg_out(2);
 alias VF : std_logic is status_reg_out(3);
 
-signal PC, PC1, JUMP_PC : unsigned(15 downto 0) := (others => '0');
+signal PC, PC1, JUMP_PC : unsigned(15 downto 0) := x"0001";
 
 signal PMdata_out : unsigned(31 downto 0) := (others => '0');
 signal pm_addr : unsigned(15 downto 0) := (others => '0');
@@ -82,6 +82,12 @@ signal com_debug : std_logic := '1';
 
 signal com_pm_val : unsigned(31 downto 0) := (others => '0');
 signal com_pm_part : unsigned(4 downto 0) := (others => '0');
+
+-- interrupts
+signal interrupt_en : std_logic := '1';
+signal interrupt : std_logic := '0';
+signal interrupt_handling : std_logic := '0';
+signal interrupt_handling_jump : std_logic := '0';
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
@@ -400,11 +406,22 @@ begin
 	begin
 		if (rising_edge(clk)) then
 			if (rst='1') then
-				PC <= (others => '0');
-				PC1 <= (others => '0');
-				JUMP_PC <= (others => '0');
+				PC <= x"0001";
+				PC1 <=  x"0001";
+				JUMP_PC <= x"0001";
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
+
+            -- proritize interrupts if one occurs
+            elsif (interrupt='1' and interrupt_en='1' and interrupt_handling='0') then
+                -- we save a flag to know we're handling an interrupt
+                -- and give the opportunity to raise another one (which isn't handled)
+                interrupt_handling <= '1';
+                interrupt_handling_jump <= '1';
+                
+                -- jump to the interrupt vector by using a subroutine call 
+                IR1_op <= SUBR;
+                IR1_const <= x"0000";
 
             -- run as per usual when bootloader has loaded a program
 			elsif (boot_done='1' or boot_en='0') then
@@ -415,10 +432,17 @@ begin
 		        if (IR2_op = RET) then	
 					IR2_op <= POSR;
 					IR1_op <= PCR;
-        
+
                 -- PCR pops the stack unto the program counter
 				elsif (IR2_op = PCR) then
-					PC <= data_bus;
+                    -- special case if we're handling an interrupt since
+                    -- the PC that is pushed into that stack is off by one
+                    if (interrupt_handling='1') then
+                        PC <= data_bus - 1;
+                        interrupt_handling <= '0';
+                    else
+                        PC <= data_bus;
+                    end if;
 
                     -- we clean the pipe in case there's some
                     -- jump instruction laying waiting to ruin things for us
@@ -430,13 +454,13 @@ begin
 				-- This can lead to uneccesary NOPs but this is better than
 				-- having to add NOPs manually
 				elsif (IR1_op = RJMP) or
-				   (IR1_op = BEQ)  or 
-				   (IR1_op = BNE)  or
-				   (IR1_op = BPL)  or
-				   (IR1_op = BMI)  or
-				   (IR1_op = BGE)  or
-				   (IR1_op = SUBR) or
-				   (IR1_op = BLT) then
+                      (IR1_op = BEQ)  or 
+                      (IR1_op = BNE)  or
+                      (IR1_op = BPL)  or
+                      (IR1_op = BMI)  or
+                      (IR1_op = BGE)  or
+                      (IR1_op = SUBR) or
+                      (IR1_op = BLT)  then
 						 PC1 <= PC;
 
 						 if (IR1_op = SUBR) then
@@ -456,7 +480,15 @@ begin
 					    ((IR2_op = BMI) and NF = '1') 				or
 					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
 					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
-					PC <= JUMP_PC;
+
+                    -- special case if subr call is from an interrupt, jump to intr vec
+                    if (interrupt_handling_jump='1') then
+                        PC <= x"0000";
+                        interrupt_handling_jump <= '0';
+                    else
+                        PC <= JUMP_PC;
+                    end if;
+
 
                 -- Update as per usual if nothing special is happening
 				else
