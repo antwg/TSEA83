@@ -63,7 +63,7 @@ signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals
-signal boot_en : std_logic := '0';
+signal boot_en : std_logic := '1';
 signal boot_done : std_logic := '0';
 signal boot_we : std_logic := '0';
 signal boot_addr : unsigned(15 downto 0) := (others => '0');

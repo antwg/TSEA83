@@ -93,18 +93,18 @@ architecture func of PROG_MEM is
     --x"00000000", --     nop
     --x"0100FFFF", --     rjmp LOOP
     
-    x"08000001", --     ldi a, 1
-    x"10000001", --     subi a, 1
-    x"12000000", --     cmpi a, 0
-    x"23000005", --     subr TEST
-    x"00000000",
-    x"02000002", --     beq FINISH
-    x"08001337", --     ldi a, $1337
-    x"00000000", --     nop
-    x"0100FFFF", --     rjmp -1
-    x"08100000", --     ldi b, 0
-    x"10100001", --     subi b, 1
-    x"24000000", --     ret
+    --x"08000001", --     ldi a, 1
+    --x"10000001", --     subi a, 1
+    --x"12000000", --     cmpi a, 0
+    --x"23000005", --     subr TEST
+    --x"00000000",
+    --x"02000002", --     beq FINISH
+    --x"08001337", --     ldi a, $1337
+    --x"00000000", --     nop
+    --x"0100FFFF", --     rjmp -1
+    --x"08100000", --     ldi b, 0
+    --x"10100001", --     subi b, 1
+    --x"24000000", --     ret
     
       
   
