@@ -411,7 +411,7 @@ begin
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
 
-    dm_and_sm_data_out <= dm_data_out;-- when (alu_out < x"FC00") else spriteOut;
+    dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
 
 	-- Status reg
 	sr_we <= '1' when (IR2_op = POSR) else '0';
@@ -422,16 +422,16 @@ begin
 
 	
 	-- sprite mem
-	--spriteListPos <= alu_out(4 downto 0);
-	--spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
-	--spriteType 		<= data_bus(15 downto 13);
-	--spriteX 		<= data_bus(12  downto 6);
-	--spriteY			<= data_bus(5  downto 0);
-	spriteListPos <= "00000";
-	spriteWrite <= '1';
-	spriteType 		<= "001";
-	spriteX 		<= "0000000";
-	spriteY			<= "000000";
+	spriteListPos <= alu_out(4 downto 0);
+	spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
+	spriteType 		<= data_bus(15 downto 13);
+	spriteX 		<= data_bus(12  downto 6);
+	spriteY			<= data_bus(5  downto 0);
+	--spriteListPos <= "00000";
+	--spriteWrite <= '1';
+	--spriteType 		<= "001";
+	--spriteX 		<= "0000000";
+	--spriteY			<= "000000";
 
 
 	-- Write enable RF

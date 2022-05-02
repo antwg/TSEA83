@@ -58,6 +58,15 @@ add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_out}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/data_in}
 add wave -group dm {sim:/pipecpu_tb/U0/data_mem_comp/we}
 add wave -dec {sim:/pipecpu_tb/U0/leddriver_comp/value}
+add wave -dec {sim:/pipecpu_tb/U0/spriteOut}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteListPos}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteWrite}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/vgaRed}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/collision}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite0pix}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite1pix}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite2pix}
+add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite3pix}
 
 
 restart -f

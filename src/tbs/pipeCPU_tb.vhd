@@ -31,6 +31,8 @@ end component;
 	signal Hsync	  : std_logic;                        -- horizontal sync
 	signal Vsync	  : std_logic;
 
+	--signal spriteOut : unsigned(15 downto 0);
+
 
 begin
 
@@ -43,7 +45,8 @@ begin
         vgaGreen => vgaGreen,	    
         vgaBlue => vgaBlue,  
 		Hsync => Hsync,
-		Vsync => Vsync	 
+		Vsync => Vsync
+		--spriteOut => spriteOut	
 		);
 
 	process

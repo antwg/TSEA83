@@ -14,18 +14,28 @@ architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
-		--x"00000000", -- nop
-		x"08001234",
-		--x"0820FDE8", -- LDI c,65000 ; Inner counter
-		--x"00000000", -- nop
-		--x"10200001", -- SUBI c,1
-		--x"0300FFFF", -- BNE -1
+		x"00000000", -- NOP
+		x"08002820", -- LDI a,10272 ; 0010100000100000
+		x"08102FFF", -- LDI b,12287 ; 0010111111111111
+		x"082023CF", -- LDI c,9167  ; 0010001111001111
+		x"0830FC01", -- LDI d,64513 ; The register to write to
+		x"0840FC02", -- LDI e,64514 ; The register to write to
+		x"0850FC03", -- LDI f,64515 ; The register to write to
+		x"0B300000", -- ST d,a
+		x"0B410000", -- ST e,b
+		x"0B520000", -- ST f,c
 		x"00000000", -- NOP
 		x"0100FFFF", -- RJMP -1
-	
 		
 
+		
+		
+		
+		
+		
 
+		
+	
 	    others => (others => '0')
 	);
 
