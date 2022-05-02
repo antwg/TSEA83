@@ -16,9 +16,33 @@ architecture func of PROG_MEM is
 	constant PM_c : PM_t := (
 		x"08F00000", -- LDI P,0
 		x"08E00000", -- LDI O,0
+		x"0800FDE8", -- LDI a, 65000
+		x"10000001", -- SUBI a, 1
+		x"12000000", -- CMPI a, 0
+		x"0300FFFE", -- BNE -2
 		x"08F08000", -- LDI P, 32768 ; load enable bit 1000000000000000
+		x"08101388", -- LDI b, 5000
+		x"0800FDE8", -- LDI a, 65000
+		x"10000001", -- SUBI a, 1
+		x"12000000", -- CMPI a, 0
+		x"0300FFFE", -- BNE -2
+		x"10100001", -- subi b, 1
+		x"12100000", -- CMPI b, 0
+		x"0300FFFA", -- BNE -6
+		x"14207FFF", -- ANDI c, 32767 ; disable joystick
+		x"0CF20000", -- COPY p,c
+		x"08101388", -- LDI b, 5000 
+		x"0800FDE8", -- LDI a, 65000
+		x"10000001", -- SUBI a, 1
+		x"12000000", -- CMPI a, 0
+		x"0300FFFE", -- BNE -2
+		x"10100001", -- subi b, 1
+		x"12100000", -- CMPI b, 0
+		x"0300FFFA", -- BNE -6
+		x"0100FFED", -- RJMP -19 ;start again 
 		x"00000000", -- NOP
-		x"0100FFFF", -- RJMP -1-bash-4.2$ 
+		
+		
 										others => (others => '0')
 	);
 

@@ -14,11 +14,11 @@ component joystickreal is
             enable: in std_logic;
             done : out std_logic;
             data_out: out unsigned(22 downto 0);
-            JA : inout unsigned(7 downto 0)
+            JA : inout unsigned(3 downto 0)
             );
     end component;
 
-    signal JA : unsigned(7 downto 0):= (others => '0');
+    signal JA : unsigned(3 downto 0):= (others => '0');
 	alias SS is JA(0) ; -- pin 1
 	alias MOSI is JA(1); -- pin 2
 	alias MISO is JA(2); -- pin 3
@@ -44,7 +44,12 @@ J_CMP : joystickreal port map (
     with timer select 
         MISO <=  '1' when "00101",
                  '1' when "00111",
-                 '0' when others;
+                '1' when  "01010", 
+                '1' when  "01011", 
+                '1' when  "01100", 
+                '1' when  "01110", 
+                
+                '0' when others;
 
 
     MOSI_timer : process begin

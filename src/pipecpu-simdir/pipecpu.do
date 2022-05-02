@@ -65,6 +65,9 @@ add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/btns}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/x}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/y}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/bits_sent}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/fall_edge_SCLK_enp}
+add wave -group joystick {sim:/pipeCPU_tb/timer}
+add wave -group joystick {sim:/pipeCPU_tb/JA}
 
 restart -f
-run 1000 ns
+run 10 ms

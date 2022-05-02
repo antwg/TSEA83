@@ -39,56 +39,46 @@ architecture func of REG_FILE is
 
 begin
 
-process(clk) begin
-	if rising_edge(clk) then
-		--map enable bit
-		jstk_en <= RF(15)(15);
-
-		if (jstk_done = '1') then
-			-- jstk y data
-			RF(14)(0) <= jstk_data(3);
-			RF(14)(1) <= jstk_data(4);
-			RF(14)(2) <= jstk_data(5);
-			RF(14)(3) <= jstk_data(6);
-			RF(14)(4) <= jstk_data(7);
-			RF(14)(5) <= jstk_data(8);
-			RF(14)(6) <= jstk_data(9);
-			RF(14)(7) <= jstk_data(10);
-			RF(14)(8) <= jstk_data(11);
-			RF(14)(9) <= jstk_data(12);
-			--buttons
-			RF(15)(10) <= jstk_data(0);
-			RF(15)(11) <= jstk_data(1);
-			RF(15)(12) <= jstk_data(2);
-			--x data	
-			RF(15)(0) <= jstk_data(12);
-			RF(15)(1) <= jstk_data(13);
-			RF(15)(2) <= jstk_data(14);
-			RF(15)(3) <= jstk_data(15);
-			RF(15)(4) <= jstk_data(16);
-			RF(15)(5) <= jstk_data(17);
-			RF(15)(6) <= jstk_data(18);
-			RF(15)(7) <= jstk_data(19);
-			RF(15)(8) <= jstk_data(20);
-			RF(15)(9) <= jstk_data(21);
-			
-
-
-
-
-		end if;
-	end if;
-end process;	
-
-
 
 
 	process(clk)
         begin
           if rising_edge(clk) then
-            if we = '1' then
+
+			--enable joystick bit
+			jstk_en <= RF(15)(15);
+
+			if we = '1' then
                 RF(to_integer(rd_in)) <= data_in;
-            end if;
+   
+			if (jstk_done = '1') then
+				RF(14)(0) <= jstk_data(3);
+				RF(14)(1) <= jstk_data(4);
+				RF(14)(2) <= jstk_data(5);
+				RF(14)(3) <= jstk_data(6);
+				RF(14)(4) <= jstk_data(7);
+				RF(14)(5) <= jstk_data(8);
+				RF(14)(6) <= jstk_data(9);
+				RF(14)(7) <= jstk_data(10);
+				RF(14)(8) <= jstk_data(11);
+				RF(14)(9) <= jstk_data(12);
+				--buttons
+				RF(15)(10) <= jstk_data(0);
+				RF(15)(11) <= jstk_data(1);
+				RF(15)(12) <= jstk_data(2);
+				--x data	
+				RF(15)(0) <= jstk_data(12);
+				RF(15)(1) <= jstk_data(13);
+				RF(15)(2) <= jstk_data(14);
+				RF(15)(3) <= jstk_data(15);
+				RF(15)(4) <= jstk_data(16);
+				RF(15)(5) <= jstk_data(17);
+				RF(15)(6) <= jstk_data(18);
+				RF(15)(7) <= jstk_data(19);
+				RF(15)(8) <= jstk_data(20);
+				RF(15)(9) <= jstk_data(21);
+				end if;
+			end if;
          end if;
         end process;
 
