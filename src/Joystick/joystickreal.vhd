@@ -27,9 +27,10 @@ architecture Behavioural of joystickreal is
     signal btns: unsigned(2 downto 0):= (others => '0');  
     signal SCLK_old : std_logic := '0'; 
     signal fall_edge_SCLK_enp : std_logic := '0';
-    signal swth_leds : unsigned(1 downto 0):= (others => '0');
+    signal MOSI_out : unsigned(7 downto 0):= "10000000";
+    signal rise_edge_SCLK_enp : std_logic := '0';
     constant sclk_speed : unsigned (15 downto 0) := x"07CF"; -- 1999
-
+    signal leds : unsigned(1 downto 0):= "11";
 	alias SS is JA(0) ; -- pin 1
 	alias MOSI is JA(1); -- pin 2
 	alias MISO is JA(2); -- pin 3
@@ -42,30 +43,25 @@ architecture Behavioural of joystickreal is
     begin
 
 fall_edge_SCLK_enp <= (not SCLK) and not SCLK_old;
-
+rise_edge_SCLK_enp <= (SCLK) and SCLK_old;
 
 SS <= not enable; -- ss is the opposite of what makes sense, 0 is enable 1 is disable
 data_out <= x&y&btns;
 
- process(clk) begin
+MOSI <= MOSI_out(7);
+
+process(clk) begin
     --send data to joystick
     if rising_edge(clk) then
-        -- set start bit and led on jstk 
-        if (bits_sent = 1 or bits_sent = 7 or bits_sent = 8) then
-            if (swth_leds = "00") then
-                MOSI <= '1';
-            elsif (swth_leds = "01") then
-                MOSI <= '0';
-            elsif (swth_leds = "10" and bits_sent = 7) then
-                MOSI <= '1';
-            elsif (swth_leds = "10" and bits_sent = 8) then
-                MOSI <= '0';
-            else 
-                MOSI <= '0';
-            end if;
-        end if;
         SCLK_old <= not SCLK;
         
+        if (bits_sent = 0) then
+            MOSI_out <= "100000"&leds;
+        elsif (rise_edge_SCLK_enp = '1' and bits_sent /= 1) then
+            MOSI_out <= MOSI_out(6 downto 0)&'0';
+        end if;
+       
+
         if (fall_edge_SCLK_enp = '1') then
             --x data from joystick
             if (bits_sent < 9) then
@@ -90,8 +86,9 @@ data_out <= x&y&btns;
             elsif (bits_sent = 40) then
                 btns(0) <= MISO;
                 done <= '1';
-                swth_leds <= swth_leds + 1;
-            end if;
+                -- this should cause leds on joystick to blink
+                leds <= leds - 1;
+                end if;
         elsif(SS = '1' or rst = '1') then
             x <= "0000000000";
             y <= "0000000000";

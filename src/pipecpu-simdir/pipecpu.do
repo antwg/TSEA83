@@ -61,13 +61,17 @@ add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/MOSI}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/MISO}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/SCLK}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/enable}
-add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/btns}
-add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/x}
-add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/y}
-add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/bits_sent}
+add wave -bin -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/btns}
+add wave -bin -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/x}
+add wave -bin -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/y}
+add wave -uns -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/bits_sent}
 add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/fall_edge_SCLK_enp}
-add wave -group joystick {sim:/pipeCPU_tb/timer}
+add wave -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/rise_edge_SCLK_enp}
+add wave -uns -group joystick {sim:/pipeCPU_tb/timer}
 add wave -group joystick {sim:/pipeCPU_tb/JA}
+add wave -bin -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/leds}
+add wave -bin -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/data_out}
+add wave -bin -group joystick {sim:/pipeCPU_tb/U0/joystick_comp/mosi_out}
 
 restart -f
 run 10 ms

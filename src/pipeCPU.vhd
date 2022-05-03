@@ -81,7 +81,7 @@ signal com_pm_part : unsigned(4 downto 0) := (others => '0');
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
-signal led_addr : unsigned(3 downto 0) := "1111"; 
+signal led_addr : unsigned(3 downto 0) := "0011"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
 --joystick out 

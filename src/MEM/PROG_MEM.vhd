@@ -21,7 +21,7 @@ architecture func of PROG_MEM is
 		x"12000000", -- CMPI a, 0
 		x"0300FFFE", -- BNE -2
 		x"08F08000", -- LDI P, 32768 ; load enable bit 1000000000000000
-		x"081001F4", -- LDI b, 500 
+		x"08100032", -- LDI b, 50 
 		x"08000FA0", -- LDI a, 4000 
 		x"10000001", -- SUBI a, 1
 		x"12000000", -- CMPI a, 0
@@ -31,9 +31,18 @@ architecture func of PROG_MEM is
 		x"0300FFFA", -- BNE -6
 		x"14F07FFF", -- ANDI p, 32767 ; disable joystick 0111111111111111
 		x"0CF20000", -- COPY p,c ; move read bits  to c
+		x"081001F4", -- LDI b, 500 
+		x"0800FDE8", -- LDI a, 65000
+		x"10000001", -- SUBI a, 1
+		x"12000000", -- CMPI a, 0
+		x"0300FFFE", -- BNE -2
+		x"10100001", -- subi b, 1
+		x"12100000", -- CMPI b, 0
+		x"0300FFFA", -- BNE -6
 		x"0100FFE9", -- RJMP -23 ;start again 
 		x"00000000", -- NOP
-		x"0100FFFF", -- RJMP -1 ; just in case we loop at the end
+		x"0100FFFF", -- RJMP -1 ; just in case we loop at the endantos931@tlvm-4-1-3:~/projekt/assembler$ 
+				
 		
 		
 										others => (others => '0')
