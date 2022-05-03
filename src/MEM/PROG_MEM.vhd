@@ -14,6 +14,7 @@ architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
+
 		x"08000000", --     ldi a, 0
 		x"0810FC00", --     ldi b, $FC00
 		x"0820FC01", --     ldi c, $FC01
@@ -126,7 +127,6 @@ architecture func of PROG_MEM is
 		x"18200000", --     pop c
 		x"24000000", --     ret
 
-        
 	    others => (others => '0')
 	);
 

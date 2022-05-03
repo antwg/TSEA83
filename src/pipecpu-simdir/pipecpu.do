@@ -3,7 +3,7 @@
 # Build CPU
 vcom "+acc" ../pipeCPU.vhd
 # Build memory files
-vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd ../alu.vhd
+vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd ../alu.vhd ../VGA_MOTOR.vhd
 # Build relevant testbench
 vcom "+acc" ../tbs/pipeCPU_tb.vhd
 

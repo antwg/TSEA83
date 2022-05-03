@@ -9,7 +9,13 @@ entity pipeCPU is
 		UART_out : out std_logic;
 		--JA : in unsigned(15 downto 0);
 		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0));
+		an : out unsigned(3 downto 0);
+		vgaRed		    : out std_logic_vector(2 downto 0);
+        vgaGreen	    : out std_logic_vector(2 downto 0);
+        vgaBlue		    : out std_logic_vector(2 downto 1);
+        Hsync		    : out std_logic;
+        Vsync		    : out std_logic);
+
 
 end pipeCPU;
 
@@ -47,6 +53,7 @@ signal pm_addr : unsigned(15 downto 0) := (others => '0');
 -- Data memory
 signal dm_addr : unsigned(15 downto 0) := (others => '0');
 signal dm_data_out : unsigned(15 downto 0) := (others => '0');
+signal dm_and_sm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
 
 -- Sprite memory
@@ -99,6 +106,16 @@ signal MISO : std_logic;
 signal SS : STD_LOGIC;								-- Slave Select, Pin 1, Port JA
 signal SCLK: STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
 signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
+
+--vga
+signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
+--signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+signal spriteData      : unsigned(15 downto 0);
+--signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+--signal spriteY          :  unsigned(5 downto 0);
+signal spriteOut        :  unsigned(15 downto 0);
+
  
 
 -- Instructions
@@ -152,6 +169,28 @@ component PROG_MEM is
 	      wr_addr : in unsigned(15 downto 0);
 	      wr_data : in unsigned(31 downto 0));
 end component;
+
+-- Sprite minne
+component VGA_MOTOR is
+    port ( 
+	   clk	            : in std_logic;                         -- system clock
+	   rst              : in std_logic;   
+	   vgaRed		    : out std_logic_vector(2 downto 0);
+	   vgaGreen	        : out std_logic_vector(2 downto 0);
+	   vgaBlue		    : out std_logic_vector(2 downto 1);
+	   Hsync		    : out std_logic;
+	   Vsync		    : out std_logic;
+	   spriteWrite      : in  std_logic;            -- 1 -> writing   0 -> reading
+	   --spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+	   spriteData       : in unsigned(15 downto 0);
+	   spriteListPos    : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+	   --spriteX          : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+	   --spriteY          : in  unsigned(5 downto 0);
+	   spriteOut        : out unsigned(15 downto 0)
+	   
+	   );    -- VGA blue
+end component;
+
 
 component PROG_LOADER is
 	port( clk, rst, rx, boot_en : in std_logic;
@@ -238,6 +277,25 @@ begin
 		we => boot_we,
 		wr_addr => boot_addr,
 		wr_data => boot_data_out);
+
+
+	sprite_mem_comp : VGA_MOTOR port map(
+		vgaRed => vgaRed,
+		vgaGreen => vgaGreen,
+		vgaBlue	=> vgaBlue,
+		Hsync => Hsync,
+		Vsync => Vsync,
+		clk => clk,
+		rst => rst,  
+		spriteWrite => spriteWrite,  
+		--spriteType => spriteType,  
+		spriteListPos => spriteListPos, 
+		--spriteX => spriteX, 
+		--spriteY => spriteY,
+		spriteData => spriteData,
+		spriteOut => spriteOut 
+	);
+	
 
 	prog_loader_comp : PROG_LOADER port map(
 		clk => clk,
@@ -359,13 +417,15 @@ begin
 		data_bus <= rf_ra       				when ST,
 					rf_rd						when PUSH,
                     IR2_const   				when STI,
-					dm_data_out 				when LD,
-					dm_data_out 				when POP,
-					dm_data_out					when POSR,
-					dm_data_out					when PCR,
+					dm_and_sm_data_out			when LD,
+					dm_and_sm_data_out 			when POP,
+					dm_and_sm_data_out			when POSR,
+					dm_and_sm_data_out	    	when PCR,
 					PC							when SUBR,
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
+
+    dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
 
 	-- Status reg
 	sr_we <= '0' ;--when (IR2_op = POSR) else '0';
@@ -378,8 +438,20 @@ begin
 												(IR2_op = PUSR) 	or 
 												(IR2_op = SUBR))) 	else '0';
 
-	--sm_addr <= (alu_out and "0000001111111111");
-	--sm_we <= '0' when (alu_out < x"FC00") else '1';
+	
+	-- sprite mem
+	spriteListPos <= alu_out(4 downto 0);
+	spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
+	--spriteType 		<= data_bus(15 downto 13);
+	--spriteX 		<= data_bus(12  downto 6);
+	--spriteY			<= data_bus(5  downto 0);
+	spriteData      <= data_bus;
+	--spriteListPos <= "00000";
+	--spriteWrite <= '1';
+	--spriteType 		<= "001";
+	--spriteX 		<= "0000000";
+	--spriteY			<= "000000";
+
 
 	-- Write enable RF
 	rf_we <= '0' when ((IR2_op = NOP)   or
