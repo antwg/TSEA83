@@ -1,21 +1,16 @@
-    ;ldi a, 0
-    ;ldi b, $FC00
-    ;ldi c, $FC01
-    subr GET_SPAWN_LOC
-    subr GET_SPAWN_LOC
-    subr MS_TIMER
-    subr MS_TIMER
-    subr MS_TIMER
-    subr MS_TIMER
+    ldi a, 0
+    ldi b, $FC00
+    ldi c, $FC01
+    subr SPAWN_AST
     
 
 START:
-    ;ld a, b
-    ;addi a, 1
-    ;st b, a
-    ;ld a, c
-    ;addi a, 1
-    ;st c, a
+    ld a, b
+    addi a, 1
+    st b, a
+    ld a, c
+    addi a, 1
+    st c, a
     
     rjmp START
 
@@ -101,62 +96,105 @@ RAND_NUM_GEN_END: ; Mask last byte
     ret
 
 ; --------------------------
-; Returns a valid spawn location
-; for an asteroid
-; FC00 -> xpixel 8 bitar låga
-;   01-> 3 bitar (vilken sprite höga) + 8 bitar ypixel (låga)
-; Stor asteroid 010
+; Spawns an asteroid at a random locaion
+; just outside of the screen. (top, left, ...)
+
+; DATA_MEM(FCXX)      -> xpixel 8 bit (low)
+; DATA_MEM(FCXX+1)    -> 3 bit sprite (high) + 8 bit ypixel (low) 
+; 
+; In: AST_NR(A)
+; Out: AST_DIR(B)
 ; --------------------------
 
-GET_SPAWN_LOC:
-    push a ; Random number
-    push b ; xpixel (8 low)
-    push c ; which sprite (3 high) and ypixel (8 low)
+SPAWN_AST:
+    push d ; Random number
+    push e ; xpixel (8 low)
+    push f ; which sprite (3 high) and ypixel (8 low)
 
-    ; Choose left or right
+    push a
     subr RAND_NUM_GEN
-    copy b, a
-    andi b, $0003
-    cmpi b, 0
-    beq GET_SPAWN_LEFT
-    cmpi b, 1
-    beq GET_SPAWN_LOC_RIGHT
-    cmpi b, 2
-    beq GET_SPAWN_LOC_BOTTOM
-
-GET_SPAWN_LOC_TOP:
-    copy b, a       ; Xpixel = random
-    andi b, $00FF
-    ldi c, $4000     ; Ypixel = 0, large asteroid
-    rjmp GET_SPAWN_LOC_END
-
-GET_SPAWN_LOC_BOTTOM:
-    copy b, a       ; Xpixel = random
-    andi b, $00FF
-    ldi c, $4082     ; Ypixel = 130, large asteroid
-    rjmp GET_SPAWN_LOC_END
-
-GET_SPAWN_LOC_RIGHT:
-    ldi b, $00A2        ; Xpixel = 162
-    copy c, a        ; Ypixel = random, large asteroid
-    andi c, $00FF
-    ori c, $4000
-    rjmp GET_SPAWN_LOC_END
-
-GET_SPAWN_LOC_LEFT:
-    ldi b, 0        ; Xpixel = 0
-    copy c, a        ; Ypixel = random, large asteroid
-    andi c, $00FF
-    ori c, $4000
-GET_SPAWN_LOC_END:
-    ldi a, $FC00
-    st a, b
-    ldi a, $FC01
-    st a, c
-    pop c
-    pop b
+    copy d, a
     pop a
+
+    ; Choose left/right/bottom/top
+    copy e, d
+    andi e, $0003
+    cmpi e, 0
+    beq SPAWN_AST_LEFT
+    cmpi e, 1
+    beq SPAWN_AST_RIGHT
+    cmpi e, 2
+    beq SPAWN_AST_BOTTOM
+
+SPAWN_AST_TOP:
+    ldi e, 80           ; Xpixel = 80
+    ldi f, $0000        ; Ypixel = 0
+    rjmp SPAWN_AST_END
+
+SPAWN_AST_BOTTOM:
+    ldi e, 80           ; Xpixel = 80
+    ldi f, 130          ; Ypixel = 130
+    rjmp SPAWN_AST_END
+
+SPAWN_AST_RIGHT:
+    ldi e, $00A2        ; Xpixel = 162
+    ldi f, 65          ; Ypixel = 65
+    rjmp SPAWN_AST_END
+
+SPAWN_AST_LEFT:
+    ldi e, 0            ; Xpixel = 0
+    ldi f, 65           ; Ypixel = 65
+
+SPAWN_AST_END:
+    subr GET_AST_SIZE   ; Get a random size of asteroid and apply
+    or f, b
+
+    mulsi a, 2           ; Store xpixel
+    ldi d, $FC00
+    add d, a
+    st d, e
+
+    ldi d, $FC01        ; Store ypixel and asteroid type
+    add d, a
+    st d, f
+
+    pop f
+    pop e
+    pop d
     ret
 
+; --------------------------
+; Gets a random size for an asteroid
+; In: AST_NR(A)
+; Out: Sprite(B)
+; --------------------------
+GET_AST_SIZE:
+    push c
 
+    ; Get random num and move to C
+    push a             
+    subr RAND_NUM_GEN
+    copy c, a
+    pop a
 
+    ; Choose random size
+    andi a, $0003
+    cmpi a, 0
+    beq GET_AST_SIZE_LARGE
+    cmpi a, 1
+    beq GET_AST_SIZE_MEDIUM
+    cmpi a, 2
+    beq GET_AST_SIZE_SMALL
+
+GET_AST_SIZE_SMALL:
+    ldi b, $8000
+    rjmp GET_AST_SIZE_END
+GET_AST_SIZE_MEDIUM:
+    ldi b, $6000
+    rjmp GET_AST_SIZE_END
+GET_AST_SIZE_LARGE:
+    ldi b, $4000
+    rjmp GET_AST_SIZE_END
+GET_AST_SIZE_END:
+    pop c
+    ret
