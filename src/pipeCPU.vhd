@@ -45,7 +45,7 @@ alias NF : std_logic is status_reg_out(1);
 alias CF : std_logic is status_reg_out(2);
 alias VF : std_logic is status_reg_out(3);
 
-signal PC, PC1, JUMP_PC : unsigned(15 downto 0) := (others => '0');
+signal PC, PC1, JUMP_PC : unsigned(15 downto 0) := x"0001";
 
 signal PMdata_out : unsigned(31 downto 0) := (others => '0');
 signal pm_addr : unsigned(15 downto 0) := (others => '0');
@@ -77,6 +77,9 @@ signal boot_addr : unsigned(15 downto 0) := (others => '0');
 signal boot_data_out : unsigned(31 downto 0) := (others => '0');
 signal boot_wait_cnt : unsigned(13 downto 0) := (others => '0');
 
+-- jumping
+signal jumping : std_logic := '0';
+
 -- UART com
 signal com_send_byte : unsigned (7 downto 0) := (others => '0');
 signal com_sent : std_logic := '0';
@@ -86,6 +89,12 @@ signal com_debug : std_logic := '1';
 
 signal com_pm_val : unsigned(31 downto 0) := (others => '0');
 signal com_pm_part : unsigned(4 downto 0) := (others => '0');
+
+-- interrupts
+signal interrupt_en : std_logic := '1';
+signal interrupt : std_logic := '0';
+signal interrupt_handling : std_logic := '0';
+signal interrupt_handling_jump : std_logic := '0';
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
@@ -147,6 +156,7 @@ constant PUSR		: unsigned(7 downto 0) := x"21";
 constant POSR		: unsigned(7 downto 0) := x"22";
 constant SUBR		: unsigned(7 downto 0) := x"23";
 constant RET		: unsigned(7 downto 0) := x"24";
+constant PCR		: unsigned(7 downto 0) := x"25";
 
 
 ------------------------------------ Def components ---------------------------
@@ -394,11 +404,11 @@ begin
 								  (IR2_op = ORI)    	or 
 								  (IR2_op = MULI)   	or
 								  (IR2_op = MULSI)) 	else
-
 				SP 		  	when  (IR2_op = POP)		or 
 								  (IR2_op = PUSR)		or
 								  (IR2_op = POSR)		or
 								  (IR2_op = SUBR)		or
+								  (IR2_op = PCR)		or
 								  (IR2_op = PUSH)		else 
 				rf_ra;
 
@@ -410,6 +420,7 @@ begin
 					dm_and_sm_data_out			when LD,
 					dm_and_sm_data_out 			when POP,
 					dm_and_sm_data_out			when POSR,
+					dm_and_sm_data_out	    	when PCR,
 					PC							when SUBR,
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
@@ -417,11 +428,15 @@ begin
     dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
 
 	-- Status reg
-	sr_we <= '1' when (IR2_op = POSR) else '0';
+	sr_we <= '0' ;--when (IR2_op = POSR) else '0';
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
-	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) or (IR2_op = ST) or (IR2_op = PUSH) or (IR2_op = PUSR) or (IR2_op =  SUBR))) else '0';
+	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) 		or 
+												(IR2_op = ST) 		or 
+												(IR2_op = PUSH) 	or 
+												(IR2_op = PUSR) 	or 
+												(IR2_op = SUBR))) 	else '0';
 
 	
 	-- sprite mem
@@ -454,59 +469,109 @@ begin
 					   (IR2_op = PUSR)	or 
 					   (IR2_op = POSR)	or
 					   (IR2_op = SUBR)	or
+					   (IR2_op = PCR)	or
+					   (IR2_op = RET)	or
                        (IR2_op = PUSH)) else '1';
 
 	-- Handle PC:s and IR:s
-    ---
-    -- We only execute as per usual when the bootloader is done loading a program.
-    -- There's one special case while executing, when we want to jump. Then we
-    -- need to insert a jump nop, stop counting PC and set PC to the correct jump addr.
 	process(clk)
 	begin
 		if (rising_edge(clk)) then
 			if (rst='1') then
-				PC <= (others => '0');
-				PC1 <= (others => '0');
-				JUMP_PC <= (others => '0');
+				PC <= x"0001";
+				PC1 <=  x"0001";
+				JUMP_PC <= x"0001";
 				IR1 <= (others => '0');
 				IR2 <= (others => '0');
 
+            -- proritize interrupts if one occurs
+            elsif (interrupt='1' and interrupt_en='1' and interrupt_handling='0') then
+                -- we save a flag to know we're handling an interrupt
+                -- and give the opportunity to raise another one (which isn't handled)
+                interrupt_handling <= '1';
+                interrupt_handling_jump <= '1';
+                
+                -- jump to the interrupt vector by using a subroutine call 
+                IR1_op <= SUBR;
+                IR1_const <= x"0000";
+
             -- run as per usual when bootloader has loaded a program
-			elsif (boot_done='1' or boot_en = '0') then
+			elsif (boot_done='1' or boot_en='0') then
 				IR2 <= IR1;
 				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
 
-				-- Flags are not tested since they hane not been set yet.
+                -- If we see a subroutine return, prepare for it
+		        if (IR2_op = RET) then	
+					IR2_op <= POSR;
+					IR1_op <= PCR;
+
+                -- PCR pops the stack unto the program counter
+				elsif (IR2_op = PCR) then
+                    -- special case if we're handling an interrupt since
+                    -- the PC that is pushed into that stack is off by one
+                    if (interrupt_handling='1') then
+                        PC <= data_bus - 1;
+                        interrupt_handling <= '0';
+                    else
+                        PC <= data_bus;
+                    end if;
+
+                    -- we clean the pipe in case there's some
+                    -- jump instruction laying waiting to ruin things for us
+                    IR1 <= (others => '0'); -- jump NOP
+                    IR2 <= (others => '0'); -- jump NOP
+
+                -- If we see a jump, prepare for it...
+				-- Flags are not tested since they have not been set yet.
 				-- This can lead to uneccesary NOPs but this is better than
 				-- having to add NOPs manually
-				if (IR1_op = RJMP) or -- if we see a jump, prepare for it
-				   (IR1_op = BEQ) or 
-				   (IR1_op = BNE) or
-				   (IR1_op = BPL) or
-				   (IR1_op = BMI) or
-				   (IR1_op = BGE) or
-				   (IR1_op = SUBR) or
-				   (IR1_op = BLT) then
+				elsif (IR1_op = RJMP) or
+                      (IR1_op = BEQ)  or 
+                      (IR1_op = BNE)  or
+                      (IR1_op = BPL)  or
+                      (IR1_op = BMI)  or
+                      (IR1_op = BGE)  or
+                      (IR1_op = SUBR) or
+                      (IR1_op = BLT)  then
 						 PC1 <= PC;
+
 						 if (IR1_op = SUBR) then
 							IR1_op <= PUSR;
-						 else IR1 <= (others => '0'); -- jump NOP
+							IR1_const <= x"0000";
+							jumping <= '1';
+						 else
+						 	IR1 <= (others => '0'); -- jump NOP
 						 end if;
-				elsif (IR2_op = RJMP) 								or
-						(IR2_op = RET)								or
+
+                -- Don't increase PC if we're jumping
+				elsif   (IR2_op = RJMP) 		    				or
+						(IR2_op = SUBR)								or
 					  	((IR2_op = BEQ) and ZF = '1') 				or
 					    ((IR2_op = BNE) and ZF = '0') 				or
 					    ((IR2_op = BPL) and NF = '0') 				or
 					    ((IR2_op = BMI) and NF = '1') 				or
 					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
 					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
-					PC <= JUMP_PC; -- don't increase PC if jump is happening
-				
-				else -- update as per usual if nothing special is happening
+
+                    -- special case if subr call is from an interrupt, jump to intr vec
+                    if (interrupt_handling_jump='1') then
+                        PC <= x"0000";
+                        interrupt_handling_jump <= '0';
+                    else
+                        PC <= JUMP_PC;
+                    end if;
+
+
+                -- Update as per usual if nothing special is happening
+				else
 					PC <= PC + 1;
 					PC1 <= PC;
 
 					IR1 <= PMdata_out;
+
+					if jumping='1' then
+						jumping <= '0';
+					end if;
 				end if;
 			end if;
 		end if;
@@ -522,10 +587,14 @@ begin
 		if rising_edge(clk) then
 			if (rst='1') then
 				SP <= x"00FF";
-			elsif ((IR2_op = POP) or (IR2_op = POSR)) then
+			elsif ((IR2_op = POP) or (IR2_op = POSR) or (IR2_op = PCR)) then
 				SP <= SP + 1;
 			elsif (IR2_op = PUSH or (IR2_op = PUSR) or (IR2_op = SUBR)) then
-				SP <= SP - 1;
+				if (jumping = '1') and (IR2_op = PUSR) then
+					SP <= SP;
+				else
+					SP <= SP - 1;
+				end if;
 			end if;
 		end if;
 	end process;
