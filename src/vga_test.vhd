@@ -28,8 +28,8 @@ architecture Behavioral of vga_test is
            spriteWrite      : in  std_logic;            -- 1 -> writing   0 -> reading
            spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
            spriteListPos    : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
-           spriteX          : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
-           spriteY          : in  unsigned(6 downto 0)
+           spriteX          : in  unsigned(7 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+           spriteY          : in  unsigned(7 downto 0)
            
            );    -- VGA blue
            
@@ -47,10 +47,10 @@ begin
       Vsync => Vsync,
 
       spriteWrite => '1',  
-      spriteType => "011",  
+      spriteType => "001",  
       spriteListPos => "00000", 
-      spriteX => "0000000", 
-      spriteY => "0000000"       
+      spriteX => "00001111", 
+      spriteY => "00000111"       
       );
 
 end Behavioral;
