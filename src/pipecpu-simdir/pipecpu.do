@@ -21,6 +21,10 @@ add wave -dec -group pcir {sim:/pipecpu_tb/U0/PC1}
 add wave -group pcir {sim:/pipecpu_tb/U0/IR2}
 add wave -dec -group pcir {sim:/pipecpu_tb/U0/jumping}
 add wave -dec -group pcir {sim:/pipecpu_tb/U0/JUMP_PC}
+add wave -group intr {sim:/pipecpu_tb/U0/interrupt_en}
+add wave -group intr {sim:/pipecpu_tb/U0/interrupt}
+add wave -group intr {sim:/pipecpu_tb/U0/interrupt_handling}
+add wave -group intr {sim:/pipecpu_tb/U0/interrupt_handling_jump}
 add wave -group cpu {sim:/pipecpu_tb/U0/SP}
 add wave -group cpu {sim:/pipecpu_tb/U0/status_reg_out}
 add wave -group cpu {sim:/pipecpu_tb/U0/sr_we}
@@ -63,4 +67,4 @@ add wave -unsigned {sim:/pipecpu_tb/U0/leddriver_comp/value}
 
 
 restart -f
-run 1 ms
+run 200 ns
