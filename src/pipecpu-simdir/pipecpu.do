@@ -3,7 +3,7 @@
 # Build CPU
 vcom "+acc" ../pipeCPU.vhd
 # Build memory files
-vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd ../alu.vhd
+vcom "+acc"  ../MEM/DATA_MEM.vhd ../MEM/REG_FILE.vhd ../MEM/PROG_MEM.vhd ../MEM/PROG_LOADER.vhd ../alu.vhd ../VGA_MOTOR.vhd
 # Build relevant testbench
 vcom "+acc" ../tbs/pipeCPU_tb.vhd
 
@@ -62,11 +62,13 @@ add wave -dec {sim:/pipecpu_tb/U0/spriteOut}
 add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteListPos}
 add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteWrite}
 add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/vgaRed}
-add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/collision}
-add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite0pix}
-add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite1pix}
-add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite2pix}
-add wave -dec {sim:/pipecpu_tb/U0/sprite_mem_comp/sprite3pix}
+
+add wave -bin {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteData}
+add wave -hex {sim:/pipecpu_tb/U0/sprite_mem_comp/Xoffset}
+add wave -bin {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteList}
+
+
+
 
 
 restart -f

@@ -38,11 +38,11 @@ entity VGA_MOTOR is
 
   -- When changing sprite mem
   spriteWrite     : in  std_logic;            -- 1 -> writing   0 -> reading
-  --spriteData      : in unsigned(15 downto 0);
-  spriteType      : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+  spriteData      : in unsigned(15 downto 0);
+  --spriteType      : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
   spriteListPos   : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
-  spriteX         : in  unsigned(7 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
-  spriteY         : in  unsigned(7 downto 0);	
+  --spriteX         : in  unsigned(7 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+  --spriteY         : in  unsigned(7 downto 0);	
   spriteOut       : out unsigned(15 downto 0)
   );
   
@@ -53,7 +53,8 @@ end VGA_MOTOR;
 -- architecture
 architecture Behavioral of VGA_MOTOR is
 
-    --alias spiteType : unsigned;
+    signal spriteX         :  unsigned(7 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+    signal spriteY         :  unsigned(7 downto 0);	
 
     signal	Xpixel	        : unsigned(9 downto 0);       -- Horizontal pixel counter
     signal	Ypixel	        : unsigned(9 downto 0);		    -- Vertical pixel counter
@@ -159,7 +160,7 @@ architecture Behavioral of VGA_MOTOR is
     type ram_3 is array (0 to 31) of unsigned(34 downto 0);
     signal spriteList : ram_3 := (--"001"&"0001000"&"001000"&"0010111"&"010111", 
                                   --"011"&"1100000"&"100000"&"1101111"&"101111", 
-                                  --"011"&"0010000"&"010000"&"0011111"&"011111", 
+                                  --"011"&"00011111"&"00011111"&"00000000"&"00000000", 
                                   --1 => "11111111111111111111111111111",
                                  
                                   others => (others => '0'));
@@ -403,21 +404,40 @@ begin
       end if;
 
       if (spriteWrite = '1') then
-        spriteList(to_integer(spriteListPos)) <= spriteType & (spriteX ) & spriteY & (spriteX +"1111") & (spriteY +"1111");
 
-        if(   (spriteX - "1111") > spriteX ) then
-          Xoffset <= "1111" - spriteX(3 downto 0) -1;
-          --Xoffset <= "0000";
+        if(spriteListPos mod 2) = 0 then
+
+          spriteList(to_integer(spriteListPos))(31 downto 24) <= spriteData(7 downto 0);--spriteType & (spriteX ) & spriteY & (spriteX +"1111") & (spriteY +"1111");
+
+          if(   (spriteData(7 downto 0)- "1111") > spriteData(7 downto 0) ) then
+            Xoffset <= "1111" - spriteData(3 downto 0) -1;
+            --Xoffset <= "0000";
+          else
+            Xoffset <= "1111";
+          end if;
+
         else
-          Xoffset <= "1111";
+
+          spriteList(to_integer(spriteListPos)-1)(23 downto 16) <= spriteData(7 downto 0);--spriteType & (spriteX ) & spriteY & (spriteX +"1111") & (spriteY +"1111");
+          spriteList(to_integer(spriteListPos)-1)(34 downto 32) <= spriteData(15 downto 13);
+
+          if(   (spriteData(7 downto 0)- "1111") > spriteData(7 downto 0) ) then
+            Yoffset <= "1111" - spriteData(3 downto 0) -1;
+            --Xoffset <= "0000";
+          else
+            Yoffset <= "1111";
+          end if;
+            
         end if;
 
-        if(   (spriteY - "1111") > spriteY ) then
-          Yoffset <= "1111" - spriteY(3 downto 0) -1;
-          --Xoffset <= "0000";
-        else
-          Yoffset <= "1111";
-        end if;
+  
+
+        --if(   (spriteY - "1111") > spriteY ) then
+        --  Yoffset <= "1111" - spriteY(3 downto 0) -1;
+        --  --Xoffset <= "0000";
+        --else
+        --  Yoffset <= "1111";
+        --end if;
         --  spriteList(to_integer(spriteListPos)) <= spriteType & (spriteX -"1111") & (spriteY -"1111") & spriteX & spriteY; 
         --elsif(   ((spriteX - 5) > spriteX) and ((spriteY - 5) > spriteY) ) then 
         --  spriteList(to_integer(spriteListPos)) <= spriteType & "00000000" & "00000000" & spriteX & spriteY; 

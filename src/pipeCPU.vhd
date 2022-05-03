@@ -100,10 +100,11 @@ signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
 
 --vga
 signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
-signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+--signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
 signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
-signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
-signal spriteY          :  unsigned(5 downto 0);
+signal spriteData      : unsigned(15 downto 0);
+--signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+--signal spriteY          :  unsigned(5 downto 0);
 signal spriteOut        :  unsigned(15 downto 0);
 
  
@@ -170,10 +171,11 @@ component VGA_MOTOR is
 	   Hsync		    : out std_logic;
 	   Vsync		    : out std_logic;
 	   spriteWrite      : in  std_logic;            -- 1 -> writing   0 -> reading
-	   spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+	   --spriteType       : in  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+	   spriteData       : in unsigned(15 downto 0);
 	   spriteListPos    : in  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
-	   spriteX          : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
-	   spriteY          : in  unsigned(5 downto 0);
+	   --spriteX          : in  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+	   --spriteY          : in  unsigned(5 downto 0);
 	   spriteOut        : out unsigned(15 downto 0)
 	   
 	   );    -- VGA blue
@@ -276,10 +278,11 @@ begin
 		clk => clk,
 		rst => rst,  
 		spriteWrite => spriteWrite,  
-		spriteType => spriteType,  
+		--spriteType => spriteType,  
 		spriteListPos => spriteListPos, 
-		spriteX => spriteX, 
-		spriteY => spriteY,
+		--spriteX => spriteX, 
+		--spriteY => spriteY,
+		spriteData => spriteData,
 		spriteOut => spriteOut 
 	);
 	
@@ -424,9 +427,10 @@ begin
 	-- sprite mem
 	spriteListPos <= alu_out(4 downto 0);
 	spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
-	spriteType 		<= data_bus(15 downto 13);
-	spriteX 		<= data_bus(12  downto 6);
-	spriteY			<= data_bus(5  downto 0);
+	--spriteType 		<= data_bus(15 downto 13);
+	--spriteX 		<= data_bus(12  downto 6);
+	--spriteY			<= data_bus(5  downto 0);
+	spriteData      <= data_bus;
 	--spriteListPos <= "00000";
 	--spriteWrite <= '1';
 	--spriteType 		<= "001";
