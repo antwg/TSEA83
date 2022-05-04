@@ -38,7 +38,6 @@ alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 signal SP : unsigned(15 downto 0) := x"00FF";
 
 -- Status register
-signal sr_we : std_logic := '0';
 signal status_reg_out : unsigned(3 downto 0) := (others => '0');
 alias ZF : std_logic is status_reg_out(0);
 alias NF : std_logic is status_reg_out(1);
@@ -56,9 +55,17 @@ signal dm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_and_sm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
 
--- Sprite memory
+-- Sprite memory/VGA
 signal sm_addr : unsigned(15 downto 0) := (others => '0');
 signal sm_we : std_logic := '0';
+signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
+--signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+signal spriteData      : unsigned(15 downto 0);
+--signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+--signal spriteY          :  unsigned(5 downto 0);
+signal sm_data_out        :  unsigned(15 downto 0);
+
 
 -- ALU
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
@@ -107,15 +114,6 @@ signal MISO : std_logic;
 signal SS : STD_LOGIC;								-- Slave Select, Pin 1, Port JA
 signal SCLK: STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
 signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
-
---vga
-signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
---signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
-signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
-signal spriteData      : unsigned(15 downto 0);
---signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
---signal spriteY          :  unsigned(5 downto 0);
-signal spriteOut        :  unsigned(15 downto 0);
 
  
 
@@ -295,7 +293,7 @@ begin
 		--spriteX => spriteX, 
 		--spriteY => spriteY,
 		spriteData => spriteData,
-		spriteOut => spriteOut 
+		spriteOut => sm_data_out 
 	);
 	
 
@@ -396,7 +394,6 @@ begin
 --    end process;
 
 	-- ALU multiplexers
-	--alu_mux1 <= data_bus 	when (IR2_op = POSR) else rf_rd;
 	alu_mux1 <= rf_rd;
 
 	alu_mux2 <= IR2_const 	when ((IR2_op = LDI)    	or
@@ -423,8 +420,8 @@ begin
 		data_bus <= rf_ra       				when ST,
 					rf_rd						when PUSH,
 					dm_and_sm_data_out			when LD,
-					dm_and_sm_data_out 			when POP,
-					dm_and_sm_data_out			when POSR,
+					dm_and_sm_data_out 		    when POP,
+					dm_and_sm_data_out		    when POSR,
 					dm_and_sm_data_out	    	when PCR,
                     IR2_const   				when STI,
 					PC							when SUBR,
@@ -432,10 +429,7 @@ begin
 					alu_out     				when others;
 
     -- slows clock
-    dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
-
-	-- Status reg
-	sr_we <= '0' ;--when (IR2_op = POSR) else '0';
+    dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else sm_data_out;
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
