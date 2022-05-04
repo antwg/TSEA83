@@ -63,7 +63,18 @@ add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/data_out}
 add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/rx1}
 add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/rx2}
 add wave -group boot {sim:/pipecpu_tb/U0/prog_loader_comp/st_868_cnt_out}
-add wave -unsigned {sim:/pipecpu_tb/U0/leddriver_comp/value}
+add wave -unsigned {sim:/pipecpu_tb/U0/leddriver_comp/value} 
+
+add wave -unsigned {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteData}
+add wave -unsigned {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteWrite}
+add wave -unsigned {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteOut}
+add wave -unsigned {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteListPos}   
+add wave -bin {sim:/pipecpu_tb/U0/dm_and_sm_data_out}
+add wave -hex {sim:/pipecpu_tb/U0/alu_out}
+
+add wave -bin {sim:/pipecpu_tb/U0/sprite_mem_comp/spriteList}
+
+
 
 
 restart -f

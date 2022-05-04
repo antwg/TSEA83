@@ -53,10 +53,10 @@ begin
       spriteWrite => '1',  
       --spriteType => "001",  
 
-      spriteListPos => "00001", 
+      spriteListPos => "00000", 
       --spriteX => "00001111", 
       --spriteY => "00000111" 
-      spriteData => data    
+      spriteData => x"000D"  
       );
 
      -- process
