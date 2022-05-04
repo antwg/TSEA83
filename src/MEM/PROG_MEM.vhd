@@ -15,30 +15,22 @@ architecture func of PROG_MEM is
 	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
 		x"00000000", -- NOP
-		x"0810001F", -- LDI b,31   ;000000000000110
-		x"0820201F", -- LDI c,8223 ;001000000011111
-		x"0830FC00", -- LDI d,64512 ; FC00
-		x"0840FC01", -- LDI e,64513 ; FC01
-		x"0850FDE8", -- LDI f,65000 ; Inner counter
-		x"08600028", -- LDI g,40   ; Outer counter
+		x"0810001F", -- LDI b,$001F  
+		x"0820401F", -- LDI c,$401F 
+		x"0830FC00", -- LDI d,$FC00 
+		x"0840FC01", -- LDI e,$FC01
 		x"0B310000", -- ST d,b
 		x"0B420000", -- ST e,c
-		x"09130000", -- LD b,d
-		x"0E100001", -- ADDI b,1
+		x"0810001F", -- LDI b,$001F
+		x"0820401F", -- LDI c,$401F 
+		x"0830FC02", -- LDI d,$FC02
+		x"0840FC03", -- LDI e,$FC03
 		x"0B310000", -- ST d,b
-		x"10500001", -- SUBI f,1
-		x"0300FFFF", -- BNE -1
-		x"0850FDE8", -- LDI f,65000
-		x"10600001", -- SUBI g,1
-		x"0300FFFC", -- BNE -4
-		x"08600028", -- LDI g,40
-		x"0100FFF7", -- RJMP -9
-		
-		
-		
-		
-
-		
+		x"0B420000", -- ST e,c
+		x"0850FC1F", -- LDI f,$FC1F
+		x"09050000", -- LD a,f
+		x"0A500000", -- STI f,$0000
+		x"0100FFFE", -- RJMP -2
 		
 		
 
