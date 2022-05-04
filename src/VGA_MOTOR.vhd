@@ -373,7 +373,7 @@ begin
     end if;
   end process;
   
- sprite0pix <= spriteMem(to_integer( (255* to_integer(spriteList(1)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - spriteList(1)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - spriteList(0)(7 downto 0) + spriteList(1)(15 downto 13)))  )) 
+ sprite0pix <= spriteMem(to_integer( (256* to_integer(spriteList(1)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - spriteList(1)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - spriteList(0)(7 downto 0) + spriteList(1)(15 downto 13)))  )) 
                    when   
                   Xpixel(9 downto 2) >= (spriteList(0)(7 downto 0)-offsetList(0)) and 
                   Xpixel(9 downto 2) <= (spriteList(0)(7 downto 0 )) and
@@ -382,7 +382,7 @@ begin
                   else "0000" ;
 
 
- sprite1pix <= spriteMem(to_integer( (255* to_integer(spriteList(3)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite1pix <= spriteMem(to_integer( (256* to_integer(spriteList(3)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(3)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(2)(7 downto 0) + 
                                                       spriteList(3)(15 downto 13)))  )) when   
@@ -394,7 +394,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(3)(7 downto 0 ))
                                else "0000" ;
 
- sprite2pix <= spriteMem(to_integer( (255* to_integer(spriteList(5)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite2pix <= spriteMem(to_integer( (256* to_integer(spriteList(5)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(5)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(4)(7 downto 0) + 
                                                       spriteList(5)(15 downto 13)))  )) when   
@@ -406,7 +406,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(5)(7 downto 0 ))
                                else "0000" ;
 
- sprite3pix <= spriteMem(to_integer( (255* to_integer(spriteList(7)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite3pix <= spriteMem(to_integer( (256* to_integer(spriteList(7)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(7)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(6)(7 downto 0) + 
                                                       spriteList(7)(15 downto 13)))  )) when   
@@ -418,7 +418,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(7)(7 downto 0 ))
                                else "0000" ;
 
- sprite4pix <= spriteMem(to_integer( (255* to_integer(spriteList(9)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite4pix <= spriteMem(to_integer( (256* to_integer(spriteList(9)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(9)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(8)(7 downto 0) + 
                                                       spriteList(9)(15 downto 13)))  )) when   
@@ -430,7 +430,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(9)(7 downto 0 ))
                                else "0000" ;
 
- sprite5pix <= spriteMem(to_integer( (255* to_integer(spriteList(11)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite5pix <= spriteMem(to_integer( (256* to_integer(spriteList(11)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(11)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(10)(7 downto 0) + 
                                                       spriteList(11)(15 downto 13)))  )) when   
@@ -442,7 +442,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(11)(7 downto 0 ))
                                else "0000" ;
 
- sprite6pix <= spriteMem(to_integer( (255* to_integer(spriteList(13)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite6pix <= spriteMem(to_integer( (256* to_integer(spriteList(13)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(13)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(12)(7 downto 0) + 
                                                       spriteList(13)(15 downto 13)))  )) when   
@@ -454,7 +454,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(13)(7 downto 0 ))
                                else "0000" ;
 
- sprite7pix <= spriteMem(to_integer( (255* to_integer(spriteList(15)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite7pix <= spriteMem(to_integer( (256* to_integer(spriteList(15)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(15)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(14)(7 downto 0) + 
                                                       spriteList(15)(15 downto 13)))  )) when   
@@ -466,7 +466,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(15)(7 downto 0 ))
                                else "0000" ;
 
- sprite8pix <= spriteMem(to_integer( (255* to_integer(spriteList(17)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite8pix <= spriteMem(to_integer( (256* to_integer(spriteList(17)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(17)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(16)(7 downto 0) + 
                                                       spriteList(17)(15 downto 13)))  )) when   
@@ -478,7 +478,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(17)(7 downto 0 ))
                                else "0000" ;
 
- sprite9pix <= spriteMem(to_integer( (255* to_integer(spriteList(19)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+ sprite9pix <= spriteMem(to_integer( (256* to_integer(spriteList(19)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(19)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(18)(7 downto 0) + 
                                                       spriteList(19)(15 downto 13)))  )) when   
@@ -490,7 +490,7 @@ begin
                                Ypixel(9 downto 2) <= (spriteList(19)(7 downto 0 ))
                                else "0000" ;
                        
-sprite10pix <= spriteMem(to_integer( (255* to_integer(spriteList(21)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+sprite10pix <= spriteMem(to_integer( (256* to_integer(spriteList(21)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
                                                       spriteList(21)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
                                                       spriteList(20)(7 downto 0) + 
                                                       spriteList(21)(15 downto 13)))  )) when   
