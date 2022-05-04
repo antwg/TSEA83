@@ -43,7 +43,6 @@ architecture func of PROG_LOADER is
     signal st_10_cnt_out : unsigned(3 downto 0) := (others => '0'); -- counter out
 
 	-- 4 counter, keep tracks on what in the instruction we're fetching (opcode et.c...)
-   	--signal st_4_cnt_en  : std_logic := '0'; 	-- enable counter
     signal st_4_cnt_out : unsigned(1 downto 0) := (others => '0'); -- counter out
 
     constant max_cnt : unsigned(11 downto 0) := x"340"; -- 363_16 is 867_10, which works in sim
@@ -185,7 +184,7 @@ begin
     we <= '1' when (we_en1='1' and we_en2='0') else '0'; 
 
     -- passive passing
-	data_out <= instrReg(31 downto 0);
+	data_out <= instrReg;
 	addr <= addr_cnt_out;
     done <= finished;
 end func;
