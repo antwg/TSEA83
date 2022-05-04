@@ -64,6 +64,7 @@ signal sm_we : std_logic := '0';
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
 -- Data bus
 signal data_bus : unsigned(15 downto 0) := (others => '0');
+signal new_status_reg : unsigned(3 downto 0) := (others => '0');
 
 -- Register file
 signal rf_we : std_logic := '0';
@@ -236,6 +237,7 @@ component ALU is
 	   	   op_code : in unsigned(7 downto 0);
 	   	   result : out unsigned(15 downto 0);
 	   	   status_reg : out unsigned(3 downto 0);
+           new_status_reg : in unsigned(3 downto 0);
 		   reset: in std_logic;
 	   	   clk : in std_logic);
 end component;
@@ -343,6 +345,7 @@ begin
 		op_code => IR2_op,
 		result => alu_out,
 		status_reg => status_reg_out,
+        new_status_reg => new_status_reg,
 		reset => rst,
 		clk => clk);
 
@@ -393,7 +396,8 @@ begin
 --    end process;
 
 	-- ALU multiplexers
-	alu_mux1 <= data_bus 	when (IR2_op = POSR) else rf_rd;
+	--alu_mux1 <= data_bus 	when (IR2_op = POSR) else rf_rd;
+	alu_mux1 <= rf_rd;
 
 	alu_mux2 <= IR2_const 	when ((IR2_op = LDI)    	or
                                   (IR2_op = STI)    	or
@@ -412,19 +416,22 @@ begin
 								  (IR2_op = PUSH)		else 
 				rf_ra;
 
+    new_status_reg <= data_bus(3 downto 0) when (IR2_op = POSR) else status_reg_out;
+
 	-- Data bus multiplexer
     with IR2_op select
 		data_bus <= rf_ra       				when ST,
 					rf_rd						when PUSH,
-                    IR2_const   				when STI,
 					dm_and_sm_data_out			when LD,
 					dm_and_sm_data_out 			when POP,
 					dm_and_sm_data_out			when POSR,
 					dm_and_sm_data_out	    	when PCR,
+                    IR2_const   				when STI,
 					PC							when SUBR,
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
 
+    -- slows clock
     dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
 
 	-- Status reg

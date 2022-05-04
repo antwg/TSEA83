@@ -9,6 +9,7 @@ entity ALU is
         op_code : in unsigned(7 downto 0);
         result : out unsigned(15 downto 0);
         status_reg : out unsigned(3 downto 0);
+        new_status_reg : in unsigned(3 downto 0);
 		reset : in std_logic;
 		clk : in std_logic);	
 end ALU;
@@ -165,14 +166,14 @@ begin
 			C <= '0';
 		else
 			case alu_op is
-				when alu_posr => C <= MUX1(2);
-				when alu_add=> C <= result_large(16);
-				when alu_sub => C <= result_large(16);
-				when alu_LS => C <= MUX1(15);
-				when alu_RS => C<= MUX1(0);
-				when alu_mul => C <= result_large(31);
-				when alu_muls => C <= result_large(31);
-				when others =>  C <= C;
+				when alu_posr   => C <= new_status_reg(2);
+				when alu_add    => C <= result_large(16);
+				when alu_sub    => C <= result_large(16);
+				when alu_LS     => C <= MUX1(15);
+				when alu_RS     => C <= MUX1(0);
+				when alu_mul    => C <= result_large(31);
+				when alu_muls   => C <= result_large(31);
+				when others     => C <= C;
 			end case;
 		end if;
 	end if;
@@ -186,12 +187,12 @@ begin
 			V <= '0';
 		else
 			case alu_op is
-				when alu_posr => V <= MUX1(3);
-				when alu_add => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
-				                        or (not MUX1(15) and not MUX2(15) and result_large(15)));
-				when alu_sub => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
-				                        or ( MUX1(15) and not MUX2(15) and not result_large(15)));
-				when others => V <= V;
+				when alu_posr   => V <= new_status_reg(3);
+				when alu_add    => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
+				                            or (not MUX1(15) and not MUX2(15) and result_large(15)));
+				when alu_sub    => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
+				                            or ( MUX1(15) and not MUX2(15) and not result_large(15)));
+				when others     => V <= V;
 			end case;	
 		end if;
 	end if;
@@ -206,13 +207,13 @@ begin
 			N <= '0';
 		elsif ((alu_op /= alu_nop)) then	--if it is an actual alu operation
 			case alu_op is
-				when alu_posr => N <= MUX1(1);
-				when alu_add => N <= result_large(15);
-				when alu_sub => N <= result_large(15);
-				when alu_cmp => N <= result_large(15);
-				when alu_mul => N <= result_large(31);
-				when alu_muls => N <= result_large(31);
-				when others => N <= N;
+				when alu_posr   => N <= new_status_reg(1);
+				when alu_add    => N <= result_large(15);
+				when alu_sub    => N <= result_large(15);
+				when alu_cmp    => N <= result_large(15);
+				when alu_mul    => N <= result_large(31);
+				when alu_muls   => N <= result_large(31);
+				when others     => N <= N;
 			end case;
 		end if;
 	end if;
@@ -229,7 +230,7 @@ begin
 			Z <= '0';
 		else
 			case alu_op is
-				when alu_posr 	=> Z <= MUX1(0);
+				when alu_posr 	=> Z <= new_status_reg(0);
 				when alu_add 	=> Z <= Z_helper;
 				when alu_sub 	=> Z <= Z_helper;
 				when alu_cmp 	=> Z <= Z_helper;
