@@ -319,6 +319,7 @@ begin
       end if;
     end if;
   end process;
+<<<<<<< HEAD
 
 
   sprite0pix <= spriteMem(to_integer( (64* to_integer(spriteList(1)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - spriteList(1)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - spriteList(0)(7 downto 0) ))  )) --18.69ns
@@ -334,82 +335,204 @@ begin
                                                       spriteList(3)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(2)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(2)(7 downto 0)-offsetList(0)) and 
+=======
+  
+ sprite0pix <= spriteMem(to_integer( (256* to_integer(spriteList(1)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - spriteList(1)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - spriteList(0)(7 downto 0) + spriteList(1)(15 downto 13)))  )) 
+                   when   
+                  Xpixel(9 downto 2) >= (spriteList(0)(7 downto 0)-offsetList(0)) and 
+                  Xpixel(9 downto 2) <= (spriteList(0)(7 downto 0 )) and
+                  Ypixel(9 downto 2) >= (spriteList(1)(7 downto 0)-offsetList(1)) and 
+                  Ypixel(9 downto 2) <= (spriteList(1)(7 downto 0 ))
+                  else "0000" ;
+
+
+ sprite1pix <= spriteMem(to_integer( (256* to_integer(spriteList(3)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(3)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(2)(7 downto 0) + 
+                                                      spriteList(3)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(2)(7 downto 0)-
+                                                      offsetList(2)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(2)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(3)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(3)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;      
                                
   sprite2pix <= spriteMem(to_integer( (64* to_integer(spriteList(5)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(5)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(4)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(4)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite2pix <= spriteMem(to_integer( (256* to_integer(spriteList(5)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(5)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(4)(7 downto 0) + 
+                                                      spriteList(5)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(4)(7 downto 0)-
+                                                      offsetList(4)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(4)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(5)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(5)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
 
   sprite3pix <= spriteMem(to_integer( (64* to_integer(spriteList(7)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(7)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(6)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(6)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite3pix <= spriteMem(to_integer( (256* to_integer(spriteList(7)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(7)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(6)(7 downto 0) + 
+                                                      spriteList(7)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(6)(7 downto 0)-
+                                                      offsetList(6)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(6)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(7)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(7)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
 
   sprite4pix <= spriteMem(to_integer( (64* to_integer(spriteList(9)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(9)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(8)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(8)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite4pix <= spriteMem(to_integer( (256* to_integer(spriteList(9)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(9)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(8)(7 downto 0) + 
+                                                      spriteList(9)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(8)(7 downto 0)-
+                                                      offsetList(8)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(8)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(9)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(9)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
 
   sprite5pix <= spriteMem(to_integer( (64* to_integer(spriteList(11)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(11)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(10)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(10)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite5pix <= spriteMem(to_integer( (256* to_integer(spriteList(11)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(11)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(10)(7 downto 0) + 
+                                                      spriteList(11)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(10)(7 downto 0)-
+                                                      offsetList(10)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(10)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(11)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(11)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;      
         
   sprite6pix <= spriteMem(to_integer( (64* to_integer(spriteList(13)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(13)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(12)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(12)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite6pix <= spriteMem(to_integer( (256* to_integer(spriteList(13)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(13)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(12)(7 downto 0) + 
+                                                      spriteList(13)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(12)(7 downto 0)-
+                                                      offsetList(12)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(12)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(13)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(13)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
 
   sprite7pix <= spriteMem(to_integer( (64* to_integer(spriteList(15)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(15)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(14)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(14)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite7pix <= spriteMem(to_integer( (256* to_integer(spriteList(15)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(15)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(14)(7 downto 0) + 
+                                                      spriteList(15)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(14)(7 downto 0)-
+                                                      offsetList(14)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(14)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(15)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(15)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
 
   sprite8pix <= spriteMem(to_integer( (64* to_integer(spriteList(17)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(17)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(16)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(16)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite8pix <= spriteMem(to_integer( (256* to_integer(spriteList(17)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(17)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(16)(7 downto 0) + 
+                                                      spriteList(17)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(16)(7 downto 0)-
+                                                      offsetList(16)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(16)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(17)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(17)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
 
   sprite9pix <= spriteMem(to_integer( (64* to_integer(spriteList(19)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
                                                       spriteList(19)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
                                                       spriteList(18)(7 downto 0) ))  )) when   
                                Xpixel(9 downto 2) >= (spriteList(18)(7 downto 0)-offsetList(0)) and 
+=======
+                               else "0000" ;
+
+ sprite9pix <= spriteMem(to_integer( (256* to_integer(spriteList(19)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(19)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(18)(7 downto 0) + 
+                                                      spriteList(19)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(18)(7 downto 0)-
+                                                      offsetList(18)) and 
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
                                Xpixel(9 downto 2) <= (spriteList(18)(7 downto 0 )) and
                                Ypixel(9 downto 2) >= (spriteList(19)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(19)(7 downto 0 ))
+<<<<<<< HEAD
                                else "0000" ;  
+=======
+                               else "0000" ;
+                       
+sprite10pix <= spriteMem(to_integer( (256* to_integer(spriteList(21)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
+                                                      spriteList(21)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
+                                                      spriteList(20)(7 downto 0) + 
+                                                      spriteList(21)(15 downto 13)))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(20)(7 downto 0)-
+                                                      offsetList(20)) and 
+                               Xpixel(9 downto 2) <= (spriteList(20)(7 downto 0 )) and
+                               Ypixel(9 downto 2) >= (spriteList(21)(7 downto 0)-
+                                                      offsetList(21)) and 
+                               Ypixel(9 downto 2) <= (spriteList(21)(7 downto 0 ))
+                               else "0000" ;
+>>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
 
 
  
