@@ -15,6 +15,7 @@ architecture func of PROG_MEM is
 	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
 <<<<<<< HEAD
+<<<<<<< HEAD
 		x"00000000", -- NOP
 		x"0810001F", -- LDI b,31   ;000000000000110
 		x"0820201F", -- LDI c,8223 ;001000000011111
@@ -43,6 +44,8 @@ architecture func of PROG_MEM is
 
 =======
 >>>>>>> 31e0790adb0eac50cb118d6eb3f5f419c68e63b4
+=======
+>>>>>>> 1eb256cd78307ba50971572a64fc1556a2f10f66
 	    others => (others => '0')
 	);
 
