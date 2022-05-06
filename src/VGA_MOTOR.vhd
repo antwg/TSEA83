@@ -30,21 +30,22 @@ end VGA_MOTOR;
 -- architecture
 architecture Behavioral of VGA_MOTOR is
 
-    signal spriteX         :  unsigned(7 downto 0);       -- cordinates for sprite. Note: the sprite cord is divided by 8	
+    signal spriteX         :  unsigned(7 downto 0);        -- cordinates for sprite. Note: the sprite cord is divided by 8	
     signal spriteY         :  unsigned(7 downto 0);	
 
-    signal	Xpixel	        : unsigned(9 downto 0);       -- Horizontal pixel counter
-    signal	Ypixel	        : unsigned(9 downto 0);		    -- Vertical pixel counter
-    signal	ClkDiv	        : unsigned(1 downto 0);		    -- Clock divisor, to generate 25 MHz signal
-    signal	Clk25		        : std_logic;		              -- One pulse width 25 MHz signal
+    signal	Xpixel	        : unsigned(9 downto 0);        -- Horizontal pixel counter
+    signal	Ypixel	        : unsigned(9 downto 0);		     -- Vertical pixel counter
+    --signal	ClkDiv	        : unsigned(1 downto 0);		   -- Clock divisor, to generate 25 MHz signal
+    signal	ClkDiv	        : unsigned(0 downto 0);            	   -- Clock divisor, to generate 25 MHz signal
+    signal	Clk25		        : std_logic;		               -- One pulse width 25 MHz signal
 		
-    signal 	tilePixel       : unsigned(3 downto 0);	      -- Tile pixel data
+    signal 	tilePixel       : unsigned(3 downto 0);	       -- Tile pixel data
     signal 	outputPixel_4bit : unsigned(3 downto 0);
     signal 	outputPixel     : std_logic_vector(7 downto 0);		
-    signal	tileAddr	      : unsigned(10 downto 0);	    -- Tile address (temporary varible)
+    signal	tileAddr	      : unsigned(10 downto 0);	     -- Tile address (temporary varible)
     signal  collision       : std_logic := '0';
 
-    signal blank            : std_logic;                  -- blanking signal
+    signal blank            : std_logic;                   -- blanking signal
     signal tileListData     : unsigned(7 downto 0);
 
     signal Xoffset          : unsigned(3 downto 0);
@@ -139,108 +140,54 @@ architecture Behavioral of VGA_MOTOR is
     -- 7 white
 
     type ram_4 is array (0 to 2047) of unsigned(3 downto 0); -- Every sprite is 16x16 an there are 8 sprite -> 16x16x8=2048
-    signal spriteMem : ram_4 := ( x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",  -- blank (no sprite)
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-    
-                                  x"0",x"0",x"0",x"0",x"0",x"3",x"3",x"0",x"0",x"3",x"3",x"0",x"0",x"0",x"0",x"0",  -- space ship
-                                  x"0",x"0",x"0",x"3",x"3",x"4",x"4",x"0",x"0",x"4",x"4",x"3",x"3",x"0",x"0",x"0",
-                                  x"0",x"0",x"3",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"3",x"0",x"0",
-                                  x"0",x"3",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"3",x"0",
-                                  x"0",x"3",x"4",x"4",x"4",x"4",x"4",x"5",x"5",x"4",x"4",x"4",x"4",x"4",x"3",x"0",
-                                  x"3",x"4",x"4",x"4",x"4",x"4",x"5",x"6",x"6",x"5",x"4",x"4",x"4",x"4",x"4",x"3",
-                                  x"3",x"4",x"4",x"4",x"4",x"5",x"6",x"6",x"5",x"5",x"5",x"4",x"4",x"4",x"4",x"3",
-                                  x"0",x"0",x"4",x"4",x"5",x"5",x"5",x"5",x"5",x"5",x"5",x"5",x"4",x"4",x"0",x"0",
-                                  x"0",x"0",x"4",x"4",x"5",x"5",x"5",x"5",x"5",x"5",x"5",x"5",x"4",x"4",x"0",x"0",
-                                  x"3",x"4",x"4",x"4",x"4",x"5",x"5",x"5",x"5",x"5",x"5",x"4",x"4",x"4",x"4",x"3",
-                                  x"3",x"4",x"4",x"4",x"4",x"4",x"5",x"5",x"5",x"5",x"4",x"4",x"4",x"4",x"4",x"3",
-                                  x"0",x"3",x"4",x"4",x"4",x"4",x"4",x"5",x"5",x"4",x"4",x"4",x"4",x"4",x"3",x"0",
-                                  x"0",x"3",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"3",x"0",
-                                  x"0",x"0",x"3",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"3",x"0",x"0",
-                                  x"0",x"0",x"0",x"3",x"3",x"4",x"4",x"0",x"0",x"4",x"4",x"3",x"3",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"3",x"3",x"0",x"0",x"3",x"3",x"0",x"0",x"0",x"0",x"0",
+    signal spriteMem : ram_4 := ( x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",   -- Void (black)   
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
 
-                                  x"0",x"0",x"0",x"0",x"0",x"4",x"4",x"4",x"4",x"4",x"0",x"0",x"0",x"0",x"0",x"0",  -- asteroid -big
-                                  x"0",x"0",x"0",x"0",x"0",x"4",x"4",x"3",x"3",x"4",x"4",x"4",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"4",x"4",x"4",x"3",x"3",x"3",x"4",x"4",x"4",x"4",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"4",x"4",x"3",x"3",x"3",x"4",x"4",x"4",x"4",x"4",x"4",x"0",
-                                  x"0",x"0",x"0",x"4",x"3",x"3",x"3",x"2",x"3",x"4",x"3",x"3",x"3",x"3",x"4",x"2",
-                                  x"0",x"0",x"4",x"4",x"3",x"2",x"1",x"2",x"3",x"4",x"3",x"2",x"2",x"3",x"3",x"2",
-                                  x"0",x"4",x"4",x"2",x"2",x"1",x"2",x"2",x"3",x"4",x"4",x"2",x"2",x"2",x"2",x"2",
-                                  x"3",x"3",x"3",x"2",x"1",x"2",x"2",x"2",x"2",x"2",x"4",x"2",x"1",x"2",x"2",x"2",
-                                  x"3",x"3",x"2",x"2",x"1",x"1",x"2",x"2",x"2",x"3",x"4",x"2",x"1",x"2",x"1",x"1",
-                                  x"1",x"2",x"2",x"1",x"1",x"2",x"2",x"2",x"3",x"3",x"4",x"1",x"2",x"2",x"1",x"0",
-                                  x"1",x"1",x"2",x"1",x"3",x"3",x"4",x"3",x"3",x"4",x"2",x"1",x"2",x"1",x"1",x"0",
-                                  x"0",x"1",x"1",x"1",x"2",x"2",x"2",x"3",x"3",x"3",x"2",x"1",x"1",x"1",x"1",x"0",
-                                  x"0",x"0",x"1",x"1",x"1",x"2",x"2",x"2",x"3",x"3",x"1",x"1",x"1",x"1",x"0",x"0",
-                                  x"0",x"0",x"0",x"1",x"1",x"1",x"1",x"2",x"3",x"2",x"2",x"1",x"1",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"1",x"1",x"1",x"1",x"1",x"1",x"1",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"1",x"1",x"1",x"0",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"1",x"1",x"0",x"0",x"0",   -- Space ship 
+                                x"0",x"0",x"1",x"3",x"3",x"1",x"0",x"0",
+                                x"0",x"1",x"3",x"3",x"3",x"3",x"1",x"0",
+                                x"1",x"3",x"3",x"6",x"6",x"3",x"3",x"1",
+                                x"1",x"3",x"3",x"6",x"6",x"3",x"3",x"1",
+                                x"0",x"1",x"3",x"3",x"3",x"3",x"1",x"0",
+                                x"0",x"0",x"1",x"3",x"3",x"1",x"0",x"0",
+                                x"0",x"0",x"0",x"1",x"1",x"0",x"0",x"0",
 
-                                  x"0",x"0",x"0",x"0",x"4",x"4",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",  -- asteroid -medium
-                                  x"0",x"0",x"4",x"4",x"4",x"2",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"3",x"4",x"3",x"3",x"3",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"3",x"3",x"3",x"3",x"3",x"2",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"3",x"2",x"2",x"2",x"3",x"2",x"1",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"2",x"2",x"2",x"2",x"2",x"1",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"1",x"1",x"2",x"1",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"1",x"1",x"1",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  
-                                  x"0",x"4",x"4",x"3",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",  -- asteroid -small
-                                  x"3",x"3",x"3",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"2",x"3",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"1",x"1",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",
-    
-                                  x"6",x"5",x"0",x"0",x"0",x"2",x"2",x"2",x"2",x"2",x"2",x"0",x"0",x"0",x"0",x"0", -- circle gray
-                                  x"0",x"0",x"0",x"2",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"2",x"0",x"0",x"0",
-                                  x"0",x"0",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"0",x"0",
-                                  x"0",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"0",
-                                  x"0",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"0",
-                                  x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",
-                                  x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",
-                                  x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",
-                                  x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",
-                                  x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",
-                                  x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",
-                                  x"0",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"0",
-                                  x"0",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"0",
-                                  x"0",x"0",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"0",x"0",
-                                  x"0",x"0",x"0",x"2",x"2",x"0",x"0",x"0",x"0",x"0",x"0",x"2",x"2",x"0",x"0",x"0",
-                                  x"0",x"0",x"0",x"0",x"0",x"2",x"2",x"2",x"2",x"2",x"2",x"0",x"0",x"0",x"0",x"0",
+                                x"0",x"0",x"0",x"1",x"1",x"0",x"0",x"0",   -- Asteroid Dark
+                                x"0",x"0",x"1",x"1",x"1",x"1",x"0",x"0",
+                                x"0",x"1",x"1",x"1",x"1",x"1",x"1",x"0",
+                                x"1",x"1",x"1",x"1",x"1",x"1",x"1",x"1",
+                                x"1",x"1",x"1",x"1",x"1",x"1",x"1",x"1",
+                                x"0",x"1",x"1",x"1",x"1",x"1",x"1",x"0",
+                                x"0",x"0",x"1",x"1",x"1",x"1",x"0",x"0",
+                                x"0",x"0",x"0",x"1",x"1",x"0",x"0",x"0",
+
+                                x"0",x"0",x"0",x"3",x"3",x"0",x"0",x"0",   -- Asteroid Medium
+                                x"0",x"0",x"3",x"3",x"3",x"3",x"0",x"0",
+                                x"0",x"3",x"3",x"3",x"3",x"3",x"3",x"0",
+                                x"3",x"3",x"3",x"3",x"3",x"3",x"3",x"3",
+                                x"3",x"3",x"3",x"3",x"3",x"3",x"3",x"3",
+                                x"0",x"3",x"3",x"3",x"3",x"3",x"3",x"0",
+                                x"0",x"0",x"3",x"3",x"3",x"3",x"0",x"0",
+                                x"0",x"0",x"0",x"3",x"3",x"0",x"0",x"0",
+
+                                x"0",x"0",x"0",x"4",x"4",x"0",x"0",x"0",   -- Asteroid Light
+                                x"0",x"0",x"4",x"4",x"4",x"4",x"0",x"0",
+                                x"0",x"4",x"4",x"4",x"4",x"4",x"4",x"0",
+                                x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",
+                                x"4",x"4",x"4",x"4",x"4",x"4",x"4",x"4",
+                                x"0",x"4",x"4",x"4",x"4",x"4",x"4",x"0",
+                                x"0",x"0",x"4",x"4",x"4",x"4",x"0",x"0",
+                                x"0",x"0",x"0",x"4",x"4",x"0",x"0",x"0",
+
+
                                 others => (others => '0'));
+                                
 
   
 
@@ -270,7 +217,7 @@ begin
   end process;
 	
   -- 25 MHz clock (one system clock pulse width)
-  Clk25 <= '1' when (ClkDiv = 3) else '0';
+  Clk25 <= '1' when (ClkDiv = 1) else '0';
 		
   -- Horizontal pixel counter
   process(clk)
@@ -363,144 +310,106 @@ begin
 
         spriteList(to_integer(spriteListPos)) <= spriteData;
 
-          if(   (spriteData(7 downto 0)- "1111") > spriteData(7 downto 0) ) then
-            offsetList(to_integer(spriteListPos)) <= spriteData(3 downto 0);
+          if(   (spriteData(7 downto 0)- "111") > spriteData(7 downto 0) ) then
+            offsetList(to_integer(spriteListPos)) <= spriteData(2 downto 0);
           else
-            offsetList(to_integer(spriteListPos)) <= "1111";
+            offsetList(to_integer(spriteListPos)) <= "111";
           end if;
 
       end if;
     end if;
   end process;
-  
- sprite0pix <= spriteMem(to_integer( (256* to_integer(spriteList(1)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - spriteList(1)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - spriteList(0)(7 downto 0) + spriteList(1)(15 downto 13)))  )) 
-                   when   
-                  Xpixel(9 downto 2) >= (spriteList(0)(7 downto 0)-offsetList(0)) and 
-                  Xpixel(9 downto 2) <= (spriteList(0)(7 downto 0 )) and
-                  Ypixel(9 downto 2) >= (spriteList(1)(7 downto 0)-offsetList(1)) and 
-                  Ypixel(9 downto 2) <= (spriteList(1)(7 downto 0 ))
-                  else "0000" ;
 
 
- sprite1pix <= spriteMem(to_integer( (256* to_integer(spriteList(3)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(3)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(2)(7 downto 0) + 
-                                                      spriteList(3)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(2)(7 downto 0)-
-                                                      offsetList(2)) and 
+  sprite0pix <= spriteMem(to_integer( (64* to_integer(spriteList(1)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - spriteList(1)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - spriteList(0)(7 downto 0) ))  )) --18.69ns
+                                  when   
+                                Xpixel(9 downto 2) >= (spriteList(0)(7 downto 0)-offsetList(0)) and 
+                                Xpixel(9 downto 2) <= (spriteList(0)(7 downto 0 )) and
+                                Ypixel(9 downto 2) >= (spriteList(1)(7 downto 0)-offsetList(1)) and 
+                                Ypixel(9 downto 2) <= (spriteList(1)(7 downto 0 ))
+                                else "0000" ;
+
+
+  sprite1pix <= spriteMem(to_integer( (64* to_integer(spriteList(3)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(3)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(2)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(2)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(2)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(3)(7 downto 0)-
-                                                      offsetList(3)) and 
+                               Ypixel(9 downto 2) >= (spriteList(3)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(3)(7 downto 0 ))
-                               else "0000" ;
-
- sprite2pix <= spriteMem(to_integer( (256* to_integer(spriteList(5)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(5)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(4)(7 downto 0) + 
-                                                      spriteList(5)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(4)(7 downto 0)-
-                                                      offsetList(4)) and 
+                               else "0000" ;      
+                               
+  sprite2pix <= spriteMem(to_integer( (64* to_integer(spriteList(5)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(5)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(4)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(4)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(4)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(5)(7 downto 0)-
-                                                      offsetList(5)) and 
+                               Ypixel(9 downto 2) >= (spriteList(5)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(5)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
- sprite3pix <= spriteMem(to_integer( (256* to_integer(spriteList(7)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(7)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(6)(7 downto 0) + 
-                                                      spriteList(7)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(6)(7 downto 0)-
-                                                      offsetList(6)) and 
+  sprite3pix <= spriteMem(to_integer( (64* to_integer(spriteList(7)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(7)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(6)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(6)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(6)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(7)(7 downto 0)-
-                                                      offsetList(7)) and 
+                               Ypixel(9 downto 2) >= (spriteList(7)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(7)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
- sprite4pix <= spriteMem(to_integer( (256* to_integer(spriteList(9)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(9)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(8)(7 downto 0) + 
-                                                      spriteList(9)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(8)(7 downto 0)-
-                                                      offsetList(8)) and 
+  sprite4pix <= spriteMem(to_integer( (64* to_integer(spriteList(9)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(9)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(8)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(8)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(8)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(9)(7 downto 0)-
-                                                      offsetList(9)) and 
+                               Ypixel(9 downto 2) >= (spriteList(9)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(9)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
- sprite5pix <= spriteMem(to_integer( (256* to_integer(spriteList(11)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(11)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(10)(7 downto 0) + 
-                                                      spriteList(11)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(10)(7 downto 0)-
-                                                      offsetList(10)) and 
+  sprite5pix <= spriteMem(to_integer( (64* to_integer(spriteList(11)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(11)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(10)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(10)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(10)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(11)(7 downto 0)-
-                                                      offsetList(11)) and 
+                               Ypixel(9 downto 2) >= (spriteList(11)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(11)(7 downto 0 ))
-                               else "0000" ;
-
- sprite6pix <= spriteMem(to_integer( (256* to_integer(spriteList(13)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(13)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(12)(7 downto 0) + 
-                                                      spriteList(13)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(12)(7 downto 0)-
-                                                      offsetList(12)) and 
+                               else "0000" ;      
+        
+  sprite6pix <= spriteMem(to_integer( (64* to_integer(spriteList(13)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(13)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(12)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(12)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(12)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(13)(7 downto 0)-
-                                                      offsetList(13)) and 
+                               Ypixel(9 downto 2) >= (spriteList(13)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(13)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
- sprite7pix <= spriteMem(to_integer( (256* to_integer(spriteList(15)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(15)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(14)(7 downto 0) + 
-                                                      spriteList(15)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(14)(7 downto 0)-
-                                                      offsetList(14)) and 
+  sprite7pix <= spriteMem(to_integer( (64* to_integer(spriteList(15)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(15)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(14)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(14)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(14)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(15)(7 downto 0)-
-                                                      offsetList(15)) and 
+                               Ypixel(9 downto 2) >= (spriteList(15)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(15)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
- sprite8pix <= spriteMem(to_integer( (256* to_integer(spriteList(17)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(17)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(16)(7 downto 0) + 
-                                                      spriteList(17)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(16)(7 downto 0)-
-                                                      offsetList(16)) and 
+  sprite8pix <= spriteMem(to_integer( (64* to_integer(spriteList(17)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(17)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(16)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(16)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(16)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(17)(7 downto 0)-
-                                                      offsetList(17)) and 
+                               Ypixel(9 downto 2) >= (spriteList(17)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(17)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
- sprite9pix <= spriteMem(to_integer( (256* to_integer(spriteList(19)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(19)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(18)(7 downto 0) + 
-                                                      spriteList(19)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(18)(7 downto 0)-
-                                                      offsetList(18)) and 
+  sprite9pix <= spriteMem(to_integer( (64* to_integer(spriteList(19)(15 downto 13)))  + ((8*((Ypixel(9 downto 2)+7) - 
+                                                      spriteList(19)(7 downto 0))) + ((Xpixel(9 downto 2)+7) - 
+                                                      spriteList(18)(7 downto 0) ))  )) when   
+                               Xpixel(9 downto 2) >= (spriteList(18)(7 downto 0)-offsetList(0)) and 
                                Xpixel(9 downto 2) <= (spriteList(18)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(19)(7 downto 0)-
-                                                      offsetList(19)) and 
+                               Ypixel(9 downto 2) >= (spriteList(19)(7 downto 0)-offsetList(1)) and 
                                Ypixel(9 downto 2) <= (spriteList(19)(7 downto 0 ))
-                               else "0000" ;
-                       
-sprite10pix <= spriteMem(to_integer( (256* to_integer(spriteList(21)(15 downto 13)))  + ((16*((Ypixel(9 downto 2)+15) - 
-                                                      spriteList(21)(7 downto 0))) + ((Xpixel(9 downto 2)+15) - 
-                                                      spriteList(20)(7 downto 0) + 
-                                                      spriteList(21)(15 downto 13)))  )) when   
-                               Xpixel(9 downto 2) >= (spriteList(20)(7 downto 0)-
-                                                      offsetList(20)) and 
-                               Xpixel(9 downto 2) <= (spriteList(20)(7 downto 0 )) and
-                               Ypixel(9 downto 2) >= (spriteList(21)(7 downto 0)-
-                                                      offsetList(21)) and 
-                               Ypixel(9 downto 2) <= (spriteList(21)(7 downto 0 ))
-                               else "0000" ;
+                               else "0000" ;  
 
 
  
