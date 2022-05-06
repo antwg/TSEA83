@@ -52,6 +52,7 @@ begin
                 RF(to_integer(rd_in)) <= data_in;
    
 			if (jstk_done = '1') then
+				-- y data
 				RF(14)(0) <= jstk_data(3);
 				RF(14)(1) <= jstk_data(4);
 				RF(14)(2) <= jstk_data(5);
@@ -67,16 +68,16 @@ begin
 				RF(15)(11) <= jstk_data(1);
 				RF(15)(12) <= jstk_data(2);
 				--x data	
-				RF(15)(0) <= jstk_data(12);
-				RF(15)(1) <= jstk_data(13);
-				RF(15)(2) <= jstk_data(14);
-				RF(15)(3) <= jstk_data(15);
-				RF(15)(4) <= jstk_data(16);
-				RF(15)(5) <= jstk_data(17);
-				RF(15)(6) <= jstk_data(18);
-				RF(15)(7) <= jstk_data(19);
-				RF(15)(8) <= jstk_data(20);
-				RF(15)(9) <= jstk_data(21);
+				RF(15)(0) <= jstk_data(13);
+				RF(15)(1) <= jstk_data(14);
+				RF(15)(2) <= jstk_data(15);
+				RF(15)(3) <= jstk_data(16);
+				RF(15)(4) <= jstk_data(17);
+				RF(15)(5) <= jstk_data(18);
+				RF(15)(6) <= jstk_data(19);
+				RF(15)(7) <= jstk_data(20);
+				RF(15)(8) <= jstk_data(21);
+				RF(15)(9) <= jstk_data(22);
 				end if;
 			end if;
          end if;

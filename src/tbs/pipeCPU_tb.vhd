@@ -12,7 +12,11 @@ component pipeCPU is
 		clk : in std_logic;
 		rst : in std_logic;
         UART_in : in std_logic;
-		JA : inout unsigned(3 downto 0)
+	
+		MISO : in std_logic;
+		SS : out std_logic;
+		SCLK : out std_logic;
+		MOSI : out std_logic
 		);
 end component;
 
@@ -21,19 +25,21 @@ end component;
 	signal rx : std_logic;
 	signal timer : unsigned(5 downto 0) := "000000";
 	signal SCLK_en : std_logic;
-	signal JA : unsigned(3 downto 0);
-	alias SS is JA(0) ; -- pin 1
-	alias MOSI is JA(1); -- pin 2
-	alias MISO is JA(2); -- pin 3
-	alias SCLK is JA(3); -- pin 4
-    
+	signal MISO :std_logic;
+	signal	SS :  std_logic;
+	signal	SCLK :  std_logic;
+	signal	MOSI :  std_logic;
+	
 begin
 
 	U0 : pipeCPU port map(
 		clk => clk,
 		rst => rst,
-		UART_in => rx,
-		JA => JA 	
+		UART_in => rx,	
+		MISO => MISO,
+		SCLK => SCLK,
+		MOSI => MOSI,
+		SS => SS
 		);
 
 --    with timer select 

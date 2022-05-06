@@ -29,9 +29,12 @@ architecture func of PROG_MEM is
 		x"10100001", -- subi b, 1
 		x"12100000", -- CMPI b, 0
 		x"0300FFFA", -- BNE -6
+		x"0C2F0000", -- COPY c,p ; move x and btns read bits  to c
+		x"0CDE0000", -- COPY n,o ; move x and btns read bits  to c
+		x"14207FFF", -- ANDI c, 32767 ; disable joystick 0111111111111111
+		x"14D07FFF", -- ANDI n, 32767 ; disable joystick 0111111111111111
 		x"14F07FFF", -- ANDI p, 32767 ; disable joystick 0111111111111111
-		x"0CF20000", -- COPY p,c ; move read bits  to c
-		x"081001F4", -- LDI b, 500 
+		x"081000C8", -- LDI b, 200
 		x"0800FDE8", -- LDI a, 65000
 		x"10000001", -- SUBI a, 1
 		x"12000000", -- CMPI a, 0
@@ -39,10 +42,19 @@ architecture func of PROG_MEM is
 		x"10100001", -- subi b, 1
 		x"12100000", -- CMPI b, 0
 		x"0300FFFA", -- BNE -6
-		x"0100FFE9", -- RJMP -23 ;start again 
+		x"0C2D0000", -- COPY c,n ; move y read bits  to c
+		x"081000C8", -- LDI b, 200
+		x"0800FDE8", -- LDI a, 65000
+		x"10000001", -- SUBI a, 1
+		x"12000000", -- CMPI a, 0
+		x"0300FFFE", -- BNE -2
+		x"10100001", -- subi b, 1
+		x"12100000", -- CMPI b, 0
+		x"0300FFFA", -- BNE -6
+		x"0100FFE0", -- RJMP -32 ;start again 
 		x"00000000", -- NOP
-		x"0100FFFF", -- RJMP -1 ; just in case we loop at the endantos931@tlvm-4-1-3:~/projekt/assembler$ 
-				
+		x"0100FFFF", -- RJMP -1 ; just in case we loop at the end-bash-4.2$ 
+																										
 		
 		
 										others => (others => '0')

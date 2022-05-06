@@ -7,8 +7,11 @@ entity pipeCPU is
 		clk, rst : in std_logic;
 		UART_in : in std_logic;
 		UART_out : out std_logic;
-		JA : inout unsigned(3 downto 0):= "1000";
 		seg : out unsigned(7 downto 0);
+		SS : out std_logic;
+		MOSI : out std_logic;
+		MISO : in std_logic;
+		SCLK : out std_logic;
 		an : out unsigned(3 downto 0));
 
 end pipeCPU;
@@ -81,7 +84,7 @@ signal com_pm_part : unsigned(4 downto 0) := (others => '0');
 
 -- Out to 7seg
 signal led_value : unsigned(15 downto 0) := (others => '0');
-signal led_addr : unsigned(3 downto 0) := "0011"; 
+signal led_addr : unsigned(3 downto 0) := "0010"; 
 signal led_null : unsigned(15 downto 0) := (others => '0');
 
 --joystick out 
@@ -203,8 +206,12 @@ end component;
 			enable: in std_logic;
 			done : out std_logic;	
 			data_out : out unsigned (22 downto 0);
-			JA : inout unsigned (3 downto 0)
-   			); -- Cathodes for Seven Segment Display
+            SS : out  std_logic:= '1';
+            MOSI : out  std_logic:= '0';
+            MISO : in  std_logic;
+            SCLK : out  std_logic := '0'
+
+			); -- Cathodes for Seven Segment Display
 end component;
 
 begin
@@ -216,7 +223,11 @@ begin
 		enable => jstk_en,
 		done => jstk_done,
 		data_out => jstk_data,
-		JA => JA
+		MISO => MISO,
+		MOSI => MOSI,
+		SCLK => SCLK,
+		SS => SS
+		
 		);
 
 
