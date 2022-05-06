@@ -35,16 +35,16 @@ int main(int argc, char** argv) {
                 return 0;
             i++; // skip filepath arg
         } else if (!strcmp(argv[i], "-m")) {
-            engine.config[manual] = true;
+            engine.config["manual"] = true;
         } else if (!strcmp(argv[i], "-d")) {
-            engine.config[debug] = true;
+            engine.config["debug"] = true;
         } else if (!strcmp(argv[i], "-h")) {
             printHelp();
             return 0;
         } else if (!strcmp(argv[i], "-t")) {
-            engine.config[interrupts] = true;
+            engine.config["interrupts"] = true;
         } else if (!strcmp(argv[i], "-u")) {
-            engine.config[uart] = true;
+            engine.config["uart"] = true;
         }
     }
 

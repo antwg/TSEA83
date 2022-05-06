@@ -79,13 +79,6 @@ struct Instruction {
     std::string fileLine;
 };
 
-enum CONF {
-    interrupts,
-    manual,
-    debug,
-    uart
-};
-
 class Assembler {
 public:
     Assembler();
@@ -95,11 +88,11 @@ public:
     int setOutput(std::string path);
 
     // where we store assembler configuration options
-    std::unordered_map<CONF, bool> config = {
-        {interrupts, false},
-        {manual, false},
-        {debug, false},
-        {uart, false},
+    std::unordered_map<std::string, bool> config = {
+        {"interrupts", false},
+        {"manual", false},
+        {"debug", false},
+        {"uart", false},
     };
 
     int run();

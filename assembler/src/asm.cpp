@@ -56,7 +56,7 @@ int Assembler::run() {
 
 int Assembler::parseLines() {
     // add a NOP to the interrupt vector for the user
-    if (!config[interrupts]) {
+    if (!config["interrupts"]) {
         Instruction nop = {NOP, 0, 0, "", 0, 0, "interrupt vector"};
         instructions.push_back(nop);
     }
@@ -92,7 +92,7 @@ int Assembler::parseLines() {
                 instr.opcode = LBL;
                 instr.labelName = label;
 
-                if (config[debug]) {
+                if (config["debug"]) {
                     cout << "------LBL------" << endl;
                     cout << "Line: " << instr.fileLine << endl;
                     cout << "Label: " << instr.labelName << endl;
@@ -104,7 +104,7 @@ int Assembler::parseLines() {
 
             // it is an instruction
             } else {
-                if (config[debug]) {
+                if (config["debug"]) {
                     cout << "------INSTR-----" << endl;
                     cout << "Line: " << line << endl;
                 }
@@ -112,7 +112,7 @@ int Assembler::parseLines() {
                 // remove starting whitespace and fetch instruction arguments
                 vector<string> arg = getInstrArgs(line.substr(n, line.size()));
 
-                if (config[debug]) {
+                if (config["debug"]) {
                     cout << "Arg0: " << arg[0] << endl;
                     cout << "Arg1: " << arg[1] << endl;
                     cout << "Arg2: " << arg[2] << endl;
@@ -198,7 +198,7 @@ int Assembler::parseLines() {
                 instr.registers = registers;
                 instr.labelName = labelName;
 
-                if (config[debug]) {
+                if (config["debug"]) {
                     cout << "--" << endl;
                     printf("OP: %.2X\n", instr.opcode);
                     printf("Regs: %.2X\n", instr.registers);
@@ -214,7 +214,7 @@ int Assembler::parseLines() {
 }
 
 int Assembler::updateLabels() {
-    if (config[debug] && labelsInstructions.size()) {
+    if (config["debug"] && labelsInstructions.size()) {
         cout << "--------LABELS------" << endl;
     }
 
@@ -224,7 +224,7 @@ int Assembler::updateLabels() {
 
         instructions[line] = instr;
 
-        if (config[debug]) {
+        if (config["debug"]) {
             cout << "----" << endl;
             cout << "Line: " << instr.fileLine << endl;
             cout << "Label: " << instr.labelName << endl;
@@ -239,7 +239,7 @@ int Assembler::updateLabels() {
 
 int Assembler::write() {
     for(Instruction instr : instructions) {
-        if (config[manual]) {
+        if (config["manual"]) {
             if (instr.opcode != LBL) {
                 printf("x\"");
                 printf("%.2X", instr.opcode);
@@ -264,7 +264,7 @@ int Assembler::write() {
     outputFile.close();
 
     // write to uart device (should've been configured by user)
-    if (config[uart]) {
+    if (config["uart"]) {
         std::ifstream outFile;
         outFile.open(outputFilePath, std::ifstream::binary);
 

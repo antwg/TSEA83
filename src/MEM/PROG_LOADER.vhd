@@ -45,7 +45,13 @@ architecture func of PROG_LOADER is
 	-- 4 counter, keep tracks on what in the instruction we're fetching (opcode et.c...)
     signal st_4_cnt_out : unsigned(1 downto 0) := (others => '0'); -- counter out
 
-    constant max_cnt : unsigned(11 downto 0) := x"340"; -- 363_16 is 867_10, which works in sim
+    --constant max_cnt : unsigned(11 downto 0) := x"340"; -- 363_16 is 867_10, which works in sim
+
+    -- 50 Mhz clock, each bit 8.68 us long
+    -- 1B2_16 => 434_10, half 217 <- gave some result
+    -- 0D9_16 => 217_10, half 108 (868/4)
+    -- 0D0_16 => 208_10, half 104 (868/4)
+    constant max_cnt : unsigned(11 downto 0) := x"340"; 
 begin
 	-- syncing
 	process(clk) begin
@@ -184,7 +190,7 @@ begin
     we <= '1' when (we_en1='1' and we_en2='0') else '0'; 
 
     -- passive passing
-	data_out <= instrReg;
+	data_out <= instrReg(31 downto 0);
 	addr <= addr_cnt_out;
     done <= finished;
 end func;
