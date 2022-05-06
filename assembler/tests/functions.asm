@@ -1,16 +1,19 @@
-    ldi a, 0
-    ldi b, $FC00
-    ldi c, $FC01
+    ;ldi a, 0
+    ;ldi b, $FC00
+    ;ldi c, $FC01
+    nop
     subr SPAWN_AST
-    
 
 START:
-    ld d, b
-    addi d, 1
-    st b, d
-    ld d, c
-    addi d, 1
-    st c, d
+    subr MOVE_AST
+    subr TENTH_TIMER
+
+    ;ld d, b
+    ;addi d, 1
+    ;st b, d
+    ;ld d, c
+    ;addi d, 1
+    ;st c, d
     
     rjmp START
 
@@ -103,7 +106,7 @@ RAND_NUM_GEN_END: ; Mask last byte
 ; DATA_MEM(FCXX+1)    -> 3 bit sprite (high) + 8 bit ypixel (low) 
 ; 
 ; In: AST_NR(A)
-; Out: AST_DIR(B)
+; Out: AST_DIR(B)     -> Rght: 0, Up: 1 Left: 2 Down: 3
 ; --------------------------
 
 SPAWN_AST:
@@ -129,21 +132,25 @@ SPAWN_AST:
 SPAWN_AST_TOP:
     ldi e, 80           ; Xpixel = 80
     ldi f, $0000        ; Ypixel = 0
+    ldi b, 3
     rjmp SPAWN_AST_END
 
 SPAWN_AST_BOTTOM:
     ldi e, 80           ; Xpixel = 80
     ldi f, 130          ; Ypixel = 130
+    ldi b, 1
     rjmp SPAWN_AST_END
 
 SPAWN_AST_RIGHT:
     ldi e, $00A2        ; Xpixel = 162
     ldi f, 65          ; Ypixel = 65
+    ldi b, 2
     rjmp SPAWN_AST_END
 
 SPAWN_AST_LEFT:
     ldi e, 0            ; Xpixel = 0
     ldi f, 65           ; Ypixel = 65
+    ldi b, 0
 
 SPAWN_AST_END:
     subr GET_AST_SIZE   ; Get a random size of asteroid and apply
@@ -157,6 +164,8 @@ SPAWN_AST_END:
     ldi d, $FC01        ; Store ypixel and asteroid type
     add d, a
     st d, f
+
+    subr SET_AST_DIR
 
     pop f
     pop e
@@ -198,3 +207,109 @@ GET_AST_SIZE_LARGE:
 GET_AST_SIZE_END:
     pop c
     ret
+
+
+; --------------------------
+; Asteroids direction is saved at $(00F0 + 2 * AST_NR)
+; ex. AST_NR = 2 => $F4: x_dir
+;                => $F5: y_dir
+; In: AST_DIR(B), AST_NR(A)
+; --------------------------
+SET_AST_DIR:
+    push c
+    push d
+    push e
+
+    ; Get position in data_mem
+    ldi c, $00F0
+    ldi d, $00F1
+    lsls a          ; Mult by 2
+    add c, a
+    add d, a
+    lsrs a          ; Reset
+
+    ; Decode AST_DIR
+    cmpi b, 0               ; Right 
+    beq SET_AST_DIR_RIGHT
+    cmpi b, 1               ; Up
+    beq SET_AST_DIR_UP
+    cmpi b, 2               ; Left
+    beq SET_AST_DIR_LEFT
+    ; else down
+
+SET_AST_DIR_DOWN:
+    ldi e, 0        ; x-dir
+    st c, e
+    ldi e, 1        ; y-dir
+    st d, e 
+
+SET_AST_DIR_RIGHT:
+    ldi e, 1        ; x-dir
+    st c, e
+    ldi e, 0        ; y-dir
+    st d, e
+
+SET_AST_DIR_LEFT:
+    ldi e, -1        ; x-dir
+    st c, e
+    ldi e, 0        ; y-dir
+    st d, e
+
+SET_AST_DIR_UP:
+    ldi e, 0        ; x-dir
+    st c, e
+    ldi e, -1        ; y-dir
+    st d, e
+
+SET_AST_DIR_END:
+    pop e
+    pop d
+    pop c
+    ret
+
+
+; --------------------------
+; Updates the position of ast with AST_NR
+; In: AST_NR(A)
+; --------------------------
+MOVE_AST:
+    push c
+    push d
+    push e
+    push f
+    push g
+    push h
+
+    ; Get position in data_mem
+    ldi c, $00F0
+    ldi d, $00F1
+    lsls a          ; Mult by 2
+    add c, a
+    add d, a
+    ld e, c         ; Move in x-dir
+    ld f, d         ; Move in y-dir
+
+    ; Read curr position and update
+    ldi c, $FC00
+    ldi d, $FC01
+    add c, a
+    add d, a
+    ld g, c         ; Curr x-pos
+    ld h, d         ; Curr y-pos
+    add g, e        ; New x-pos
+    add h, d        ; New y-pos
+    
+    ; Store new pos
+    st c, g
+    st d, h
+
+MOVE_AST_END:
+    lsrs a
+    pop h
+    pop g
+    pop f
+    pop e
+    pop d
+    pop c
+    ret
+
