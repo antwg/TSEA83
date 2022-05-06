@@ -7,11 +7,11 @@ entity pipeCPU is
 	port (
         -- 50 MHZ clock stuff
         -- ========================
-		--CLK_IN1, RESET : in std_logic;
+		CLK_IN1, RESET : in std_logic;
         -- ========================
         -- original clock stuff
         -- ========================
-		clk, rst : in std_logic;
+		--clk, rst : in std_logic;
         -- ========================
 		UART_in : in std_logic;
 		UART_out : out std_logic;
@@ -264,11 +264,11 @@ architecture func of pipeCPU is
       LOCKED : out std_logic);
     end component;
 
-   -- signal locked_int : std_logic;  -- 1 when PLL has locked internal clock
-   -- signal clk_int : std_logic;     -- internal clock
-   -- signal rst_int : std_logic;     -- internal reset
-   -- signal clk : std_logic;         -- clock for original design
-   -- signal rst : std_logic;         -- reset for original design
+    signal locked_int : std_logic;  -- 1 when PLL has locked internal clock
+    signal clk_int : std_logic;     -- internal clock
+    signal rst_int : std_logic;     -- internal reset
+    signal clk : std_logic;         -- clock for original design
+    signal rst : std_logic;         -- reset for original design
     -- =======================================
 
 begin
@@ -277,14 +277,14 @@ begin
   
    -- 50 Mhz CLOCK STUFF
    -- =======================================
-  -- clknetwork : clk_wiz_v3_6
-  -- port map (
-  --       CLK_IN1 => CLK_IN1,
-  --       CLK_OUT1 => clk_int,
-  --       RESET => rst_int,
-  --       LOCKED => locked_int);
-  -- clk <= clk_int;
-  -- rst <= (not locked_int or rst_int);
+   clknetwork : clk_wiz_v3_6
+   port map (
+         CLK_IN1 => CLK_IN1,
+         CLK_OUT1 => clk_int,
+         RESET => rst_int,
+         LOCKED => locked_int);
+   clk <= clk_int;
+   rst <= (not locked_int or rst_int);
    -- =======================================
 
    prog_mem_comp : PROG_MEM port map(
