@@ -3,6 +3,7 @@
     ;ldi c, $FC01
     nop
     subr SPAWN_AST
+    ldi a, 0
 
 START:
     subr MOVE_AST
