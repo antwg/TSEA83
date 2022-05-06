@@ -5,12 +5,12 @@
     
 
 START:
-    ld a, b
-    addi a, 1
-    st b, a
-    ld a, c
-    addi a, 1
-    st c, a
+    ld d, b
+    addi d, 1
+    st b, d
+    ld d, c
+    addi d, 1
+    st c, d
     
     rjmp START
 

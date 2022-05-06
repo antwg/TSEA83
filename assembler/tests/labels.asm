@@ -3,7 +3,6 @@
 
 
 ; above 2 lines are intentionally left empty
-
 rjmp FIRST                      ; 0
 LDI a,1                         ; 1 should be skipped
 

@@ -38,7 +38,6 @@ alias IR2_const : unsigned(15 downto 0) is IR2(15 downto 0);
 signal SP : unsigned(15 downto 0) := x"00FF";
 
 -- Status register
-signal sr_we : std_logic := '0';
 signal status_reg_out : unsigned(3 downto 0) := (others => '0');
 alias ZF : std_logic is status_reg_out(0);
 alias NF : std_logic is status_reg_out(1);
@@ -56,9 +55,16 @@ signal dm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_and_sm_data_out : unsigned(15 downto 0) := (others => '0');
 signal dm_we : std_logic := '0';
 
--- Sprite memory
+-- Sprite memory/VGA
 signal sm_addr : unsigned(15 downto 0) := (others => '0');
 signal sm_we : std_logic := '0';
+signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
+--signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
+signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
+--signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
+--signal spriteY          :  unsigned(5 downto 0);
+signal sm_data_out        :  unsigned(15 downto 0);
+
 
 -- ALU
 signal alu_out, alu_mux1, alu_mux2 : unsigned(15 downto 0):= (others => '0');
@@ -71,7 +77,7 @@ signal rf_we : std_logic := '0';
 signal rf_rd, rf_ra : unsigned(15 downto 0) := (others => '0');
 
 -- Loader signals
-signal boot_en : std_logic := '0';
+signal boot_en : std_logic := '1';
 signal boot_done : std_logic := '0';
 signal boot_we : std_logic := '0';
 signal boot_addr : unsigned(15 downto 0) := (others => '0');
@@ -82,14 +88,14 @@ signal boot_wait_cnt : unsigned(13 downto 0) := (others => '0');
 signal jumping : std_logic := '0';
 
 -- UART com
-signal com_send_byte : unsigned (7 downto 0) := (others => '0');
-signal com_sent : std_logic := '0';
-signal com_send : std_logic := '0';
-signal com_debug_value : unsigned(7 downto 0) := (others => '1');
-signal com_debug : std_logic := '1';
-
-signal com_pm_val : unsigned(31 downto 0) := (others => '0');
-signal com_pm_part : unsigned(4 downto 0) := (others => '0');
+--signal com_send_byte : unsigned (7 downto 0) := (others => '0');
+--signal com_sent : std_logic := '0';
+--signal com_send : std_logic := '0';
+--signal com_debug_value : unsigned(7 downto 0) := (others => '1');
+--signal com_debug : std_logic := '1';
+--
+--signal com_pm_val : unsigned(31 downto 0) := (others => '0');
+--signal com_pm_part : unsigned(4 downto 0) := (others => '0');
 
 -- interrupts
 signal interrupt_en : std_logic := '1';
@@ -107,15 +113,6 @@ signal MISO : std_logic;
 signal SS : STD_LOGIC;								-- Slave Select, Pin 1, Port JA
 signal SCLK: STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
 signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
-
---vga
-signal spriteWrite      :  std_logic;            -- 1 -> writing   0 -> reading
---signal spriteType       :  unsigned(2 downto 0); -- the order the sprite is locatet in "spriteMem"
-signal spriteListPos    :  unsigned(4 downto 0); -- where in the "spriteList" the sprite is stored
-signal spriteData      : unsigned(15 downto 0);
---signal spriteX          :  unsigned(6 downto 0); -- cordinates for sprite. Note: the sprite cord is divided by 8	
---signal spriteY          :  unsigned(5 downto 0);
-signal spriteOut        :  unsigned(15 downto 0);
 
  
 
@@ -200,13 +197,13 @@ component PROG_LOADER is
           data_out : out unsigned(31 downto 0));
 end component;
 
-component UART_COM is
-    port( clk, rst : in std_logic;
-          bit_out : out std_logic;
-          send_byte : in unsigned(7 downto 0);
-          send : in std_logic;
-          sent : out std_logic);
-end component;
+--component UART_COM is
+--    port( clk, rst : in std_logic;
+--          bit_out : out std_logic;
+--          send_byte : in unsigned(7 downto 0);
+--          send : in std_logic;
+--          sent : out std_logic);
+--end component;
 
 component DATA_MEM is
 	port( clk : in std_logic;
@@ -294,8 +291,8 @@ begin
 		spriteListPos => spriteListPos, 
 		--spriteX => spriteX, 
 		--spriteY => spriteY,
-		spriteData => spriteData,
-		spriteOut => spriteOut 
+		spriteData => data_bus,
+		spriteOut => sm_data_out 
 	);
 	
 
@@ -309,13 +306,13 @@ begin
 	  	addr => boot_addr,
 	  	data_out => boot_data_out);
 
-    uart_com_comp : UART_COM port map(
-        clk => clk,
-        rst => rst,
-        send => com_send,
-        bit_out => UART_out,
-        send_byte => com_send_byte,
-        sent => com_sent);
+   -- uart_com_comp : UART_COM port map(
+   --     clk => clk,
+   --     rst => rst,
+   --     send => com_send,
+   --     bit_out => UART_out,
+   --     send_byte => com_send_byte,
+   --     sent => com_sent);
 
 	reg_file_comp : REG_FILE port map(
 		rd_in => IR2_rd,
@@ -396,7 +393,6 @@ begin
 --    end process;
 
 	-- ALU multiplexers
-	--alu_mux1 <= data_bus 	when (IR2_op = POSR) else rf_rd;
 	alu_mux1 <= rf_rd;
 
 	alu_mux2 <= IR2_const 	when ((IR2_op = LDI)    	or
@@ -422,9 +418,13 @@ begin
     with IR2_op select
 		data_bus <= rf_ra       				when ST,
 					rf_rd						when PUSH,
+					--dm_data_out			        when LD,
+					--dm_data_out 		        when POP,
+					--dm_data_out		            when POSR,
+					--dm_data_out	    	        when PCR,
 					dm_and_sm_data_out			when LD,
-					dm_and_sm_data_out 			when POP,
-					dm_and_sm_data_out			when POSR,
+					dm_and_sm_data_out 		    when POP,
+					dm_and_sm_data_out		    when POSR,
 					dm_and_sm_data_out	    	when PCR,
                     IR2_const   				when STI,
 					PC							when SUBR,
@@ -432,10 +432,7 @@ begin
 					alu_out     				when others;
 
     -- slows clock
-    dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else spriteOut;
-
-	-- Status reg
-	sr_we <= '0' ;--when (IR2_op = POSR) else '0';
+    dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else sm_data_out;
       
 	-- Address controller
 	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
@@ -452,7 +449,6 @@ begin
 	--spriteType 		<= data_bus(15 downto 13);
 	--spriteX 		<= data_bus(12  downto 6);
 	--spriteY			<= data_bus(5  downto 0);
-	spriteData      <= data_bus;
 	--spriteListPos <= "00000";
 	--spriteWrite <= '1';
 	--spriteType 		<= "001";
