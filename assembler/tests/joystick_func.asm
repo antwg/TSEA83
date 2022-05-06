@@ -46,6 +46,50 @@ pop a
 
 ret
 
+
+GET_JOYSTICK_DIRECTION:
+;----------
+;   Returns a signed value which indicating direction 
+;   the joystick is pointing and 
+;   a value between 0-512 indicating how much
+;   IN --
+;   OUT a - signed x value
+;       b - signed y value
+;
+;----------
+
+;the joystick goes between 0-1024
+;0-512 indicates poiting down
+;512 - 1024 indicates up
+
+subr GET_JOYSTICK_DATA
+cmpi a, 512
+bge X_GREATER_THAN_512 
+X_LESS_THAN_512:
+ori a,1000000000000000 ;set the signed bit
+
+
+RJMP X_DONE 
+X_GREATER_THAN_512:
+
+
+X_DONE:
+cmpi b, 512
+bge Y_GREATER_THAN_512
+
+Y_LESS_THAN_512:
+
+
+rjmp X_DONE
+Y_GREATER_THAN_512:
+;do smth
+
+DONE:
+
+ret
+
+
+
 MOVE_SHIP:
 ;----------
 ; Moves the spaceship with the coordinates retrived form the joystick 
