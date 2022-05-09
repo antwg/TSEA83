@@ -115,15 +115,15 @@ architecture func of pipeCPU is
 
     -- Out to 7seg
     signal led_value : unsigned(15 downto 0) := (others => '0');
-    signal led_addr : unsigned(3 downto 0) := "0000"; 
+    signal led_addr : unsigned(3 downto 0) := "0010"; 
     signal led_null : unsigned(15 downto 0) := (others => '0');
 
 
 --joystick out 
 
-signal  jstk_en : std_logic;
-signal  jstk_done : std_logic;
-signal  jstk_data : unsigned(22 downto 0);
+    signal  jstk_en : std_logic;
+    signal  jstk_done : std_logic;
+    signal  jstk_data : unsigned(22 downto 0);
 
      
 
@@ -236,7 +236,12 @@ signal  jstk_data : unsigned(22 downto 0);
             rd_out : out unsigned(15 downto 0);
             ra_out : out unsigned(15 downto 0);
             led_addr : in unsigned(3 downto 0); 
-            led_out : out unsigned(15 downto 0));
+            led_out : out unsigned(15 downto 0);
+            jstk_en : in std_logic;
+            jstk_done : in std_logic;
+            jstk_data : in unsigned(22 downto 0)
+            );
+
     end component;
 
     component ALU is
@@ -266,12 +271,9 @@ signal  jstk_data : unsigned(22 downto 0);
                 MOSI : out  std_logic:= '0';
                 MISO : in  std_logic;
                 SCLK : out  std_logic := '0'
-    
                 ); -- Cathodes for Seven Segment Display
     end component;
-    
-    begin
-    
+        
     ------------------------------------ Components -------------------------------
     
     -- 50 Mhz CLOCK STUFF
@@ -317,7 +319,7 @@ begin
     MOSI => MOSI,
     SCLK => SCLK,
     SS => SS
-    
+
     );
 
 
@@ -406,7 +408,8 @@ begin
 	leddriver_comp : leddriver port map(
 		clk => clk,
         rst => rst,
-        seg => seg,
+        seg => seg,    
+
         an => an,
         value => led_value);
 
