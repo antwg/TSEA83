@@ -1,17 +1,19 @@
-    ;ldi a, 0
-    ;ldi b, $FC00
-    ;ldi c, $FC01
+    ldi a, 0
+    ldi b, $FC00
+    ldi c, $FC01
     nop
     subr SPAWN_AST
     ldi a, 0
 
 START:
-    subr MOVE_AST
+    ;subr MOVE_AST
     subr TENTH_TIMER
 
     ;ld d, b
+    ;copy a, d
     ;addi d, 1
     ;st b, d
+;
     ;ld d, c
     ;addi d, 1
     ;st c, d
@@ -156,6 +158,7 @@ SPAWN_AST_LEFT:
     ldi b, 0            ; Set dir right
 
 SPAWN_AST_END:
+    subr SET_AST_DIR
     subr GET_AST_SIZE   ; Get a random size of asteroid and apply
     or f, b
 
@@ -167,8 +170,6 @@ SPAWN_AST_END:
     ldi d, $FC01        ; Store ypixel and asteroid type
     add d, a
     st d, f
-
-    subr SET_AST_DIR
 
     pop f
     pop e
@@ -224,7 +225,7 @@ SET_AST_DIR:
     push e
     push f
 
-    ; Get position in data_mem
+    ; Get position in data_mem for direction
     ldi c, $00F0
     ldi d, $00F1
     lsls a          ; Mult by 2
@@ -270,6 +271,11 @@ SET_AST_DIR_END:
 ; Out: A (Nondestructive)
 ; --------------------------
 MOVE_AST:
+    LD d,b
+    ADDI d,1
+    ST b,d
+    ret
+
     push c
     push d
     push e
