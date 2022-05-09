@@ -15,15 +15,17 @@ entity pipeCPU is
         -- ========================
 		UART_in : in std_logic;
 		UART_out : out std_logic;
-		--JA : in unsigned(15 downto 0);
 		seg : out unsigned(7 downto 0);
 		an : out unsigned(3 downto 0);
 		vgaRed		    : out std_logic_vector(2 downto 0);
         vgaGreen	    : out std_logic_vector(2 downto 0);
         vgaBlue		    : out std_logic_vector(2 downto 1);
         Hsync		    : out std_logic;
-        Vsync		    : out std_logic);
-
+        Vsync		    : out std_logic;
+		SS : out std_logic;
+		MOSI : out std_logic;
+		MISO : in std_logic;
+		SCLK : out std_logic);
 
 end pipeCPU;
 
@@ -113,14 +115,15 @@ architecture func of pipeCPU is
 
     -- Out to 7seg
     signal led_value : unsigned(15 downto 0) := (others => '0');
-    signal led_addr : unsigned(3 downto 0) := "0000"; 
+    signal led_addr : unsigned(3 downto 0) := "0010"; 
     signal led_null : unsigned(15 downto 0) := (others => '0');
 
-    --joystick out 
-    signal MISO : std_logic;
-    signal SS : STD_LOGIC;								-- Slave Select, Pin 1, Port JA
-    signal SCLK: STD_LOGIC;            							-- Serial Clock, Pin 4, Port JA
-    signal MOSI : STD_LOGIC;							-- Master Out Slave In, Pin 2, Port JA
+
+--joystick out 
+
+    signal  jstk_en : std_logic;
+    signal  jstk_done : std_logic;
+    signal  jstk_data : unsigned(22 downto 0);
 
      
 
@@ -233,7 +236,12 @@ architecture func of pipeCPU is
             rd_out : out unsigned(15 downto 0);
             ra_out : out unsigned(15 downto 0);
             led_addr : in unsigned(3 downto 0); 
-            led_out : out unsigned(15 downto 0));
+            led_out : out unsigned(15 downto 0);
+            jstk_en : in std_logic;
+            jstk_done : in std_logic;
+            jstk_data : in unsigned(22 downto 0)
+            );
+
     end component;
 
     component ALU is
@@ -253,7 +261,21 @@ architecture func of pipeCPU is
                an : out  UNSIGNED (3 downto 0);
                value : in  UNSIGNED (15 downto 0));
     end component;
-
+	component joystickreal is
+        Port ( CLK : in  STD_LOGIC;								-- 100Mhz onboard clock
+                RST : in  STD_LOGIC;           								-- Button DNN
+                enable: in std_logic;
+                done : out std_logic;	
+                data_out : out unsigned (22 downto 0);
+                SS : out  std_logic:= '1';
+                MOSI : out  std_logic:= '0';
+                MISO : in  std_logic;
+                SCLK : out  std_logic := '0'
+                ); -- Cathodes for Seven Segment Display
+    end component;
+        
+    ------------------------------------ Components -------------------------------
+    
     -- 50 Mhz CLOCK STUFF
     -- =======================================
     component clk_wiz_v3_6 is
@@ -286,6 +308,21 @@ begin
    clk <= clk_int;
    rst <= (not locked_int or rst_int);
    -- =======================================
+
+   joystick_comp : joystickreal port map( 	
+    CLK => clk,
+    RST => rst,
+    enable => jstk_en,
+    done => jstk_done,
+    data_out => jstk_data,
+    MISO => MISO,
+    MOSI => MOSI,
+    SCLK => SCLK,
+    SS => SS
+
+    );
+
+
 
    prog_mem_comp : PROG_MEM port map(
 		clk => clk,
@@ -342,7 +379,11 @@ begin
 		clk => clk,
         --led_out => led_null, -- turns of led to be set here
         led_out => led_value, -- set led value to led_addr in register file
-        led_addr => led_addr);
+		led_addr => led_addr,
+		jstk_data => jstk_data,	
+		jstk_en => jstk_en,
+		jstk_done => jstk_done
+		);
 
 	data_mem_comp : DATA_MEM port map(
 		we => dm_we,
@@ -367,7 +408,8 @@ begin
 	leddriver_comp : leddriver port map(
 		clk => clk,
         rst => rst,
-        seg => seg,
+        seg => seg,    
+
         an => an,
         value => led_value);
 
