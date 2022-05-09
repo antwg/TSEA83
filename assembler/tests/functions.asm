@@ -1,17 +1,19 @@
-    ;ldi a, 0
-    ;ldi b, $FC00
-    ;ldi c, $FC01
+    ldi a, 0
+    ldi b, $FC00
+    ldi c, $FC01
     nop
     subr SPAWN_AST
     ldi a, 0
 
 START:
-    subr MOVE_AST
+    ;subr MOVE_AST
     subr TENTH_TIMER
 
     ;ld d, b
+    ;copy a, d
     ;addi d, 1
     ;st b, d
+;
     ;ld d, c
     ;addi d, 1
     ;st c, d
@@ -101,13 +103,15 @@ RAND_NUM_GEN_END: ; Mask last byte
 
 ; --------------------------
 ; Spawns an asteroid at a random locaion
-; just outside of the screen. (top, left, ...)
-
+; just outside of the screen. (top, left, ...).
+; Also sets direction opposite of spawn, eg. if
+; spawn on left side, dir = right
+;
 ; DATA_MEM(FCXX)      -> xpixel 8 bit (low)
 ; DATA_MEM(FCXX+1)    -> 3 bit sprite (high) + 8 bit ypixel (low) 
 ; 
 ; In: AST_NR(A)
-; Out: AST_DIR(B)     -> Rght: 0, Up: 1 Left: 2 Down: 3
+; Out: -
 ; --------------------------
 
 SPAWN_AST:
@@ -116,9 +120,9 @@ SPAWN_AST:
     push f ; which sprite (3 high) and ypixel (8 low)
 
     push a
-    subr RAND_NUM_GEN
-    copy d, a
-    pop a
+    subr RAND_NUM_GEN               ; Random number always returned to Reg(a)
+    copy d, a                       ; Need to move to another reg to save AST_NR
+    pop a               
 
     ; Choose left/right/bottom/top
     copy e, d
@@ -133,27 +137,28 @@ SPAWN_AST:
 SPAWN_AST_TOP:
     ldi e, 80           ; Xpixel = 80
     ldi f, $0000        ; Ypixel = 0
-    ldi b, 3
+    ldi b, 3            ; Set dir down
     rjmp SPAWN_AST_END
 
 SPAWN_AST_BOTTOM:
     ldi e, 80           ; Xpixel = 80
     ldi f, 130          ; Ypixel = 130
-    ldi b, 1
+    ldi b, 1            ; Set dir up
     rjmp SPAWN_AST_END
 
 SPAWN_AST_RIGHT:
     ldi e, $00A2        ; Xpixel = 162
-    ldi f, 65          ; Ypixel = 65
-    ldi b, 2
+    ldi f, 65           ; Ypixel = 65
+    ldi b, 2            ; Set dir left
     rjmp SPAWN_AST_END
 
 SPAWN_AST_LEFT:
     ldi e, 0            ; Xpixel = 0
     ldi f, 65           ; Ypixel = 65
-    ldi b, 0
+    ldi b, 0            ; Set dir right
 
 SPAWN_AST_END:
+    subr SET_AST_DIR
     subr GET_AST_SIZE   ; Get a random size of asteroid and apply
     or f, b
 
@@ -165,8 +170,6 @@ SPAWN_AST_END:
     ldi d, $FC01        ; Store ypixel and asteroid type
     add d, a
     st d, f
-
-    subr SET_AST_DIR
 
     pop f
     pop e
@@ -220,8 +223,9 @@ SET_AST_DIR:
     push c
     push d
     push e
+    push f
 
-    ; Get position in data_mem
+    ; Get position in data_mem for direction
     ldi c, $00F0
     ldi d, $00F1
     lsls a          ; Mult by 2
@@ -240,40 +244,38 @@ SET_AST_DIR:
 
 SET_AST_DIR_DOWN:
     ldi e, 0        ; x-dir
-    st c, e
-    ldi e, 1        ; y-dir
-    st d, e 
-
+    ldi f, 1        ; y-dir
 SET_AST_DIR_RIGHT:
-    ldi e, 1        ; x-dir
-    st c, e
-    ldi e, 0        ; y-dir
-    st d, e
-
+    ldi e, 1        
+    ldi f, 0        
 SET_AST_DIR_LEFT:
-    ldi e, -1        ; x-dir
-    st c, e
-    ldi e, 0        ; y-dir
-    st d, e
-
+    ldi e, -1       
+    ldi f, 0        
 SET_AST_DIR_UP:
-    ldi e, 0        ; x-dir
-    st c, e
-    ldi e, -1        ; y-dir
-    st d, e
-
+    ldi e, 0        
+    ldi f, -1        
 SET_AST_DIR_END:
+    st c, e
+    st d, f
+
+    pop f
     pop e
     pop d
     pop c
     ret
 
-
 ; --------------------------
 ; Updates the position of ast with AST_NR
+; Reads direction from data mem.
 ; In: AST_NR(A)
+; Out: A (Nondestructive)
 ; --------------------------
 MOVE_AST:
+    LD d,b
+    ADDI d,1
+    ST b,d
+    ret
+
     push c
     push d
     push e
@@ -281,14 +283,14 @@ MOVE_AST:
     push g
     push h
 
-    ; Get position in data_mem
+    ; Get position addr in data_mem
     ldi c, $00F0
     ldi d, $00F1
     lsls a          ; Mult by 2
     add c, a
     add d, a
-    ld e, c         ; Move in x-dir
-    ld f, d         ; Move in y-dir
+    ld e, c         ; Move "vector" in x-dir
+    ld f, d         ; Move "vector" in y-dir
 
     ; Read curr position and update
     ldi c, $FC00
