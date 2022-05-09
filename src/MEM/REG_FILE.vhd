@@ -13,15 +13,20 @@ entity REG_FILE is
 		ra_out : out unsigned(15 downto 0);
 		we : in std_logic;
 		data_in : in unsigned(15 downto 0);
-		JA : inout unsigned(15 downto 0));
+		jstk_data : in unsigned(22 downto 0);
+		jstk_en : out std_logic := '0';
+		jstk_done : in std_logic
+
+		);
+
 end REG_FILE;
 
 architecture func of REG_FILE is
 
-	alias SS is JA(0) ; -- pin 1
-	alias MOSI is JA(1); -- pin 2
-	alias MISO is JA(2); -- pin 3
-	alias SCLK is JA(3); -- pin 4
+	alias x is jstk_data(9 downto 0) ; -- joystick x positon 
+	alias y is jstk_data(19 downto 10); -- joystick y position 
+	alias btns is jstk_data(22 downto 20); -- joystick btns
+ 
 
 	type RF_t is array(0 to 15) of unsigned(15 downto 0);
 	constant RF_c : RF_t := (
@@ -31,24 +36,51 @@ architecture func of REG_FILE is
 
 	signal RF : RF_t := RF_c;
 
+
+
 begin
-      process(clk)
+
+
+
+	process(clk)
         begin
           if rising_edge(clk) then
-            if we = '1' then
-                RF(to_integer(rd_in)) <= data_in;
-            end if;
 
-			-- Joystick IO register
-			RF(15)(0) <= JA(0); -- register bit 0 to ss
-			RF(15)(1) <= JA(1);	-- regsiter bit 1 to MOSI
-			JA(2) <= RF(15)(2);	-- MISO to register bit 2 
-			JA(3) <= RF(15)(3);	-- SCLK to register bit 3
-			JA(4) <= RF(15)(4);
-			JA(5) <= RF(15)(5);
-			JA(6) <= RF(15)(6);
-			JA(7) <= RF(15)(7);
-		
+			--enable joystick bit
+			jstk_en <= RF(15)(15);
+
+			if we = '1' then
+                RF(to_integer(rd_in)) <= data_in;
+   
+			if (jstk_done = '1') then
+				-- y data
+				RF(14)(0) <= jstk_data(3);
+				RF(14)(1) <= jstk_data(4);
+				RF(14)(2) <= jstk_data(5);
+				RF(14)(3) <= jstk_data(6);
+				RF(14)(4) <= jstk_data(7);
+				RF(14)(5) <= jstk_data(8);
+				RF(14)(6) <= jstk_data(9);
+				RF(14)(7) <= jstk_data(10);
+				RF(14)(8) <= jstk_data(11);
+				RF(14)(9) <= jstk_data(12);
+				--buttons
+				RF(15)(10) <= jstk_data(0);
+				RF(15)(11) <= jstk_data(1);
+				RF(15)(12) <= jstk_data(2);
+				--x data	
+				RF(15)(0) <= jstk_data(13);
+				RF(15)(1) <= jstk_data(14);
+				RF(15)(2) <= jstk_data(15);
+				RF(15)(3) <= jstk_data(16);
+				RF(15)(4) <= jstk_data(17);
+				RF(15)(5) <= jstk_data(18);
+				RF(15)(6) <= jstk_data(19);
+				RF(15)(7) <= jstk_data(20);
+				RF(15)(8) <= jstk_data(21);
+				RF(15)(9) <= jstk_data(22);
+				end if;
+			end if;
          end if;
         end process;
 
