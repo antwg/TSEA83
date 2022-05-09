@@ -14,7 +14,29 @@ architecture func of PROG_MEM is
 
 	type PM_t is array(0 to 1024) of unsigned(31 downto 0);
 	constant PM_c : PM_t := (
-		x"00000000", --     nop
+		--x"00000000", -- NOP
+		--x"0810001F", -- LDI b,31   ;000000000000110
+		--x"0820201F", -- LDI c,8223 ;001000000011111
+		--x"0830FC00", -- LDI d,64512 ; FC00
+		--x"0840FC01", -- LDI e,64513 ; FC01
+		--x"0850FDE8", -- LDI f,65000 ; Inner counter
+		--x"08600028", -- LDI g,40   ; Outer counter
+		--x"0B310000", -- ST d,b
+		--x"0B420000", -- ST e,c
+		--x"09130000", -- LD b,d
+		--x"0E100001", -- ADDI b,1
+		--x"0B310000", -- ST d,b
+		--x"10500001", -- SUBI f,1
+		--x"0300FFFF", -- BNE -1
+		--x"0850FDE8", -- LDI f,65000
+		--x"10600001", -- SUBI g,1
+		--x"0300FFFC", -- BNE -4
+		--x"08600028", -- LDI g,40
+		--x"0100FFF7", -- RJMP -9
+
+
+
+x"00000000", --     nop
 x"2300002E", --     subr SPAWN_AST
 x"08000000", --     ldi a, 0
 x"2300008F", --     subr MOVE_AST
@@ -191,6 +213,13 @@ x"18400000", --     pop e
 x"18300000", --     pop d
 x"18200000", --     pop c
 x"24000000", --     ret
+		
+		
+		
+		
+		
+		
+
 	    others => (others => '0')
 	);
 
