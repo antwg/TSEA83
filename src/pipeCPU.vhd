@@ -115,7 +115,7 @@ architecture func of pipeCPU is
 
     -- Out to 7seg
     signal led_value : unsigned(15 downto 0) := (others => '0');
-    signal led_addr : unsigned(3 downto 0) := "0010"; 
+    signal led_addr : unsigned(3 downto 0) := "1000"; 
     signal led_null : unsigned(15 downto 0) := (others => '0');
 
 
@@ -495,7 +495,7 @@ begin
     dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else sm_data_out;
       
 	-- Address controller
-	dm_addr <= (alu_out and "0000000011111111"); -- Currently only allow 256 addresses
+	dm_addr <= (alu_out and "0000001111111111"); -- Currently only allow 256 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) 		or 
 												(IR2_op = ST) 		or 
 												(IR2_op = PUSH) 	or 
