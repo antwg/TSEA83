@@ -31,6 +31,7 @@ push f
 push h
 
 copy f,a
+andi d, $00FF ; remove sprite bits (gets set again later)
 andi f,$7FFF; remove possible signed bit
 
 FIRST_SPEED_X:
@@ -56,11 +57,26 @@ SPEED_DONE_X:
     copy f,a
     andi f,$8000; get possible signed bit
     cmpi f, $8000
+
     BEQ X_SIGNED
+    ; if result will be negative then ignore otherwise subtract
+    copy f,c
+    copy h,f 
+    add h,e 
+    subi h,$00FF 
+    bge X_NOT_SIGNED; if h is larger than 0FF we dont want to do anything
+
     add c,e
     RJMP X_NOT_SIGNED
 X_SIGNED:
+    ; if result will be negative then ignore otherwise subtract
+    copy f,c
+    copy h,f
+    subi h,1
+    sub h,e 
+    blt X_NOT_SIGNED; if h is larger than there was overflow
     sub c,e
+    
 ; reset for Y coordinates
 X_NOT_SIGNED:
     copy f,b
@@ -87,17 +103,31 @@ THIRD_SPEED_Y:
     ldi e,0 ; jstk movement to low dont move
 SPEED_DONE_Y:
     ;do smth
+
     copy f,b
     andi f,$8000; get possible signed bit
     cmpi f,$8000
     BEQ Y_SIGNED
+    
+    
+    copy f,d
+    copy h,f 
+    add h,e 
+    subi h,$00FF 
+    bge Y_NOT_SIGNED; if h is larger than 0FF we dont want to do anything
+
+
     add d,e
     rjmp Y_NOT_SIGNED
 Y_SIGNED:
+    copy f,d
+    copy h,f
+    subi h,1
+    sub h,e 
+    blt Y_NOT_SIGNED; if h is larger than there was overflow
+
     sub d,e
 Y_NOT_SIGNED:
-
-
 
 
 pop h
@@ -198,7 +228,7 @@ ret
 LONG_WAIT:
     push e
     push f
-    LDI f, 500
+    LDI f, 50
     LDI e, 4000 
     SUBI e, 1
     CMPI e, 0
@@ -230,7 +260,7 @@ WAIT:
 
 ret
 ;----------
-;Returns the current position of the spaceship
+;sets the current position of the spaceship
 ; in c,d - x,y pos
 ; out --
 ;
@@ -245,13 +275,17 @@ SET_NEW_POS:
     ;current position
     ; load x coords
     ldi a,$FC00
+    ;ldi c, $0022
     st a,c
     ; load y coords
     
+
+
     ldi a,$FC01
     ;ld b,a
-    ;andi b, #11111 000 11111111 ; get the sprite bits
+    ori d,#0010000000000000 ; set the ship bit
     ;and d,b ; add sprite bits 
+    ;ldi d, $0022
     st  a,d ; add the new position together with the sprite bits
     pop b 
     pop a
