@@ -107,10 +107,10 @@ begin
 		when alu_sub	    => result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
 		when alu_and    	=> result_large <= (x"0000" & (MUX1 and MUX2));
 		when alu_or	        => result_large <= (x"0000" & (MUX1 or MUX2));
-    	--when alu_LS	        => result_large <= (x"0000" & (shift_left(MUX1, 1)));
-        --when alu_RS	        => result_large <= (x"0000" & (shift_right(MUX1, 1)));
-        --when alu_mul    	=> result_large <= MUX1 * MUX2;
-		--when alu_muls   	=> result_large <= (unsigned(signed(MUX1) * signed(MUX2)));
+    	when alu_LS	        => result_large <= (x"0000" & (shift_left(MUX1, 1)));
+        when alu_RS	        => result_large <= (x"0000" & (shift_right(MUX1, 1)));
+        when alu_mul    	=> result_large <= MUX1 * MUX2;
+		when alu_muls   	=> result_large <= (unsigned(signed(MUX1) * signed(MUX2)));
      -- what happens when we include the carry here?
 		--when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + ("0000000000000000000" & C)));
 		--when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - ("0000000000000000000" & C)));

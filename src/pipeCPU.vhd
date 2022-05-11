@@ -115,7 +115,7 @@ architecture func of pipeCPU is
 
     -- Out to 7seg
     signal led_value : unsigned(15 downto 0) := (others => '0');
-    signal led_addr : unsigned(3 downto 0) := "0010"; 
+    signal led_addr : unsigned(3 downto 0) := "0110"; 
     signal led_null : unsigned(15 downto 0) := (others => '0');
 
 
@@ -535,6 +535,8 @@ begin
 					   (IR2_op = PCR)	or
 					   (IR2_op = RET)	or
                        (IR2_op = PUSH)) else '1';
+
+    --interrupt <= jstk_done;
 
 	-- Handle PC:s and IR:s
 	process(clk)
