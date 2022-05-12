@@ -57,9 +57,9 @@ MAIN_LOOP:
     subr MOVE_SHIP ; get new coordinates of ship on c,d
 
     ;copy g,c ; show x direction on 7seg
-    subr LONG_WAIT
+    subr WAIT
     ;copy g,d ; show y direction on 7seg
-    subr LONG_WAIT
+    subr WAIT
     ; check what the new position is
     subr SET_NEW_POS ; set the new position with c,d
 
@@ -133,46 +133,6 @@ GAME_OVER_RESTART:
 
 
 ; --------------------------
-; ~ A 1 ms delay
-; In: -
-; Out: -
-; --------------------------
-MS_TIMER:
-    push b
-    push c
-    ldi b, 249
-    ldi c, 10;100
-MS_TIMER_OUTER_LOOP:           ; 4 ticks per loop
-    subi b, 1
-    bne MS_TIMER_OUTER_LOOP
-MS_TIMER_INNER_LOOP:
-    ldi b, 249
-    subi c, 1
-    bne MS_TIMER_OUTER_LOOP
-MS_TIMER_END:
-    pop c
-    pop b
-    ret
-
-; --------------------------
-; ~ A 1/10 second delay
-; In: -
-; Out: -
-; --------------------------
-TENTH_TIMER:
-    push b
-    ldi b, 100
-TENTH_TIMER_LOOP:
-    subr MS_TIMER
-    subi b, 1
-    bne TENTH_TIMER_LOOP
-TENTH_TIMER_END:
-    pop b
-    ret
-
-
-
-; --------------------------
 ; Spawns an asteroid at a random locaion
 ; just outside of the screen. (top, left, ...).
 ; Also sets direction opposite of spawn, eg. if
@@ -189,12 +149,7 @@ SPAWN_AST:
     push a
     push d ; Random number
     push e ; xpixel (8 low)
-    push f ; which sprite (3 high) and ypixel (8 low)
-
-    ;push a
-    ;subr RAND_NUM_GEN               ; Random number always returned to Reg(a)
-    ;copy d, a                       ; Need to move to another reg to save AST_NR
-    ;pop a             
+    push f ; which sprite (3 high) and ypixel (8 low)           
 
     ; Choose left/right/bottom/top
     cmpi a, 1
@@ -448,6 +403,9 @@ MOVE_AST:
     push h
     push a
 
+    cmpi a, 5
+    ;beq MOVE_AST_EVIL
+
     ; Get position addr in data_mem
     ldi c, $0100
     ldi d, $0101
@@ -471,9 +429,44 @@ MOVE_AST:
     add h, f        ; New y-pos
 
     lsrs a
-    subr IN_BOUNDS
+    rjmp MOVE_AST_END
+
+MOVE_AST_EVIL:
+    ; Get curr position addr asteroid
+    ldi c, $FC0A
+    ldi d, $FC0B
+    ld g, c         ; Curr x-pos
+    ld h, d         ; Curr y-pos
+    
+    ; Get curr position addr ship
+    ldi c, $FC00
+    ldi d, $FC01
+    ld e, c         ; Curr x-pos
+    ld f, d         ; Curr y-pos
+
+    cmp e, g       ; ship pos - ast pos
+    bpl MOVE_AST_X_LARGER
+    subi g, 1; x-dir = -1
+    rjmp MOVE_AST_CHECK_Y
+MOVE_AST_X_LARGER:
+    addi g, 1; x-dir = 1
+MOVE_AST_CHECK_Y:
+    cmp f, h        ; ship pos - ast pos
+    bpl MOVE_AST_Y_LARGER
+    subi h, 1; y-dir = -1
+    rjmp MOVE_AST_EVIL_END
+MOVE_AST_Y_LARGER:
+    addi h, 1; y-dir = 1
+MOVE_AST_EVIL_END:
+    add e, g
+    add f, h
+    ldi c, $FC0A
+    ldi d, $FC0B
+    st c, g
+    st d, h
 
 MOVE_AST_END:
+    subr IN_BOUNDS
     pop a
     pop h
     pop g
@@ -514,20 +507,20 @@ IN_BOUNDS_END:
     pop f
     ret
 
-MOVE_SHIP:
-;----------
+
+; --------------------------
 ; Moves the spaceship with the coordinates retrived form the joystick 
 ; IN: a,b,c,d : a-jstk x, b - jstk y, c - ship x, d - ship y
 ; OUT: c,d - new position
-;----------
+; --------------------------
+MOVE_SHIP:
+    push e
+    push f
+    push h
 
-push e
-push f
-push h
-
-copy f,a
-andi d, $00FF ; remove sprite bits (gets set again later)
-andi f,$7FFF; remove possible signed bit
+    copy f,a
+    andi d, $00FF ; remove sprite bits (gets set again later)
+    andi f,$7FFF; remove possible signed bit
 
 FIRST_SPEED_X:
     ldi h,450
@@ -604,21 +597,17 @@ SPEED_DONE_Y:
     cmpi f,$8000
     BEQ Y_SIGNED
 
-
     copy f,d
     copy h,f
     subi h,1
 
     sub h,e 
 
-    
     blt Y_NOT_SIGNED; if h is larger than 0FF we dont want to do anything
-
 
     sub d,e
     rjmp Y_NOT_SIGNED
 Y_SIGNED:
-
     copy f,d
     copy h,f 
     add h,e 
@@ -628,14 +617,13 @@ Y_SIGNED:
     bge Y_NOT_SIGNED; if h is larger than there was overflow
 
     add d,e
+
 Y_NOT_SIGNED:
+    pop h
+    pop f
+    pop e
 
-
-pop h
-pop f
-pop e
-
-ret
+    ret
 
 
 
@@ -652,10 +640,7 @@ ret
 ;the joystick goes between 0-1024
 ;0-512 indicates poiting down
 ;512 - 1024 indicates up
-
- 
 GET_JSTK_DIRECTION:
-
     push d
     subr GET_JSTK_DATA
     copy c,a
@@ -671,17 +656,14 @@ GET_JSTK_DIRECTION:
     RJMP X_DONE
 
 X_GREATER_THAN:
-
     subi a,512; remove 512 to keep the value between 0-512
 
 X_DONE:
-
     copy c,b
     subi c,512
     bge Y_GREATER_THAN
 
 Y_LESS_THAN:
-
     ; make sure the value is in the value of 0-512 where 0 is closest to the middle
     ldi d,512
     sub d,b  
@@ -691,13 +673,11 @@ Y_LESS_THAN:
     rjmp DONE
     
 Y_GREATER_THAN:
-   
     subi b,512
+
 DONE:
-
     pop d
-
-ret
+    ret
 
 ;----------
 ;Returns x,y,buttons from joystick to registers a and b
@@ -708,7 +688,6 @@ ret
 ;   c - buttons
 ;----------
 GET_JSTK_DATA:
-   
     LDI P, 32768 ; load enable bit 1000000000000000
     subr WAIT
     copy a,p ; save x,btns to a
@@ -717,60 +696,44 @@ GET_JSTK_DATA:
     copy c,p; save x,btns to c
     andi c,#0001110000000000 ; mask out the buttons (remove x coords and enable)
     ANDI p, 32767 ; disable joystick 0111111111111111
-
-ret
+    ret
 
 
 ;-----
-;waits for e * f nops
-;in --
-;out --
+; waits for e * f nops
+; In: --
+; Out: --
 ;-----
-LONG_WAIT:
-    push e
-    push f
-    LDI f, 50
-    LDI e, 1500 
-    SUBI e, 1
-    CMPI e, 0
-    BNE -2
-    subi f, 1
-    CMPI f, 0
-    BNE -6
-    pop f
-    pop e
-
-ret
-
-
-
 WAIT:
-
     push e
     push f
+    push c
+    push d
     LDI f, 50
-    LDI e, 4000 
+WAIT_OUTER_LOOP:
+    ldi d, $0150
+    ld c, d
+    LDI e, 2500
+    sub e, c
+WAIT_LOOP: 
     SUBI e, 1
     CMPI e, 0
-    BNE -2
+    BNE WAIT_LOOP
     subi f, 1
     CMPI f, 0
-    BNE -6
+    BNE WAIT_OUTER_LOOP
+    pop c
+    pop d
     pop f
     pop e
+    ret
 
-ret
-;----------
+; --------------------------
 ;sets the current position of the spaceship
-; in c,d - x,y pos
-; out --
-;
-;----------
- 
-
+; In: c,d - x,y pos
+; out: -
+; --------------------------
 SET_NEW_POS:
-
-
     push a
     push b
     ;current position
@@ -779,8 +742,6 @@ SET_NEW_POS:
     ;ldi c, $0022
     st a,c
     ; load y coords
-    
-
 
     ldi a,$FC01
     ;ld b,a
@@ -790,18 +751,15 @@ SET_NEW_POS:
     st  a,d ; add the new position together with the sprite bits
     pop b 
     pop a
+    ret
 
-ret
-
-GET_CURRENT_POS:
-;----------
+; --------------------------
 ;Returns the current position of the spaceship
 ; in --
-; out
-;   c - x pos
-;   d - y pos
-;
-;----------
+; out c - x pos
+;     d - y pos
+; --------------------------
+GET_CURRENT_POS:
     push a
 
     ;current position
@@ -813,5 +771,4 @@ GET_CURRENT_POS:
     ld  d,a
     andi d,#1111100011111111;remove sprite bits
     pop a
-
-ret
+    ret
