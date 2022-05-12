@@ -1,4 +1,7 @@
-;====================== Useful Constants =======================
+;====================== Useful Addresses =======================
+; Addr below $0400 are in data memory
+; Addr above $FC00 are in sprite memory
+;
 ; $FC00 = x-coord for first sprite                              
 ; $FC01 = sprite (3 high) and y-coord (8 low) for first sprite  
 ;                                                               
@@ -7,9 +10,11 @@
 ;                                                               
 ; $0150 = Score                                                 
 ;                                                               
-; $FC1F = Collision detection                                   
+; $FC1F = Collision detection   
+; 
+; $0000 - $00FF = Stack                             
 ;                                                               
-; Sprites:                                                      
+; Sprites):                                                      
 ; $2000 = Ship                  $A000 = Crashed ship            
 ; $4000 = First asteroid        $6000 = Second asteroid         
 ; $8000 = Third asteroid                                        
