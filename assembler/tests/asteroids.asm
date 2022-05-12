@@ -1,41 +1,42 @@
-;init
-LDI P,0
-LDI O,0
-
-; Spawn ship
-
-; Store xpixel
-ldi d, $FC00
-ldi e, $0054
-st d, e
-
-; Store ypixel and asteroid type
-ldi d, $FC01
-ldi f, $2040
-st d, f
-
-; Spawn an asteroid
-ldi a, 1
-subr SPAWN_AST
-ldi a, 2
-subr SPAWN_AST
-ldi a, 3
-subr SPAWN_AST
-ldi a, 4
-subr SPAWN_AST
-ldi a, 5
-subr SPAWN_AST
-ldi a, 6
-subr SPAWN_AST
-ldi a, 7
-subr SPAWN_AST
-ldi a, 8
-subr SPAWN_AST
-
 MAIN:
+    ;init
+    LDI P,0
+    LDI O,0
+
+    ; Spawn ship
+
+    ; Store xpixel
+    ldi d, $FC00
+    ldi e, $0054
+    st d, e
+
+    ; Store ypixel and asteroid type
+    ldi d, $FC01
+    ldi f, $2040
+    st d, f
+
+    ; Spawn an asteroid
+    ldi a, 1
+    subr SPAWN_AST
+    ldi a, 2
+    subr SPAWN_AST
+    ldi a, 3
+    subr SPAWN_AST
+    ldi a, 4
+    subr SPAWN_AST
+    ldi a, 5
+    subr SPAWN_AST
+    ldi a, 6
+    subr SPAWN_AST
+    ldi a, 7
+    subr SPAWN_AST
+    ldi a, 8
+    subr SPAWN_AST
+
+MAIN_LOOP:
     ldi a, $FC1F
-    ld g, a
-    cmpi g, $1234
+    ld b, a
+    cmpi b, $1234
     beq GAME_OVER
 
     ; Ship
@@ -77,7 +78,7 @@ MAIN:
     ldi a, 8
     subr MOVE_AST
 
-    RJMP MAIN
+    RJMP MAIN_LOOP
 
 GAME_OVER:
     ldi d, $FC01
@@ -86,9 +87,21 @@ GAME_OVER:
     ldi b, $A000
     or a, b
     st d, a
+
+    ldi a, $FC1F
+    ldi b, 0
+    st a, b
     
 GAME_OVER_LOOP:
+    subr GET_JSTK_DATA
+    andi c,#0001110000000000 ; mask out the buttons (remove x coords and enable)
+    copy g, c
+    cmpi c,0
+    bne GAME_OVER_RESTART
     rjmp GAME_OVER_LOOP
+
+GAME_OVER_RESTART:
+    rjmp MAIN
 
 
 
