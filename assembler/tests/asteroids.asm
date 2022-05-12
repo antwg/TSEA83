@@ -15,6 +15,11 @@ MAIN:
     ldi f, $2040
     st d, f
 
+    ; Set score to 0
+    ldi d, $0150
+    ldi f, 0
+    st f, d
+
     ; Spawn an asteroid
     ldi a, 1
     subr SPAWN_AST
@@ -38,6 +43,10 @@ MAIN_LOOP:
     ld b, a
     cmpi b, $1234
     beq GAME_OVER
+
+    ; Show score
+    ldi a, $0150
+    copy g, a
 
     ; Ship
     subr GET_JSTK_DIRECTION; get directon on a,b
@@ -77,6 +86,12 @@ MAIN_LOOP:
 
     ldi a, 8
     subr MOVE_AST
+
+    ; Increase score
+    ldi a, $0150
+    ld b, a
+    add b, 1
+    st b, a
 
     RJMP MAIN_LOOP
 
