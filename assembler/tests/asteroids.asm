@@ -18,7 +18,7 @@ MAIN:
     ; Set score to 0
     ldi d, $0150
     ldi f, 0
-    st f, d
+    st d, f
 
     ; Spawn an asteroid
     ldi a, 1
@@ -46,7 +46,7 @@ MAIN_LOOP:
 
     ; Show score
     ldi a, $0150
-    copy g, a
+    ld n, a
 
     ; Ship
     subr GET_JSTK_DIRECTION; get directon on a,b
@@ -90,8 +90,8 @@ MAIN_LOOP:
     ; Increase score
     ldi a, $0150
     ld b, a
-    add b, 1
-    st b, a
+    addi b, 1
+    st a, b
 
     RJMP MAIN_LOOP
 
@@ -237,19 +237,22 @@ SPAWN_AST_THREE: ; Bottom left
     rjmp SPAWN_AST_END
 
 SPAWN_AST_TWO: ; Left bottom
+    ldi d, $FC01
     ldi e, 0            ; Xpixel = 0
-    ldi f, 30           ; Ypixel = 65
+    ld f, d           ; Ypixel = 65
+    andi f, $00FF
     ldi b, 2            ; Set dir right
     rjmp SPAWN_AST_END
 
-SPAWN_AST_ONE: ; Left top
-    ldi e, 0            ; Xpixel = 0
-    ldi f, 90           ; Ypixel = 65
-    ldi b, 1            ; Set dir right
+SPAWN_AST_ONE: ; Following asteroid
+    ldi d, $FC00
+    ld e, d            ; Xpixel = in line with player
+    ldi f, 0           ; Ypixel = 0
+    ldi b, 1            ; Set dir down
 
 SPAWN_AST_END:
     subr SET_AST_DIR
-    ldi b, $8000; subr GET_AST_SIZE   ; Get a random size of asteroid (in B) and apply
+    subr GET_AST_SIZE   ; Get a random size of asteroid (in B) and apply
     or f, b             ; add which asteroid to f reg
 
     lsls a 
@@ -400,11 +403,11 @@ SET_AST_DIR_THREE:
     rjmp SET_AST_DIR_END 
 SET_AST_DIR_TWO:        ; 2 and 1 switched
     ldi e, 3       
-    ldi f, 2
+    ldi f, 0
     rjmp SET_AST_DIR_END     
 SET_AST_DIR_ONE:
-    ldi e, 2        
-    ldi f, -2        
+    ldi e, 0        
+    ldi f, 3        
 SET_AST_DIR_END:
     st c, e
     st d, f
@@ -458,10 +461,6 @@ MOVE_AST:
     lsrs a
     subr IN_BOUNDS
 
-    ; Store new pos
-    st c, g
-    st d, h
-
 MOVE_AST_END:
     pop a
     pop h
@@ -481,34 +480,24 @@ MOVE_AST_END:
 IN_BOUNDS:
     push f
 
-    ;cmpi g, 160
-    ;bpl IN_BOUNDS_FALSE
+    cmpi g, 170
+    bpl IN_BOUNDS_FALSE
     copy f, h
     andi f, $00ff
     copy i, a
     
-    cmpi f, 80
+    cmpi f, 130
     bpl IN_BOUNDS_FALSE
+
+IN_BOUNDS_TRUE:
+    ; Store new pos
+    st c, g
+    st d, h
     rjmp IN_BOUNDS_END
 
-IN_BOUNDS_FALSE:
-    ;push d
-    ;push e
-    
-    ; Reset pos
-    ;lsls a     
-    ;ldi f, 0      
-    ;ldi d, $FC00
-    ;add d, a
-    ;st d, f
-    ;ldi d, $FC01       
-    ;add d, a
-    ;st d, f
-    ;lsrs a              
+IN_BOUNDS_FALSE:            
     subr SPAWN_AST
-    
-    ;pop e
-    ;pop d
+
 IN_BOUNDS_END:
     pop f
     ret
@@ -589,7 +578,7 @@ SECOND_SPEED_Y:
     blt SPEED_DONE_Y
 
 THIRD_SPEED_Y:
-    ldi h,450
+    ldi h,100
     ldi e,1
     sub h,f  
     blt SPEED_DONE_Y
@@ -729,7 +718,7 @@ LONG_WAIT:
     push e
     push f
     LDI f, 50
-    LDI e, 4000 
+    LDI e, 1500 
     SUBI e, 1
     CMPI e, 0
     BNE -2
