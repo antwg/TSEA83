@@ -1,16 +1,37 @@
+;====================== Useful Constants =======================
+; $FC00 = x-coord for first sprite                              
+; $FC01 = sprite (3 high) and y-coord (8 low) for first sprite  
+;                                                               
+; $0100 = x-coord part of move vector for first ship/asteroid   
+; $0101 = y-coord part of move vector for first ship/asteroid   
+;                                                               
+; $0150 = Score                                                 
+;                                                               
+; $FC1F = Collision detection                                   
+;                                                               
+; Sprites:                                                      
+; $2000 = Ship                  $A000 = Crashed ship            
+; $4000 = First asteroid        $6000 = Second asteroid         
+; $8000 = Third asteroid                                        
+;===============================================================
+
+; --------------------------------
+; Initializes and starts the game
+; In: -
+; Out: -
+; --------------------------------
 MAIN:
     ;init
     LDI P,0
     LDI O,0
 
-    ; Store ship xpixel 
-    ldi d, $FC00
-    ldi e, $0054
+    ; Create ship
+    ldi d, $FC00    ; x-pixel addr
+    ldi e, $0054    ; x-pixel
     st d, e
 
-    ; Store ypixel and asteroid type of ship
-    ldi d, $FC01
-    ldi f, $2040
+    ldi d, $FC01    ; sprite and y-pixel addr
+    ldi f, $2040     
     st d, f
 
     ; Set score to 0
@@ -43,49 +64,39 @@ MAIN_LOOP:
     ; Check if game over
     ldi a, $FC1F
     ld b, a
-    cmpi b, $1234
+    cmpi b, $1234   ; 1234 = Game over
     beq GAME_OVER
 
     ; Show score
     ldi a, $0150
     ld n, a
 
-    ; Ship
+    ; Move ship
     subr GET_JSTK_DIRECTION; get directon on a,b
 
     subr GET_CURRENT_POS ; get current positoin on c,d
     subr MOVE_SHIP ; get new coordinates of ship on c,d
 
-    ;copy g,c ; show x direction on 7seg
     subr WAIT
-    ;copy g,d ; show y direction on 7seg
     subr WAIT
-    ; check what the new position is
+
     subr SET_NEW_POS ; set the new position with c,d
 
-    ; Move Asteroids
-
+    ; Move asteroids
     ldi a, 1
     subr MOVE_AST
-
     ldi a, 2
     subr MOVE_AST
-
     ldi a, 3
     subr MOVE_AST
-
     ldi a, 4
     subr MOVE_AST
-
     ldi a, 5
     subr MOVE_AST
-
     ldi a, 6
     subr MOVE_AST
-
     ldi a, 7
     subr MOVE_AST
-
     ldi a, 8
     subr MOVE_AST
 
@@ -98,17 +109,18 @@ MAIN_LOOP:
     RJMP MAIN_LOOP
 
 
-; --------------------------
-; If game over, change sprite
-; and wait for restart button
-; In: -
+; ----------------------------------------------
+; If game over, change sprite to destroyed ship
+; and wait for restart button.
+; In: - (Destroys a, b and d)
 ; Out: -
-; --------------------------
+; ---------------------------------------------
 GAME_OVER:
     ; Get ship sprite addr
     ldi d, $FC01 
     ld a, d
-    andi a, $00ff
+    andi a, $00ff   ; Save y-coordinate
+
     ; Change sprite to destroyed ship
     ldi b, $A000
     or a, b
@@ -122,9 +134,9 @@ GAME_OVER:
 GAME_OVER_LOOP:
     ; Check if any button pressed
     subr GET_JSTK_DATA
-    andi c,#0001110000000000 ; mask out the buttons (remove x coords and enable)
+    andi c, #0001110000000000 ; mask out the buttons (remove x coords and enable)
     copy g, c
-    cmpi c,0
+    cmpi c, 0
     bne GAME_OVER_RESTART
     rjmp GAME_OVER_LOOP
 
@@ -132,26 +144,24 @@ GAME_OVER_RESTART:
     rjmp MAIN
 
 
-; --------------------------
-; Spawns an asteroid at a random locaion
-; just outside of the screen. (top, left, ...).
-; Also sets direction opposite of spawn, eg. if
-; spawn on left side, dir = right
+; --------------------------------------------------------------------
+; Spawns an asteroid at its spawn locaion just outside of the screen.
+; Also sets its direction.
 ;
 ; DATA_MEM(FCXX)      -> xpixel 8 bit (low)
 ; DATA_MEM(FCXX+1)    -> 3 bit sprite (high) + 8 bit ypixel (low) 
 ; 
 ; In: AST_NR(A)
 ; Out: -
-; --------------------------
+; --------------------------------------------------------------------
 
 SPAWN_AST:
-    push a
-    push d ; Random number
-    push e ; xpixel (8 low)
-    push f ; which sprite (3 high) and ypixel (8 low)           
+    push a ; AST_NR
+    push d ; Address
+    push e ; x-pixel (8 low)
+    push f ; sprite (3 high) and y-pixel (8 low)           
 
-    ; Choose left/right/bottom/top
+    ; Choose spawn location
     cmpi a, 1
     beq SPAWN_AST_ONE
     cmpi a, 2
@@ -168,59 +178,59 @@ SPAWN_AST:
     beq SPAWN_AST_SEVEN
 
 SPAWN_AST_EIGHT: ; top left
-    ldi e, 40           ; Xpixel = 80
-    ldi f, 0            ; Ypixel = 0
-    ldi b, 8            ; Set dir up
+    ldi e, 40           
+    ldi f, 0            
+    ldi b, 8            
     rjmp SPAWN_AST_END
 
 SPAWN_AST_SEVEN: ; Top right
-    ldi e, 120           ; Xpixel = 80
-    ldi f, 0          ; Ypixel = 130
-    ldi b, 7            ; Set dir up
+    ldi e, 120          
+    ldi f, 0          
+    ldi b, 7            
     rjmp SPAWN_AST_END
 
 SPAWN_AST_SIX: ; Right top
-    ldi e, 167        ; Xpixel = 162
-    ldi f, 90           ; Ypixel = 65
-    ldi b, 6            ; Set dir left
+    ldi e, 167          
+    ldi f, 90           
+    ldi b, 6            
     rjmp SPAWN_AST_END
 
 SPAWN_AST_FIVE: ; Right bottom
-    ldi e, 167            ; Xpixel = 0
-    ldi f, 30           ; Ypixel = 65
-    ldi b, 5            ; Set dir right
+    ldi e, 167          
+    ldi f, 30           
+    ldi b, 5            
     rjmp SPAWN_AST_END
 
 SPAWN_AST_FOUR: ; Bottom Right
-    ldi e, 120            ; Xpixel = 0
-    ldi f, 127           ; Ypixel = 65
-    ldi b, 4            ; Set dir left
+    ldi e, 120          
+    ldi f, 127          
+    ldi b, 4            
     rjmp SPAWN_AST_END
 
 SPAWN_AST_THREE: ; Bottom left
-    ldi e, 40            ; Xpixel = 0
-    ldi f, 127           ; Ypixel = 65
-    ldi b, 3            ; Set dir right
+    ldi e, 40           
+    ldi f, 127          
+    ldi b, 3            
     rjmp SPAWN_AST_END
 
-SPAWN_AST_TWO: ; Left bottom
-    ldi d, $FC01
-    ldi e, 0            ; Xpixel = 0
-    ld f, d           ; Ypixel = 65
+SPAWN_AST_TWO: ; Left on same height as ship
+    ldi d, $FC01    
+    ldi e, 0          
+    ld f, d           
     andi f, $00FF
-    ldi b, 2            ; Set dir right
+    ldi b, 2            
     rjmp SPAWN_AST_END
 
-SPAWN_AST_ONE: ; Following asteroid
+SPAWN_AST_ONE: ; Top on same width as ship
     ldi d, $FC00
-    ld e, d            ; Xpixel = in line with player
-    ldi f, 0           ; Ypixel = 0
-    ldi b, 1            ; Set dir down
+    ld e, d            
+    ldi f, 0           
+    ldi b, 1            
 
 SPAWN_AST_END:
     subr SET_AST_DIR
-    subr GET_AST_SIZE   ; Get a random size of asteroid (in B) and apply
-    or f, b             ; add which asteroid to f reg
+    subr GET_AST_COLOR   ; Get a random color of asteroid (in B) and apply
+    or f, b              ; add which asteroid to f reg
 
     lsls a 
     
@@ -240,12 +250,12 @@ SPAWN_AST_END:
     pop a
     ret
 
-; --------------------------
-; Gets a random size for an asteroid
+; ------------------------------------
+; Gets a random color for an asteroid
 ; In: AST_NR(A)
 ; Out: Sprite(B)
-; --------------------------
-GET_AST_SIZE:
+; ------------------------------------
+GET_AST_COLOR:
     push a
     push c
 
@@ -255,22 +265,22 @@ GET_AST_SIZE:
     copy c, a
     pop a
 
-    ; Choose random size
+    ; Choose random color
     andi c, $0003
     cmpi c, 0
-    beq GET_AST_SIZE_LARGE
+    beq GET_AST_COLOR_ONE
     cmpi c, 1
-    beq GET_AST_SIZE_MEDIUM
+    beq GET_AST_COLOR_TWO
     cmpi c, 2
-    beq GET_AST_SIZE_SMALL
+    beq GET_AST_COLOR_THREE
 
-GET_AST_SIZE_SMALL:
+GET_AST_COLOR_THREE:
     ldi b, $8000
     rjmp GET_AST_SIZE_END
-GET_AST_SIZE_MEDIUM:
+GET_AST_COLOR_TWO:
     ldi b, $6000
     rjmp GET_AST_SIZE_END
-GET_AST_SIZE_LARGE:
+GET_AST_COLOR_ONE:
     ldi b, $4000
     rjmp GET_AST_SIZE_END
 GET_AST_SIZE_END:
@@ -279,13 +289,13 @@ GET_AST_SIZE_END:
     ret
 
 
-; --------------------------
+; ----------------------------
 ; Returns a pseudorandom num
 ; between 0 and FFFF in Reg A
 ; Uses Reg G to store progress
 ; In: (G)
 ; Out: A
-; --------------------------
+; ----------------------------
 RAND_NUM_GEN:
     push b
     push c
@@ -305,12 +315,13 @@ RAND_NUM_GEN_END: ; Mask last byte
     pop b
     ret
 
-; --------------------------
+; ----------------------------------------------------
 ; Asteroids direction is saved at $(0100 + 2 * AST_NR)
 ; ex. AST_NR = 2 => $F4: x_dir
 ;                => $F5: y_dir
 ; In: AST_DIR(B), AST_NR(A)
-; --------------------------
+; Out: -
+; ----------------------------------------------------
 SET_AST_DIR:
     push c
     push d
@@ -319,13 +330,13 @@ SET_AST_DIR:
     push a 
     push b
 
-    ; Get position in data_mem for direction
+    ; Get addr in data_mem for direction
     ldi c, $0100
     ldi d, $0101
-    lsls a          ; Mult by 2
+    lsls a          
     add c, a
     add d, a
-    lsrs a          ; Reset
+    lsrs a          
 ;
     ; Decode AST_DIR
     cmpi b, 1               
@@ -342,7 +353,7 @@ SET_AST_DIR:
     beq SET_AST_DIR_SIX
     cmpi b, 7              
     beq SET_AST_DIR_SEVEN
-    ; else down
+    ; else eight
 
 SET_AST_DIR_EIGHT:
     ldi e, 1        ; x-dir
@@ -352,7 +363,7 @@ SET_AST_DIR_SEVEN:
     ldi e, -2        
     ldi f, 1
     rjmp SET_AST_DIR_END        
-SET_AST_DIR_SIX:        ; 5 and 6 switched for some cursed reason
+SET_AST_DIR_SIX:        ; 5 and 6 switched 
     ldi e, -1      
     ldi f, -2
     rjmp SET_AST_DIR_END   
@@ -388,12 +399,12 @@ SET_AST_DIR_END:
     ret
 
 
-; --------------------------
+; ----------------------------------------
 ; Updates the position of ast with AST_NR
 ; Reads direction from data mem.
 ; In: AST_NR(A)
 ; Out: -
-; --------------------------
+; ----------------------------------------
 MOVE_AST:
     push c
     push d
@@ -403,24 +414,20 @@ MOVE_AST:
     push h
     push a
 
-    cmpi a, 5
-    ;beq MOVE_AST_EVIL
-
     ; Get position addr in data_mem
     ldi c, $0100
     ldi d, $0101
 
-    lsls a          ; Mult by 2
+    lsls a          
     add c, a
     add d, a
-    ld e, c         ; Move "vector" in x-dir
-    ld f, d         ; Move "vector" in y-dir
+    ld e, c         ; x-part of move vector
+    ld f, d         ; y-part of move vector
 
     ; Read curr position and update
     ldi c, $FC00
     ldi d, $FC01
-
-    add c, a
+    add c, a        ; Add AST_NR
     add d, a
 
     ld g, c         ; Curr x-pos
@@ -429,43 +436,6 @@ MOVE_AST:
     add h, f        ; New y-pos
 
     lsrs a
-    rjmp MOVE_AST_END
-
-MOVE_AST_EVIL:
-    ; Get curr position addr asteroid
-    ldi c, $FC0A
-    ldi d, $FC0B
-    ld g, c         ; Curr x-pos
-    ld h, d         ; Curr y-pos
-    
-    ; Get curr position addr ship
-    ldi c, $FC00
-    ldi d, $FC01
-    ld e, c         ; Curr x-pos
-    ld f, d         ; Curr y-pos
-
-    cmp e, g       ; ship pos - ast pos
-    bpl MOVE_AST_X_LARGER
-    subi g, 1; x-dir = -1
-    rjmp MOVE_AST_CHECK_Y
-MOVE_AST_X_LARGER:
-    addi g, 1; x-dir = 1
-MOVE_AST_CHECK_Y:
-    cmp f, h        ; ship pos - ast pos
-    bpl MOVE_AST_Y_LARGER
-    subi h, 1; y-dir = -1
-    rjmp MOVE_AST_EVIL_END
-MOVE_AST_Y_LARGER:
-    addi h, 1; y-dir = 1
-MOVE_AST_EVIL_END:
-    add e, g
-    add f, h
-    ldi c, $FC0A
-    ldi d, $FC0B
-    st c, g
-    st d, h
-
-MOVE_AST_END:
     subr IN_BOUNDS
     pop a
     pop h
@@ -477,20 +447,22 @@ MOVE_AST_END:
     ret
 
 
-; --------------------------
+; -------------------------------------------------
 ; Checks if an asteroid is in bounds,
-; If it is: do nothing, else erspawn it in bounds.
+; If it is: do nothing, else respawn it in bounds.
 ; In: A(AST_NR), G(x-coord), H(y-coord)
-; --------------------------
+; Out: -
+; -------------------------------------------------
 IN_BOUNDS:
     push f
-
+    ; Check right edge
     cmpi g, 170
     bpl IN_BOUNDS_FALSE
+
+    ; Check bottom edge
     copy f, h
     andi f, $00ff
     copy i, a
-    
     cmpi f, 130
     bpl IN_BOUNDS_FALSE
 
@@ -508,11 +480,11 @@ IN_BOUNDS_END:
     ret
 
 
-; --------------------------
+; --------------------------------------------------------------------
 ; Moves the spaceship with the coordinates retrived form the joystick 
-; IN: a,b,c,d : a-jstk x, b - jstk y, c - ship x, d - ship y
-; OUT: c,d - new position
-; --------------------------
+; In: a,b,c,d : a-jstk x, b - jstk y, c - ship x, d - ship y
+; Oot: c,d - new position
+; --------------------------------------------------------------------
 MOVE_SHIP:
     push e
     push f
@@ -520,7 +492,7 @@ MOVE_SHIP:
 
     copy f,a
     andi d, $00FF ; remove sprite bits (gets set again later)
-    andi f,$7FFF; remove possible signed bit
+    andi f,$7FFF ; remove possible signed bit
 
 FIRST_SPEED_X:
     ldi h,450
@@ -538,12 +510,12 @@ THIRD_SPEED_X:
     ldi e,1
     sub h,f  
     blt SPEED_DONE_X
-
     ldi e,0 ; jstk movement to low dont move
+
 SPEED_DONE_X:
     ;do smth
     copy f,a
-    andi f,$8000; get possible signed bit
+    andi f, $8000; get possible signed bit
     cmpi f, $8000
 
     BEQ X_SIGNED
@@ -570,7 +542,6 @@ X_NOT_SIGNED:
     copy f,b
     andi f,$7FFF; remove possible signed bit
     
-
 FIRST_SPEED_Y:
     ldi h,450
     ldi e,3
@@ -613,7 +584,6 @@ Y_SIGNED:
     add h,e 
     subi h,125
 
-
     bge Y_NOT_SIGNED; if h is larger than there was overflow
 
     add d,e
@@ -627,19 +597,19 @@ Y_NOT_SIGNED:
 
 
 
-;----------
-;   Returns a signed value which indicating direction 
-;   the joystick is pointing and 
-;   a value between 0-512 indicating how much 
+;-----------------------------------------------------
+; Returns a signed value which indicating direction 
+; the joystick is pointing and 
+; a value between 0-512 indicating how much 
 ; the joystick is pointing in a certain direction
-;   IN --
-;   OUT a - signed x value
-;       b - signed y value
-;
-;----------
-;the joystick goes between 0-1024
-;0-512 indicates poiting down
-;512 - 1024 indicates up
+; IN --
+; OUT a - signed x value
+;     b - signed y value
+; 
+; the joystick goes between 0-1024
+; 0-512 indicates poiting down
+; 512 - 1024 indicates up
+;-----------------------------------------------------
 GET_JSTK_DIRECTION:
     push d
     subr GET_JSTK_DATA
@@ -679,14 +649,14 @@ DONE:
     pop d
     ret
 
-;----------
+;-------------------------------------------------------
 ;Returns x,y,buttons from joystick to registers a and b
 ; in --
 ; out 
 ;   a - x coordinates
 ;   b - y coordinates
 ;   c - buttons
-;----------
+;-------------------------------------------------------
 GET_JSTK_DATA:
     LDI P, 32768 ; load enable bit 1000000000000000
     subr WAIT
@@ -699,11 +669,12 @@ GET_JSTK_DATA:
     ret
 
 
-;-----
-; waits for e * f nops
+;--------------------------
+; Waits for a certain time
+; dependant on the score.
 ; In: --
 ; Out: --
-;-----
+;--------------------------
 WAIT:
     push e
     push f
@@ -711,7 +682,8 @@ WAIT:
     push d
     LDI f, 50
 WAIT_OUTER_LOOP:
-    ldi d, $0150
+    ; Remove score from 2500 to shorten wait as score increases
+    ldi d, $0150  
     ld c, d
     LDI e, 2500
     sub e, c
@@ -728,11 +700,11 @@ WAIT_LOOP:
     pop e
     ret
 
-; --------------------------
-;sets the current position of the spaceship
+; -------------------------------------------
+; sets the current position of the spaceship
 ; In: c,d - x,y pos
-; out: -
-; --------------------------
+; Out: -
+; -------------------------------------------
 SET_NEW_POS:
     push a
     push b
@@ -753,12 +725,12 @@ SET_NEW_POS:
     pop a
     ret
 
-; --------------------------
-;Returns the current position of the spaceship
+; ----------------------------------------------
+; Returns the current position of the spaceship
 ; in --
 ; out c - x pos
 ;     d - y pos
-; --------------------------
+; ----------------------------------------------
 GET_CURRENT_POS:
     push a
 

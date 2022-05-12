@@ -279,10 +279,7 @@ begin
     MOSI => MOSI,
     SCLK => SCLK,
     SS => SS
-
     );
-
-
 
    prog_mem_comp : PROG_MEM port map(
 		clk => clk,
@@ -290,8 +287,8 @@ begin
 		data_out => PMdata_out,
 		we => boot_we,
 		wr_addr => boot_addr,
-		wr_data => boot_data_out);
-
+		wr_data => boot_data_out
+    );
 
 	sprite_mem_comp : VGA_MOTOR port map(
 		vgaRed => vgaRed,
@@ -310,7 +307,6 @@ begin
 		spriteOut => sm_data_out 
 	);
 	
-
 	prog_loader_comp : PROG_LOADER port map(
 		clk => clk,
 		rst => rst,
@@ -319,7 +315,8 @@ begin
 		done => boot_done,
 	  	we => boot_we,
 	  	addr => boot_addr,
-	  	data_out => boot_data_out);
+	  	data_out => boot_data_out
+    );
 
 	reg_file_comp : REG_FILE port map(
 		rd_in => IR2_rd,
@@ -335,7 +332,7 @@ begin
 		jstk_data => jstk_data,	
 		jstk_en => jstk_en,
 		jstk_done => jstk_done
-		);
+	);
 
 	data_mem_comp : DATA_MEM port map(
 		we => dm_we,
@@ -353,7 +350,8 @@ begin
 		status_reg => status_reg_out,
         new_status_reg => new_status_reg,
 		reset => rst,
-		clk => clk);
+		clk => clk
+    );
 
 	leddriver_comp : leddriver port map(
 		clk => clk,
@@ -361,7 +359,8 @@ begin
         seg => seg,    
 
         an => an,
-        value => led_value);
+        value => led_value
+    );
 
 -------------------------------------------------------------------------------
 
