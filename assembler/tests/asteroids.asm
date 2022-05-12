@@ -3,14 +3,12 @@ MAIN:
     LDI P,0
     LDI O,0
 
-    ; Spawn ship
-
-    ; Store xpixel
+    ; Store ship xpixel 
     ldi d, $FC00
     ldi e, $0054
     st d, e
 
-    ; Store ypixel and asteroid type
+    ; Store ypixel and asteroid type of ship
     ldi d, $FC01
     ldi f, $2040
     st d, f
@@ -20,7 +18,7 @@ MAIN:
     ldi f, 0
     st d, f
 
-    ; Spawn an asteroid
+    ; Spawn asteroids
     ldi a, 1
     subr SPAWN_AST
     ldi a, 2
@@ -38,7 +36,11 @@ MAIN:
     ldi a, 8
     subr SPAWN_AST
 
+; --------------------------
+; Main game loop
+; --------------------------
 MAIN_LOOP:
+    ; Check if game over
     ldi a, $FC1F
     ld b, a
     cmpi b, $1234
@@ -61,7 +63,7 @@ MAIN_LOOP:
     ; check what the new position is
     subr SET_NEW_POS ; set the new position with c,d
 
-    ; Asteroids
+    ; Move Asteroids
 
     ldi a, 1
     subr MOVE_AST
@@ -95,19 +97,30 @@ MAIN_LOOP:
 
     RJMP MAIN_LOOP
 
+
+; --------------------------
+; If game over, change sprite
+; and wait for restart button
+; In: -
+; Out: -
+; --------------------------
 GAME_OVER:
-    ldi d, $FC01
+    ; Get ship sprite addr
+    ldi d, $FC01 
     ld a, d
     andi a, $00ff
+    ; Change sprite to destroyed ship
     ldi b, $A000
     or a, b
     st d, a
 
+    ; Reset collision detected
     ldi a, $FC1F
     ldi b, 0
     st a, b
     
 GAME_OVER_LOOP:
+    ; Check if any button pressed
     subr GET_JSTK_DATA
     andi c,#0001110000000000 ; mask out the buttons (remove x coords and enable)
     copy g, c
@@ -117,7 +130,6 @@ GAME_OVER_LOOP:
 
 GAME_OVER_RESTART:
     rjmp MAIN
-
 
 
 ; --------------------------
