@@ -574,24 +574,29 @@ SPEED_DONE_Y:
     andi f,$8000; get possible signed bit
     cmpi f,$8000
     BEQ Y_SIGNED
-    
-    
-    copy f,d
-    copy h,f 
-    add h,e 
-    subi h,$00FF
-    bge Y_NOT_SIGNED; if h is larger than 0FF we dont want to do anything
 
 
-    sub d,e
-    rjmp Y_NOT_SIGNED
-Y_SIGNED:
     copy f,d
     copy h,f
     subi h,1
 
     sub h,e 
-    blt Y_NOT_SIGNED; if h is larger than there was overflow
+
+    
+    blt Y_NOT_SIGNED; if h is larger than 0FF we dont want to do anything
+
+
+    sub d,e
+    rjmp Y_NOT_SIGNED
+Y_SIGNED:
+
+    copy f,d
+    copy h,f 
+    add h,e 
+    subi h,125
+
+
+    bge Y_NOT_SIGNED; if h is larger than there was overflow
 
     add d,e
 Y_NOT_SIGNED:
