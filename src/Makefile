@@ -37,7 +37,6 @@ pipecpu.%: S=pipeCPU.vhd VGA_MOTOR.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PRO
 pipecpu.%: T=tbs/pipeCPU_tb.vhd 
 pipecpu.%: U=Nexys3_Master.ucf
 
-
 vga.%: S=vga_test.vhd VGA_MOTOR.vhd MEM/DATA_MEM.vhd MEM/REG_FILE.vhd MEM/PROG_MEM.vhd MEM/PROG_LOADER.vhd alu.vhd
 vga.%: T=tbs/VGA_tb.vhd
 vga.%: U=Nexys3_Master.ucf
