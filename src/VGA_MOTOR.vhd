@@ -185,6 +185,15 @@ architecture Behavioral of VGA_MOTOR is
                                 x"0",x"0",x"4",x"4",x"4",x"4",x"0",x"0",
                                 x"0",x"0",x"0",x"4",x"4",x"0",x"0",x"0",
 
+                                x"0",x"0",x"9",x"1",x"1",x"0",x"0",x"0",   -- Space ship crashed
+                                x"0",x"9",x"9",x"3",x"3",x"1",x"0",x"0",
+                                x"0",x"9",x"8",x"8",x"3",x"3",x"1",x"0",
+                                x"1",x"9",x"8",x"6",x"6",x"9",x"3",x"1",
+                                x"1",x"3",x"9",x"8",x"6",x"8",x"3",x"1",
+                                x"0",x"1",x"3",x"8",x"3",x"3",x"1",x"0",
+                                x"0",x"0",x"1",x"3",x"3",x"1",x"0",x"0",
+                                x"0",x"0",x"0",x"1",x"1",x"0",x"0",x"0",
+
 
                                 others => (others => '0'));
                                 
@@ -479,8 +488,8 @@ begin
                  "00000010" when outputPixel_4bit = 5  else     -- neon-blue
                  "00000011" when outputPixel_4bit = 6  else     -- neon-blue-light
                  "11111111" when outputPixel_4bit = 7  else     -- white
-                 "00000000" when outputPixel_4bit = 8  else
-                 "00000000" when outputPixel_4bit = 9  else
+                 "11100000" when outputPixel_4bit = 8  else
+                 "11111100" when outputPixel_4bit = 9  else
                  "00000000" when outputPixel_4bit = 10 else
                  "00000000" when outputPixel_4bit = 11 else
                  "00000000" when outputPixel_4bit = 12 else
