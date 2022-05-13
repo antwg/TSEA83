@@ -5,7 +5,7 @@
 ** Prints help information.
 **/
 void printHelp() {
-    printf("Syntax: ./asm -i ../assembly.asm -o ./build/output.bin -m -d\n");
+    printf("Syntax: ./asm -i ../assembly.asm -o ./output.bin\n");
     printf("-i inputFile (default=./example.asm)\n");
     printf("-o outputFile (default=./out.bin)\n");
     printf("-t if not used, adds a NOP to the interrupt vector\n");
