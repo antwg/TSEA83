@@ -11,12 +11,8 @@ void printHelp() {
     printf("-t if not used, adds a NOP to the interrupt vector\n");
     printf("-m print instructions formatted to terminal\n");
     printf("-d print debug information\n");
-    printf("-u automatically upload resulting file to uart\n");
 }
 
-/*
-** -u [uploads to UART, doesn't configure UART]
-*/
 int main(int argc, char** argv) {
     if (argc <= 1) {
         printHelp();
@@ -43,8 +39,6 @@ int main(int argc, char** argv) {
             return 0;
         } else if (!strcmp(argv[i], "-t")) {
             engine.config["interrupts"] = true;
-        } else if (!strcmp(argv[i], "-u")) {
-            engine.config["uart"] = true;
         }
     }
 

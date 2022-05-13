@@ -1,17 +1,18 @@
 ; this is a counter
 ; it will count 0 to FFFF in register A
+; when it's done it will display $1337 on the 7-seg display.
 ; how many cycles to wait between each count
 ; is decided by the d register
 
 ; start of program
-ldi a,$0000
+ldi n,$0000
 
 ; increases A by 1
 COUNTER:
-    addi a,1
+    addi n,1
     subr WAIT
-    ;cmpi a, 0
-    ;beq FINISHED
+    cmpi n, 0
+    beq FINISHED
     rjmp COUNTER
 
 ; SUBR WAIT
@@ -25,6 +26,6 @@ WAIT_LOOP:
 
 ; eternity loop
 FINISHED:
-    ldi a,$1337
+    ldi n,$1337
     nop
     rjmp -1
