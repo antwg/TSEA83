@@ -5,11 +5,15 @@
 ; is decided by the d register
 
 ; start of program
+; load a hexadecimal value with prefixing the hex with $.
 ldi n,$0000
+
+; load a binary value by prefixing it with #.
+ldi n,#010101010111
 
 ; increases A by 1
 COUNTER:
-    addi n,1
+    addi n,1 ; load a decimal value by simply writing the decimal
     subr WAIT
     cmpi n, 0
     beq FINISHED
