@@ -4,21 +4,21 @@ use IEEE.numeric_std.all;
 
 entity pipeCPU is
     generic (TCQ : in time := 100 ps);
-	port (
-		CLK_IN1, RESET : in std_logic;
-		UART_in : in std_logic;
-		UART_out : out std_logic;
-		seg : out unsigned(7 downto 0);
-		an : out unsigned(3 downto 0);
-		vgaRed		    : out std_logic_vector(2 downto 0);
-        vgaGreen	    : out std_logic_vector(2 downto 0);
-        vgaBlue		    : out std_logic_vector(2 downto 1);
-        Hsync		    : out std_logic;
-        Vsync		    : out std_logic;
-		SS : out std_logic;
-		MOSI : out std_logic;
-		MISO : in std_logic;
-		SCLK : out std_logic);
+    port (
+        CLK_IN1, RESET  : in std_logic;
+        UART_in         : in std_logic;
+        UART_out        : out std_logic;
+        seg             : out unsigned(7 downto 0);
+        an              : out unsigned(3 downto 0);
+        vgaRed          : out std_logic_vector(2 downto 0);
+        vgaGreen        : out std_logic_vector(2 downto 0);
+        vgaBlue         : out std_logic_vector(2 downto 1);
+        Hsync           : out std_logic;
+        Vsync           : out std_logic;
+        SS              : out std_logic;
+        MOSI            : out std_logic;
+        MISO            : in std_logic;
+        SCLK            : out std_logic);
 
 end pipeCPU;
 
@@ -457,17 +457,17 @@ begin
                 IR1_const <= x"0000";
 
             -- run as per usual when bootloader has loaded a program
-			elsif (boot_done='1' or boot_en='0') then
-				IR2 <= IR1;
-				JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
+            elsif (boot_done='1' or boot_en='0') then
+                IR2 <= IR1;
+                JUMP_PC <= PC1 + IR1_const; -- set JUMP_PC for potential jump in the future
 
                 -- If we see a subroutine return, prepare for it
-		        if (IR2_op = RET) then	
-					IR2_op <= POSR;
-					IR1_op <= PCR;
+                if (IR2_op = RET) then
+                    IR2_op <= POSR;
+                    IR1_op <= PCR;
 
                 -- PCR pops the stack unto the program counter
-				elsif (IR2_op = PCR) then
+                elsif (IR2_op = PCR) then
                     -- special case if we're handling an interrupt since
                     -- the PC that is pushed into that stack is off by one
                     if (interrupt_handling='1') then
