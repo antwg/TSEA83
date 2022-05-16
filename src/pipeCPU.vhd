@@ -399,7 +399,6 @@ begin
 					x"000" & status_reg_out 	when PUSR,
 					alu_out     				when others;
 
-    -- slows clock
     dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else sm_data_out;
       
 	-- Address controller
