@@ -29,5 +29,5 @@ begin
           end if;
     end process;
 
-    data_out <= PM(to_integer(addr)); -- much hardware with asyn read, same in DM
+    data_out <= PM(to_integer(addr));
 end func;

@@ -31,7 +31,7 @@ architecture func of PROG_LOADER is
     -- is set to 1 when we've read up to EOF
     signal finished : std_logic := '0';
 
-    -- which addr to write to in PM (increases every instruction fetch)
+    -- which addr to write to in PM (increases on every write)
     signal addr_cnt_en : std_logic := '0';
     signal addr_cnt_out : unsigned(15 downto 0) := (others => '0');
 
@@ -70,7 +70,7 @@ begin
         end if;
     end process;
 
-    -- all counters
+    -- Counter controller
     process(clk) begin
         if (rising_edge(clk)) then
             if (rst='1' or boot_en='0') then
@@ -79,12 +79,13 @@ begin
                 st_4_cnt_out <= (others => '0');
                 addr_cnt_out <= (others => '0');
 
+            -- not finished yet and boot_en is set high
             elsif (finished='0') then
                 -- start counting if we see a startbit
                 if (st_868_cnt_en='0' and rx1='0' and rx2='1') then 
                     st_868_cnt_en <= '1';
 
-                -- we've fetched a byte, wait for next startbit
+                -- we've read a full byte, wait for next startbit
                 elsif (st_868_cnt_en='1' and st_868_cnt_out=max_cnt and st_10_cnt_out=9 and rx1='1') then
                     st_868_cnt_en <= '0';
                     st_868_cnt_out <= (others => '0');
@@ -93,7 +94,7 @@ begin
                     -- we've also fetched a full instruction
                     if (st_4_cnt_out=3) then
                         st_4_cnt_out <= (others => '0');
-                    -- or not
+                   -- or not
                     else
                         st_4_cnt_out <= st_4_cnt_out + 1;
                     end if;
@@ -127,6 +128,8 @@ begin
         if (rising_edge(clk)) then
             if (rst='1' or finished='1') then
                 byteReg <= (others => '0');
+
+            -- shift in when we get a shiftpulse (sp)
             elsif (sp='1') then
                 byteReg <= byteReg srl 1;
                 byteReg(9) <= rx2;
