@@ -3,21 +3,19 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 entity REG_FILE is
-	port(
-		clk : std_logic;
+    Port(
+        clk : std_logic;
         led_addr : in unsigned(3 downto 0);
         led_out : out unsigned(15 downto 0);
-		rd_in : in unsigned(3 downto 0);
-		rd_out : out unsigned(15 downto 0);
-		ra_in : in unsigned(3 downto 0);
-		ra_out : out unsigned(15 downto 0);
-		we : in std_logic;
-		data_in : in unsigned(15 downto 0);
-		jstk_data : in unsigned(22 downto 0);
-		jstk_en : out std_logic := '0';
-		jstk_done : in std_logic
-
-		);
+        rd_in : in unsigned(3 downto 0);
+        rd_out : out unsigned(15 downto 0);
+        ra_in : in unsigned(3 downto 0);
+        ra_out : out unsigned(15 downto 0);
+        we : in std_logic;
+        data_in : in unsigned(15 downto 0);
+        jstk_data : in unsigned(22 downto 0);
+        jstk_en : out std_logic := '0';
+        jstk_done : in std_logic);
 
 end REG_FILE;
 
@@ -36,20 +34,12 @@ architecture func of REG_FILE is
 
 	signal RF : RF_t := RF_c;
 
-
-
 begin
 
-
-
-	process(clk)
+    process(clk)
         begin
           if rising_edge(clk) then
-
-			--enable joystick bit
-			jstk_en <= RF(15)(15);
-
-			if we = '1' then
+            if we = '1' then
                 RF(to_integer(rd_in)) <= data_in;
 			
 				-- joystick data which is sent to 
@@ -87,7 +77,13 @@ begin
          end if;
         end process;
 
-	rd_out <= RF(to_integer(rd_in));
-	ra_out <= RF(to_integer(ra_in));
-    led_out <= RF(to_integer(led_addr));
+        -- Enable joystick bit
+        jstk_en <= RF(15)(15);
+
+        -- Send out data on register rd and ra
+        rd_out <= RF(to_integer(rd_in));
+        ra_out <= RF(to_integer(ra_in));
+
+        -- Send out data to the 7-segment display
+        led_out <= RF(to_integer(led_addr));
 end architecture;

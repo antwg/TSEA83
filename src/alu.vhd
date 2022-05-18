@@ -12,7 +12,7 @@ use IEEE.numeric_std.all;
 --
 ------
 entity ALU is
-	port (
+    port (
         MUX1: in unsigned(15 downto 0);
         MUX2 : in unsigned(15 downto 0);
         op_code : in unsigned(7 downto 0);

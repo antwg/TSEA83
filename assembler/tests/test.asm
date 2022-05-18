@@ -1,22 +1,15 @@
 ; this is a counter
 ; it will count 0 to FFFF in register A
-; when it's done it will display $1337 on the 7-seg display.
 ; how many cycles to wait between each count
 ; is decided by the d register
 
 ; start of program
-; load a hexadecimal value with prefixing the hex with $.
-ldi n,$0000
-
-; load a binary value by prefixing it with #.
-ldi n,#010101010111
+ldi a,$0000
 
 ; increases A by 1
 COUNTER:
-    addi n,1 ; load a decimal value by simply writing the decimal
+    addi a,1
     subr WAIT
-    cmpi n, 0
-    beq FINISHED
     rjmp COUNTER
 
 ; SUBR WAIT
@@ -30,6 +23,6 @@ WAIT_LOOP:
 
 ; eternity loop
 FINISHED:
-    ldi n,$1337
+    ldi a,$1337
     nop
     rjmp -1
