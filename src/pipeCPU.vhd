@@ -120,9 +120,12 @@ architecture func of pipeCPU is
 
 
 --joystick out 
-
+    -- enable signal
     signal  jstk_en : std_logic;
+    -- joystick done signal, all data sent when high
     signal  jstk_done : std_logic;
+    -- The data transmitted by the joystick
+    -- order of the data is: x&y&btns
     signal  jstk_data : unsigned(22 downto 0);
 
      
@@ -309,16 +312,18 @@ begin
    rst <= (not locked_int or rst_int);
    -- =======================================
 
+
+
    joystick_comp : joystickreal port map( 	
     CLK => clk,
     RST => rst,
-    enable => jstk_en,
-    done => jstk_done,
-    data_out => jstk_data,
-    MISO => MISO,
-    MOSI => MOSI,
-    SCLK => SCLK,
-    SS => SS
+    enable => jstk_en, -- get joystick enable from the register file 
+    done => jstk_done, -- set the done bit from the joystick done bit 
+    data_out => jstk_data, -- the main data sent from the joystick
+    MISO => MISO, -- bit sent from the joystick, sent to JA PIN 3
+    MOSI => MOSI, -- bit sent to the joystick, sent to JA PIN 2
+    SCLK => SCLK, -- clock which decides when data is transmitted, sent to JA pin 4
+    SS => SS -- slave select, sent to JA PIN 1
 
     );
 

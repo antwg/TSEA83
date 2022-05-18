@@ -2,6 +2,15 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+
+---------
+-- The ALU takes input from what is assumed to be two muxes which can be used to change
+-- the incoming data depending on the operation code.
+-- the opertaion code is also used by the ALU to decide which aritmetic operation to use
+-- The ALU sets the status_reg and new_status_reg is used to keep the status_reg when a subrutine is
+-- returned from 
+--
+------
 entity ALU is
 	port (
         MUX1: in unsigned(15 downto 0);
@@ -9,17 +18,22 @@ entity ALU is
         op_code : in unsigned(7 downto 0);
         result : out unsigned(15 downto 0);
         status_reg : out unsigned(3 downto 0);
-        new_status_reg : in unsigned(3 downto 0);
+        new_status_reg : in unsigned(3 downto 0); -- used to save flags when doing a subrutine call
 		reset : in std_logic;
 		clk : in std_logic);	
 end ALU;
 
 architecture func of ALU is
+
+-- flags the ALU can set
 signal status_reg_out : unsigned(3 downto 0) := (others => '0');
 alias Z : std_logic is status_reg_out(0);
 alias N : std_logic is status_reg_out(1);
 alias C : std_logic is status_reg_out(2);
 alias V : std_logic is status_reg_out(3);
+
+
+-- signals used to contain the result of ALU operations
 signal res_add : unsigned(31 downto 0)  := (others => '0');
 signal res_sub : unsigned(31 downto 0) := (others => '0');
 signal send_through : unsigned(31 downto 0) := (others => '0');
@@ -31,12 +45,18 @@ signal add_carry: unsigned(31 downto 0) := (others => '0');
 signal sub_carry: unsigned(31 downto 0) := (others => '0');
 signal log_shift_left: unsigned (31 downto 0) := (others => '0');
 signal log_shift_right: unsigned (31 downto 0) := (others => '0');
+
+
+-- the result from the operation which was decided by the op_code
+-- it is 32 bits large since some aritmetic operation cause the result
+-- to be larger than 16 bits
 signal result_large : unsigned(31 downto 0) := (others => '0');
+-- alu operation, several op_codes can use the same alu operation
+-- so alu_op gathers these into one
 signal alu_op : unsigned(7 downto 0) := (others => '0');
 signal Z_helper : std_logic := '0';
 
-
--- branch has not been fully implemented
+--Instruction constants 
 constant NOP        : unsigned(7 downto 0) := x"00";
 constant RJMP       : unsigned(7 downto 0) := x"01";
 constant BEQ        : unsigned(7 downto 0) := x"02";
@@ -76,6 +96,8 @@ constant SUBR		: unsigned(7 downto 0) := x"23";
 constant RET		: unsigned(7 downto 0) := x"24";
 constant PCR		: unsigned(7 downto 0) := x"25";
 
+-- constants which are used to make handling of the operation easier
+-- eg for instructions with the same ALU operation such as ADD and ADDI
 
 constant alu_nop	: unsigned(7 downto 0)      := x"00";
 constant alu_add	: unsigned(7 downto 0)      := x"01";
@@ -97,7 +119,12 @@ constant alu_pcr		: unsigned(7 downto 0)  := x"10";
 constant alu_ret		: unsigned(7 downto 0)  := x"11";
 
 begin
-	
+
+	-- the main aritmetic operations
+	-- we need to make sure our numbers are of the correct lenght
+	-- which is why we need to do x"000" & which also differs a bit from 
+	-- operation to opertaion, example multiplication does not require
+	-- any bits to be added since the correct lenght is gained directly
 process(alu_op, MUX1, MUX2)
 begin
 	result_large <= (others => '0');
@@ -111,9 +138,6 @@ begin
         when alu_RS	        => result_large <= (x"0000" & (shift_right(MUX1, 1)));
         when alu_mul    	=> result_large <= MUX1 * MUX2;
 		when alu_muls   	=> result_large <= (unsigned(signed(MUX1) * signed(MUX2)));
-     -- what happens when we include the carry here?
-		--when alu_add_carry 	=> result_large <= (x"000" & ((x"0" & MUX1) + (x"0" & MUX2) + ("0000000000000000000" & C)));
-		--when alu_sub_carry	=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2) - ("0000000000000000000" & C)));
 		when alu_rd         => result_large <= (x"0000" & MUX1);
 		when alu_cmp		=> result_large <= (x"000" & ((x"0" & MUX1) - (x"0" & MUX2)));
 		when alu_pop		=> result_large <= (x"0000" & (MUX2 + 1));
@@ -128,7 +152,7 @@ status_reg <= status_reg_out;
 result <= result_large(15 downto 0);
 
 -- choose alu_op code since several codes have the same operations
---makes using the alu simplier here but maybe creates an extra "unneccsary" mux
+--makes using the alu simplier here but might create an extra "unneccsary" mux
 with op_code select alu_op <=
 	-- 000 noop, 001 add, 010 sub, 011 cmp, 
 	alu_add         when ADD,	
@@ -167,13 +191,13 @@ begin
 		else
 			case alu_op is
 				when alu_posr   => C <= new_status_reg(2);
-				when alu_add    => C <= result_large(16);
-				when alu_sub    => C <= result_large(16);
-				when alu_LS     => C <= MUX1(15);
-				when alu_RS     => C <= MUX1(0);
+				when alu_add    => C <= result_large(16); -- if the result of two adds resultet in larger than 16 bit long 
+				when alu_sub    => C <= result_large(16);-- if the result of two adds resultet in larger than 16 bit long
+				when alu_LS     => C <= MUX1(15); -- if a bit is going to be shifted out
+				when alu_RS     => C <= MUX1(0);-- if a bit is going to be shifted out
 				when alu_mul    => C <= result_large(31);
-				when alu_muls   => C <= result_large(31);
-				when others     => C <= C;
+				when alu_muls   => C <= result_large(31); 
+				when others     => C <= C; -- if nothing had an affect on the flag keep it the same
 			end case;
 		end if;
 	end if;
@@ -188,8 +212,10 @@ begin
 		else
 			case alu_op is
 				when alu_posr   => V <= new_status_reg(3);
+				-- if addition going from 1000 -> 0111 or 0111 -> 1000
 				when alu_add    => V <= ((MUX1(15) and MUX2(15) and not result_large(15))
 				                            or (not MUX1(15) and not MUX2(15) and result_large(15)));
+				-- if subtraction going from 1000 -> 0111 or 0111 -> 1000
 				when alu_sub    => V <= ((not MUX1(15) and MUX2(15) and result_large(15))
 				                            or ( MUX1(15) and not MUX2(15) and not result_large(15)));
 				when others     => V <= V;
@@ -220,7 +246,7 @@ begin
 
 end process;
 
--- Z flag
+-- when result is 0 Z is always 0 
 Z_helper <= '1' when (result_large(15 downto 0) = 0) else '0';
 
 process(clk)
@@ -230,7 +256,7 @@ begin
 			Z <= '0';
 		else
 			case alu_op is
-				when alu_posr 	=> Z <= new_status_reg(0);
+				when alu_posr 	=> Z <= new_status_reg(0); -- saved flag from subrutin
 				when alu_add 	=> Z <= Z_helper;
 				when alu_sub 	=> Z <= Z_helper;
 				when alu_cmp 	=> Z <= Z_helper;
@@ -241,33 +267,6 @@ begin
 		end if;
 	end if;
 end process;
-
-
--- Z flag
---process(clk)
---begin
---	if rising_edge(clk)	then
---		if reset = '1' then
---			Z <= '0';
---		elsif (alu_op = alu_posr) then
---			Z <= MUX1(0);
---		elsif (alu_op = alu_cmp) then
---			if ((MUX1 - MUX2) = 0) then
---				Z <= '1';
---			else 
---				Z <= '0';
---			end if;
---		elsif ((alu_op /= alu_nop) or (alu_op /= alu_pcr) or (alu_op /= alu_ret)) then -- TODO håller bara flaggan 1 tick
---			if (result_large(15 downto 0) = 0) then
---				Z <= '1';
---			else 
---				Z <= '0';
---			end if;
---		end if;
---	end if;	
---end process;
-
-
 
 
 end architecture;
