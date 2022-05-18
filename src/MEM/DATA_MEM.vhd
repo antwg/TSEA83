@@ -23,7 +23,7 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-        if (we = '1') then
+            if (we = '1') then
                 DM(to_integer(addr)) <= data_in;
             end if;
         end if;

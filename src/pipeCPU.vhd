@@ -98,9 +98,14 @@ architecture func of pipeCPU is
     signal led_addr : unsigned(3 downto 0) := "1101"; 
     signal led_null : unsigned(15 downto 0) := (others => '0');
 
-    --joystick out 
+
+--joystick out 
+    -- enable signal
     signal  jstk_en : std_logic;
+    -- joystick done signal, all data sent when high
     signal  jstk_done : std_logic;
+    -- The data transmitted by the joystick
+    -- order of the data is: x&y&btns
     signal  jstk_data : unsigned(22 downto 0);
 
     -- Instructions
@@ -269,16 +274,19 @@ begin
    rst <= (not locked_int or rst_int);
    -- =======================================
 
+
+
    joystick_comp : joystickreal port map( 	
     CLK => clk,
     RST => rst,
-    enable => jstk_en,
-    done => jstk_done,
-    data_out => jstk_data,
-    MISO => MISO,
-    MOSI => MOSI,
-    SCLK => SCLK,
-    SS => SS
+    enable => jstk_en, -- get joystick enable from the register file 
+    done => jstk_done, -- set the done bit from the joystick done bit 
+    data_out => jstk_data, -- the main data sent from the joystick
+    MISO => MISO, -- bit sent from the joystick, sent to JA PIN 3
+    MOSI => MOSI, -- bit sent to the joystick, sent to JA PIN 2
+    SCLK => SCLK, -- clock which decides when data is transmitted, sent to JA pin 4
+    SS => SS -- slave select, sent to JA PIN 1
+
     );
 
    prog_mem_comp : PROG_MEM port map(
@@ -402,7 +410,8 @@ begin
     dm_and_sm_data_out <= dm_data_out when (alu_out < x"FC00") else sm_data_out;
       
 	-- Address controller
-	dm_addr <= (alu_out and "0000001111111111"); -- Currently only allow 1024 addresses
+	pm_addr <= (PC and "0000011111111111"); -- Only allow 1024 addresses
+	dm_addr <= (alu_out and "0000001111111111"); -- Only allow 1024 addresses
 	dm_we <= '1' when ((alu_out < x"FC00") and ((IR2_op = STI) 		or 
 												(IR2_op = ST) 		or 
 												(IR2_op = PUSH) 	or 
@@ -410,11 +419,11 @@ begin
 												(IR2_op = SUBR))) 	else '0';
 
 	
-	-- sprite mem
+	-- sprite memory
 	spriteListPos <= alu_out(4 downto 0);
 	spriteWrite <= '1' when ((alu_out >= x"FC00") and ((IR2_op = STI) or (IR2_op = ST))) else '0'; 
 
-	-- Write enable RF
+	-- Write enable for register file
 	rf_we <= '0' when ((IR2_op = NOP)   or
                        (IR2_op = RJMP)  or
                        (IR2_op = BEQ)   or
@@ -499,7 +508,9 @@ begin
 						 if (IR1_op = SUBR) then
 							IR1_op <= PUSR;
 							IR1_const <= x"0000";
-							jumping <= '1';
+							jumping <= '1'; -- flag to handle special case
+                                            -- where PUSR otherwise gets
+                                            -- executed twice
 						 else
 						 	IR1 <= (others => '0'); -- jump NOP
 						 end if;
@@ -514,7 +525,7 @@ begin
 					    ((IR2_op = BGE) and ((NF xor VF) = '0')) 	or
 					    ((IR2_op = BLT) and ((NF xor VF) = '1')) 	then
 
-                    -- special case if subr call is from an interrupt, jump to intr vec
+                    -- special case if subr call is from an interrupt, jump to interrput vector
                     if (interrupt_handling_jump='1') then
                         PC <= x"0000";
                         interrupt_handling_jump <= '0';
@@ -530,6 +541,8 @@ begin
 
 					IR1 <= PMdata_out;
 
+                    -- if jumping is 1, and we came this far
+                    -- we've already handled the jump
 					if jumping='1' then
 						jumping <= '0';
 					end if;
@@ -537,8 +550,6 @@ begin
 			end if;
 		end if;
 	end process;
-
-	pm_addr <= (PC and "0000011111111111"); -- Currently only allow 1024 addresses
 
 	-- Update stack pointer
 	-- If push: decrement
@@ -551,11 +562,15 @@ begin
 			elsif ((IR2_op = POP) or (IR2_op = POSR) or (IR2_op = PCR)) then
 				SP <= SP + 1;
 			elsif (IR2_op = PUSH or (IR2_op = PUSR) or (IR2_op = SUBR)) then
-				if (jumping = '1') and (IR2_op = PUSR) then
-					SP <= SP;
-				else
-					SP <= SP - 1;
-				end if;
+
+              -- Special case for when we're performing a jump
+              -- since otherwise the stackpointer will
+              -- be decreased twice
+              if (jumping = '1') and (IR2_op = PUSR) then
+				SP <= SP;
+              else
+				SP <= SP - 1;
+              end if;
 			end if;
 		end if;
 	end process;
